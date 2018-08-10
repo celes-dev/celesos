@@ -36,6 +36,8 @@ add_library( eosio_chain
               abi_serializer.cpp
               asset.cpp
 
+              forest_bank.cpp
+
              webassembly/wavm.cpp
              webassembly/binaryen.cpp
 
