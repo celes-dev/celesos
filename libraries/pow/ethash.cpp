@@ -132,16 +132,16 @@ namespace celesos {
             return true;
         }
 
-        uint256_t hash_impl(const string &forest_template, uint64_t nonce_template, uint32_t dataset_count,
+        uint256_t hash_impl(const string &forest_template, boost::multiprecision::uint256_t nonce_template,
+                            uint32_t dataset_count,
                             const std::function<node(uint32_t)> &dataset_lookup) {
-
-            char buffer[40];
+            char buffer[64];
             memcpy(buffer, &forest_template[0], 32);
             auto nonce = native_to_little(nonce_template);
-            memcpy(buffer + 32, &nonce, 8);
+            memcpy(buffer + 32, &nonce, 32);
 
             auto forest = node{};
-            sha512(forest.bytes, buffer, 40);
+            sha512(forest.bytes, buffer, 64);
             fix_endian_arr32(forest.words, NODE_WORDS);
 
             union {
@@ -189,7 +189,7 @@ namespace celesos {
             return ret_little_uint256;
         }
 
-        uint256_t hash_light(const string &forest, uint64_t nonce, uint32_t dataset_count,
+        uint256_t hash_light(const string &forest, boost::multiprecision::uint256_t nonce, uint32_t dataset_count,
                              const vector<node> &cache) {
             auto dataset_lookup = [&cache](uint32_t x) {
                 return calc_dataset_item(cache, x);
@@ -197,7 +197,7 @@ namespace celesos {
             return hash_impl(forest, nonce, dataset_count, dataset_lookup);
         }
 
-        uint256_t hash_full(const string &forest, uint64_t nonce, uint32_t dataset_count,
+        uint256_t hash_full(const string &forest, boost::multiprecision::uint256_t nonce, uint32_t dataset_count,
                             const vector<node> &dataset) {
             auto dataset_lookup = [&dataset](uint32_t x) {
                 return dataset[x];
