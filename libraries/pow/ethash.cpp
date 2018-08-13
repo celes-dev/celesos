@@ -35,7 +35,7 @@ namespace celesos {
             SHA256_Final(dst, &ctx);
         }
 
-        inline uint32_t fnv(uint32_t v1, uint32_t v2) {
+        uint32_t fnv(uint32_t v1, uint32_t v2) {
             return v1 * FNV_PRIME ^ v2;
         }
 
