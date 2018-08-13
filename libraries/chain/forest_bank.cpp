@@ -15,9 +15,9 @@ namespace celesos{
     namespace forest {
         static uint32_t question_space_number = 600;//问题间隔块数
         static uint32_t question_period = 21600;//问题有效期
-        forest_bank::forest_bank() {}
+        forest_bank::forest_bank(){}
 
-        forest_bank::~forest_bank() {}
+        forest_bank::~forest_bank(){}
 
         forest_bank& forest_bank::get_instance(){
 
@@ -58,7 +58,7 @@ namespace celesos{
 //            return sum;
 //        }
         bool forest_bank::verify_wood(uint32_t block_number, const account_name& account, const uint64_t wood){
-            const controller control = controller::controller(controller::config());
+            controller::controller control{controller::config()};
             uint32_t current_block_number = control.head_block_num();
             if(block_number <= current_block_number - question_period){
                 //wood is past due
@@ -89,20 +89,25 @@ namespace celesos{
                 //call ethash verify wood
                 uint256_t result_value = celesos::ethash::hash_light(wood_forest,wood,data_set_count,cache_data);
 
-                return result_value <= target ? true : false;
+                return result_value <= target;
             }
         }
 
         void forest_bank::update_cache(uint32_t block_number){
-            //保留最近的两个cache
+            //store current and last period feed cache for verify wood
             uint32_t current_cache_number = block_number/question_period;
-            const controller control = controller::controller(controller::config());
+            if(first_cache_pair.first == current_cache_number){
+                //in same period not need update
+                return;
+            }
+
+            const controller::controller control{controller::config()};
 
             std::vector<celesos::ethash::node> node_vector;
             uint32_t dataset_count = 16777216;
             block_id_type seed = control.get_block_id_for_num(current_cache_number);
             if(celesos::ethash::calc_cache(node_vector,dataset_count,seed.str())){
-                first_cache_pair = std::make_pair(current_cache_number, &node_vector);
+                first_cache_pair = std::make_pair(current_cache_number, node_vector);
             }
 
             if(!(first_cache_pair.second.empty()))
@@ -112,13 +117,12 @@ namespace celesos{
         }
 
         bool forest_bank::get_forest(forest_struct& forest, const account_name& account){
-            const controller control = controller::controller(controller::config());
+            controller::controller control{controller::config()};
             uint32_t current_block_number = control.head_block_num();
 
             uint32_t current_forest_number = current_block_number/question_space_number * question_space_number;
 
-            if((forest_struct.target == 0)
-               || current_forest_number != forest_struct.block_number){
+            if((forest.target == 0) || (current_forest_number != forest.block_number)){
                 block_id_type result_value = control.get_block_id_for_num(current_forest_number);
 
                 forest_data.seed = fc::sha256::hash(result_value.str());
@@ -126,10 +130,11 @@ namespace celesos{
                 forest_data.block_number = current_forest_number;
 
                 //计算难度
-                boost::multiprecision::uint512_t value = 1<<58;
+                boost::multiprecision::uint256_t value = 1<<58;
 
                 forest_data.target = value;
             }
+            forest = forest_data;
             return true;
         }
     }
