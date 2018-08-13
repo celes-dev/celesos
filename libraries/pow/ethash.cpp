@@ -132,7 +132,8 @@ namespace celesos {
             return true;
         }
 
-        uint256_t hash_impl(const string &forest_template, boost::multiprecision::uint256_t nonce_template,
+        uint256_t hash_impl(const string &forest_template,
+                            const boost::multiprecision::uint256_t &nonce_template,
                             uint32_t dataset_count,
                             const std::function<node(uint32_t)> &dataset_lookup) {
             char buffer[64];
@@ -150,7 +151,7 @@ namespace celesos {
             } mix = {};
 
             for (int i = 0; i < MIX_NODES; ++i) {
-                memcpy(&mix.bytes[0] + i * NODE_BYTES, forest.bytes, NODE_BYTES);
+                memcpy(mix.bytes + i * NODE_BYTES, forest.bytes, NODE_BYTES);
             }
 
             auto full_pages = dataset_count * NODE_WORDS / MIX_WORDS;
@@ -162,10 +163,10 @@ namespace celesos {
                 auto p = fnv(i ^ forest.words[0], mix.words[i % MIX_WORDS]) % full_pages;
 
                 for (uint32_t j = 0; j < MIX_NODES; ++j) {
-                    memcpy(&new_data.bytes[0] + i * NODE_BYTES, dataset_lookup(MIX_NODES * p + j).bytes, NODE_BYTES);
+                    memcpy(new_data.bytes + j * NODE_BYTES, dataset_lookup(MIX_NODES * p + j).bytes, NODE_BYTES);
                 }
 
-                for (int j = 0; j < MIX_BYTES; ++j) {
+                for (int j = 0; j < MIX_WORDS; ++j) {
                     mix.words[j] = fnv(mix.words[j], new_data.words[j]);
                 }
             }
@@ -178,8 +179,8 @@ namespace celesos {
 
             // concat forest and compress mix
             char forest_cmix[NODE_BYTES + MIX_BYTES / 4];
-            memcpy(&forest_cmix[0], forest.bytes, NODE_BYTES);
-            memcpy(&forest_cmix[0] + NODE_BYTES, mix.bytes, MIX_BYTES / 4);
+            memcpy(forest_cmix, forest.bytes, NODE_BYTES);
+            memcpy(forest_cmix + NODE_BYTES, mix.bytes, MIX_BYTES / 4);
 
             byte ret_hash[32];
             sha256(ret_hash, forest_cmix, NODE_BYTES + MIX_BYTES / 4);
@@ -189,7 +190,9 @@ namespace celesos {
             return ret_little_uint256;
         }
 
-        uint256_t hash_light(const string &forest, boost::multiprecision::uint256_t nonce, uint32_t dataset_count,
+        uint256_t hash_light(const string &forest,
+                             const boost::multiprecision::uint256_t &nonce,
+                             uint32_t dataset_count,
                              const vector<node> &cache) {
             auto dataset_lookup = [&cache](uint32_t x) {
                 return calc_dataset_item(cache, x);
@@ -197,9 +200,11 @@ namespace celesos {
             return hash_impl(forest, nonce, dataset_count, dataset_lookup);
         }
 
-        uint256_t hash_full(const string &forest, boost::multiprecision::uint256_t nonce, uint32_t dataset_count,
+        uint256_t hash_full(const string &forest,
+                            const boost::multiprecision::uint256_t &nonce,
+                            uint32_t dataset_count,
                             const vector<node> &dataset) {
-            auto dataset_lookup = [&dataset](uint32_t x) {
+            auto dataset_lookup = [dataset_count, &dataset](uint32_t x) {
                 return dataset[x];
             };
             return hash_impl(forest, nonce, dataset_count, dataset_lookup);
