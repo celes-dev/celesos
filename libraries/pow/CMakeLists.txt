@@ -6,13 +6,9 @@ set(MY_SOURCES
 
 add_library(pow ${MY_SOURCES} ${MY_HEADERS})
 
-target_link_libraries(pow PUBLIC
-        ${OPENSSL_LIBRARIES}
-        ${Boost_LIBRARIES})
+target_link_libraries(pow PUBLIC fc)
 
 target_include_directories(pow PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${OPENSSL_INCLUDE_DIR}
-        ${Boost_INCLUDE_DIRS})
+        ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_subdirectory(test)

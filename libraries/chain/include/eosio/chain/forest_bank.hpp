@@ -34,14 +34,12 @@ namespace celesos{
          bool verify_wood(uint32_t block_number, const account_name& account, uint64_t wood);
 
         private:
+         void update_cache(uint32_t block_number);
+         static forest_bank* instance;
 
-
-            void update_cache(uint32_t block_number);
-            static forest_bank* instance;
-
-            forest_struct forest_data;
-            pair<uint32_t,std::vector<celesos::ethash::node>> first_cache_pair;
-            pair<uint32_t,std::vector<celesos::ethash::node>> second_scahe_pair;
+         forest_struct forest_data;
+         pair<uint32_t,std::vector<celesos::ethash::node>> first_cache_pair;
+         pair<uint32_t,std::vector<celesos::ethash::node>> second_scahe_pair;
      };
     }
 }
