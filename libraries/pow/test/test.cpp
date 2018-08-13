@@ -4,11 +4,16 @@
 
 #define BOOST_TEST_MODULE pow
 
+#include <random>
 #include "celesos/pow/ethash.h"
 #include "boost/test/included/unit_test.hpp"
+#include "boost/multiprecision/cpp_int.hpp"
+#include "boost/optional.hpp"
 #include "fc/crypto/hex.hpp"
 
 using namespace celesos::ethash;
+
+using boost::multiprecision::uint256_t;
 
 namespace celesos {
     namespace ethash {
@@ -51,4 +56,46 @@ BOOST_AUTO_TEST_CASE(sha512_test) {
     auto expect = std::string{
             "f259c589d93341b291ffa906b1ac62977221b86b96535ca61b14fa30f7be0559fa858fa1b7256cd500543f55171a44846decd52c8e667b0685529086d481e0b3"};
     BOOST_REQUIRE_EQUAL(actual, expect);
+}
+
+BOOST_AUTO_TEST_CASE(light_and_full_client_checks) {
+    const static uint32_t HASH_BYTES = 64;
+    const static uint64_t CACHE_BYTES = 1024;
+    const static uint64_t DATASET_BYTES = 1024 * 32;
+
+    const static auto CACHE_COUNT = static_cast<uint32_t>(CACHE_BYTES / HASH_BYTES);
+    const static auto DATASET_COUNT = static_cast<uint32_t>(DATASET_BYTES / HASH_BYTES);
+
+    auto target = uint256_t{197};
+    target |= uint256_t{90} << 1;
+    for (int i = 2; i < 32; ++i) {
+        target |= uint256_t{255} << i * 8;
+    }
+
+    auto seed = std::string{"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"};
+    auto &forest = seed;
+
+    auto cache = std::vector<node>{CACHE_COUNT, std::vector<node>::allocator_type()};
+    calc_cache(cache, CACHE_COUNT, seed);
+
+    auto dataset = std::vector<node>{DATASET_COUNT, std::vector<node>::allocator_type()};
+    calc_dataset(dataset, DATASET_COUNT, cache);
+
+    uint256_t nonce_init = 0;
+    uint256_t tmp = 0;
+    std::random_device rd;
+    for (int i = 0; i < 16; ++i) {
+        tmp = rd();
+        tmp <<= i * 16;
+        nonce_init |= tmp;
+    }
+    uint256_t nonce = nonce_init;
+    do {
+        if (hash_full(forest, nonce, DATASET_COUNT, dataset) <= target) {
+            break;
+        }
+        nonce++;
+    } while (nonce > nonce_init);
+
+    BOOST_REQUIRE(hash_light(forest, nonce, DATASET_COUNT, cache));
 }
