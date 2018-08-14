@@ -30,7 +30,7 @@ namespace celesos{
      class forest_bank{
         public:
          forest_bank(controller &control);
-         ~forest_bank() = default;
+         ~forest_bank();
 
          bool get_forest(forest_struct& forest, const account_name& account);
          bool verify_wood(uint32_t block_number, const account_name& account, uint64_t wood);
