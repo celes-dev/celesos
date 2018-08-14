@@ -8,6 +8,7 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <fc/crypto/sha256.hpp>
 #include "../../../../pow/include/celesos/pow/ethash.h"
+#include "../include/eosio/chain/controller.hpp"
 
 namespace celesos{
     using namespace eosio;
@@ -23,19 +24,22 @@ namespace celesos{
         boost::multiprecision::uint256_t target;
       }forest_struct;
 
+      uint32_t cache_count();
+      uint32_t dataset_count();
+
      class forest_bank{
         public:
-         forest_bank();
-         ~forest_bank();
-
-         forest_bank& get_instance();
+         forest_bank(controller &control);
+         ~forest_bank() = default;
 
          bool get_forest(forest_struct& forest, const account_name& account);
          bool verify_wood(uint32_t block_number, const account_name& account, uint64_t wood);
 
+
         private:
-         void update_cache(uint32_t block_number);
+         void update_cache(const block_state_ptr& block);
          static forest_bank* instance;
+         controller &chain;
 
          forest_struct forest_data;
          pair<uint32_t,std::vector<celesos::ethash::node>> first_cache_pair;
