@@ -35,6 +35,13 @@ namespace eosio { namespace chain {
       extensions_type                   header_extensions;
 
 
+      /// CELES code: fengdong.ning{@
+      /**
+       * The difficulity value for pow
+       */
+      optional<double>                  difficulty;
+      /// @}
+
       digest_type       digest()const;
       block_id_type     id() const;
       uint32_t          block_num() const { return num_from_id(previous) + 1; }
