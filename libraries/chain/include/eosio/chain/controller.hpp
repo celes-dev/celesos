@@ -197,6 +197,13 @@ namespace eosio { namespace chain {
 
          int64_t set_proposed_producers( vector<producer_key> producers );
 
+         /// CELES code: fengdong.ning {@
+         /*
+         * set the difficulty value of pow
+         */
+         bool set_difficulty(double difficulty);
+         /// @}
+
          bool skip_auth_check()const;
 
          bool contracts_console()const;
