@@ -93,7 +93,7 @@ namespace celesos{
                 optional<double> diff = block_ptr->difficulty;
                 double double_target = *diff;
                 boost::multiprecision::uint256_t orgin_target = 10000000;
-                boost::multiprecision::uint256_t target = (boost::multiprecision::uint256_t)(double_target*orgin_target);
+                boost::multiprecision::uint256_t target = 10000000;
                 //prepare parameter for ethash
                 uint32_t cache_number = block_number/question_period;
                 std::vector<celesos::ethash::node> cache_data;
