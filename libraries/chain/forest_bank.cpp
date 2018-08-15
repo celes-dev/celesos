@@ -22,6 +22,7 @@ namespace celesos{
             return 262144;
         }
 
+        static forest_bank *instance = NULL;
         forest_bank* forest_bank::getInstance(controller &control){
             if (instance == NULL)
             {
