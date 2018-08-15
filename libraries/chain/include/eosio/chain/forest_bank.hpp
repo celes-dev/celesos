@@ -7,8 +7,8 @@
 #include <eosio/chain/types.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <fc/crypto/sha256.hpp>
-#include "../../../../pow/include/celesos/pow/ethash.h"
-#include "../include/eosio/chain/controller.hpp"
+#include "celesos/pow/ethash.h"
+#include "eosio/chain/controller.hpp"
 
 namespace celesos{
     using namespace eosio;
