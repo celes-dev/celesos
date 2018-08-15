@@ -40,8 +40,8 @@ namespace celesos{
          ~forest_bank();
 
          void update_cache(const block_state_ptr& block);
-         static forest_bank* instance;
          controller &chain;
+
 
          forest_struct forest_data;
          pair<uint32_t,std::vector<celesos::ethash::node>> first_cache_pair;
