@@ -29,14 +29,16 @@ namespace celesos{
 
      class forest_bank{
         public:
-         forest_bank(controller &control);
-         ~forest_bank();
+         static forest_bank* getInstance(controller &control);
 
          bool get_forest(forest_struct& forest, const account_name& account);
          bool verify_wood(uint32_t block_number, const account_name& account, uint64_t wood);
 
 
         private:
+         forest_bank(controller &control);
+         ~forest_bank();
+
          void update_cache(const block_state_ptr& block);
          static forest_bank* instance;
          controller &chain;

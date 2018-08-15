@@ -22,6 +22,14 @@ namespace celesos{
             return 262144;
         }
 
+        forest_bank* forest_bank::getInstance(controller &control){
+            if (instance == NULL)
+            {
+                instance = new forest_bank(control);
+            }
+            return instance;
+        }
+
         forest_bank::forest_bank(controller &control) : chain(control) {
 
             //set accepted_block signal function
@@ -82,7 +90,10 @@ namespace celesos{
                 //in here verify wood is validity
                 signed_block_ptr block_ptr = chain.fetch_block_by_number(block_number);
                 //get forest target
-                boost::multiprecision::uint256_t target = 1<<58;
+                optional<double> diff = block_ptr->difficulty;
+                double double_target = *diff;
+                boost::multiprecision::uint256_t orgin_target = 10000000;
+                boost::multiprecision::uint256_t target = (boost::multiprecision::uint256_t)(double_target*orgin_target);
                 //prepare parameter for ethash
                 uint32_t cache_number = block_number/question_period;
                 std::vector<celesos::ethash::node> cache_data;
