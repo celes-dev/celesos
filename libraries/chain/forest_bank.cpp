@@ -93,8 +93,9 @@ namespace celesos{
                 //get forest target
                 optional<double> diff = block_ptr->difficulty;
                 double double_target = *diff;
-                boost::multiprecision::uint256_t orgin_target("0xffffffffffffffffffffffffffffff61");
-                uint256_t target = 10000;//(double_target*orgin_target);
+                uint256_t original_target("0x00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+                double target_value = (original_target.template convert_to<double>())/double_target;
+                uint256_t target = (uint256_t)(target_value);
                 //prepare parameter for ethash
                 uint32_t cache_number = block_number/question_period;
                 std::vector<celesos::ethash::node> cache_data;
@@ -152,7 +153,12 @@ namespace celesos{
                 forest_data.block_number = current_forest_number;
 
                 //计算难度
-                boost::multiprecision::uint256_t value = 1<<58;
+                signed_block_ptr block_ptr = chain.fetch_block_by_number(current_forest_number);
+                optional<double> diff = block_ptr->difficulty;
+                double double_target = *diff;
+                uint256_t original_target("0x00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+                double target_value = (original_target.template convert_to<double>())/double_target;
+                uint256_t value = (uint256_t)(target_value);
 
                 forest_data.target = value;
             }
