@@ -3,9 +3,9 @@
 //
 
 #include <eosio/chain/forest_bank.hpp>
-#include "../include/eosio/chain/fork_database.hpp"
-#include "../include/eosio/chain/block.hpp"
-#include "../include/eosio/chain/block_header.hpp"
+#include "eosio/chain/fork_database.hpp"
+#include "eosio/chain/block.hpp"
+#include "eosio/chain/block_header.hpp"
 
 namespace celesos{
     using namespace eosio;
@@ -20,6 +20,15 @@ namespace celesos{
         uint32_t dataset_count(){
             //1024*10248*16/64
             return 262144;
+        }
+
+        static forest_bank *instance = NULL;
+        forest_bank* forest_bank::getInstance(controller &control){
+            if (instance == NULL)
+            {
+                instance = new forest_bank(control);
+            }
+            return instance;
         }
 
         forest_bank::forest_bank(controller &control) : chain(control) {
@@ -82,7 +91,10 @@ namespace celesos{
                 //in here verify wood is validity
                 signed_block_ptr block_ptr = chain.fetch_block_by_number(block_number);
                 //get forest target
-                boost::multiprecision::uint256_t target = 1<<58;
+                optional<double> diff = block_ptr->difficulty;
+                double double_target = *diff;
+                boost::multiprecision::uint256_t orgin_target("0xffffffffffffffffffffffffffffff61");
+                uint256_t target = 10000;//(double_target*orgin_target);
                 //prepare parameter for ethash
                 uint32_t cache_number = block_number/question_period;
                 std::vector<celesos::ethash::node> cache_data;

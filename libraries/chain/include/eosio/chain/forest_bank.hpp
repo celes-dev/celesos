@@ -7,8 +7,8 @@
 #include <eosio/chain/types.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <fc/crypto/sha256.hpp>
-#include "../../../../pow/include/celesos/pow/ethash.h"
-#include "../include/eosio/chain/controller.hpp"
+#include "celesos/pow/ethash.h"
+#include "eosio/chain/controller.hpp"
 
 namespace celesos{
     using namespace eosio;
@@ -29,17 +29,19 @@ namespace celesos{
 
      class forest_bank{
         public:
-         forest_bank(controller &control);
-         ~forest_bank();
+         static forest_bank* getInstance(controller &control);
 
          bool get_forest(forest_struct& forest, const account_name& account);
          bool verify_wood(uint32_t block_number, const account_name& account, uint64_t wood);
 
 
         private:
+         forest_bank(controller &control);
+         ~forest_bank();
+
          void update_cache(const block_state_ptr& block);
-         static forest_bank* instance;
          controller &chain;
+
 
          forest_struct forest_data;
          pair<uint32_t,std::vector<celesos::ethash::node>> first_cache_pair;

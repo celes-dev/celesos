@@ -1495,6 +1495,12 @@ int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
    return version;
 }
 
+/// CELES code: fengdong.ning {@
+bool controller::set_difficulty(double difficulty) {
+   my->pending->_pending_block_state->header.difficulty = difficulty;
+}
+/// @}
+
 const producer_schedule_type&    controller::active_producers()const {
    if ( !(my->pending) )
       return  my->head->active_schedule;
