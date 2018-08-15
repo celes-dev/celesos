@@ -3,9 +3,9 @@
 //
 
 #include <eosio/chain/forest_bank.hpp>
-#include "../include/eosio/chain/fork_database.hpp"
-#include "../include/eosio/chain/block.hpp"
-#include "../include/eosio/chain/block_header.hpp"
+#include "eosio/chain/fork_database.hpp"
+#include "eosio/chain/block.hpp"
+#include "eosio/chain/block_header.hpp"
 
 namespace celesos{
     using namespace eosio;
@@ -92,8 +92,8 @@ namespace celesos{
                 //get forest target
                 optional<double> diff = block_ptr->difficulty;
                 double double_target = *diff;
-                boost::multiprecision::uint256_t orgin_target = 10000000;
-                boost::multiprecision::uint256_t target = 10000000;
+                boost::multiprecision::uint256_t orgin_target("0xffffffffffffffffffffffffffffff61");
+                uint256_t target = 10000;//(double_target*orgin_target);
                 //prepare parameter for ethash
                 uint32_t cache_number = block_number/question_period;
                 std::vector<celesos::ethash::node> cache_data;
