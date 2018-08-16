@@ -690,6 +690,10 @@ class producer_api : public context_aware_api {
 
          return copy_size;
       }
+
+      bool set_difficulty(double diff) {
+         return context.set_difficulty(diff);
+      }
 };
 
 class crypto_api : public context_aware_api {
