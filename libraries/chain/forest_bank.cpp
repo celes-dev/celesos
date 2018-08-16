@@ -95,7 +95,7 @@ namespace celesos{
                 double double_target = *diff;
                 uint256_t original_target("0x00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
                 double target_value = (original_target.template convert_to<double>())/double_target;
-                uint256_t target = (uint256_t)(target_value);
+                uint256_t target = static_cast<uint256_t>(target_value);
                 //prepare parameter for ethash
                 uint32_t cache_number = block_number/question_period;
                 std::vector<celesos::ethash::node> cache_data;
@@ -158,7 +158,7 @@ namespace celesos{
                 double double_target = *diff;
                 uint256_t original_target("0x00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
                 double target_value = (original_target.template convert_to<double>())/double_target;
-                uint256_t value = (uint256_t)(target_value);
+                uint256_t value = static_cast<uint256_t>(target_value);
 
                 forest_data.target = value;
             }
