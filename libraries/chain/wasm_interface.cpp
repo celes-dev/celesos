@@ -1642,6 +1642,7 @@ class call_depth_api : public context_aware_api {
       }
 };
 
+/// CELES code: fengdong.ning {@
 class forest_bank_api : public context_aware_api{
    public:
     using context_aware_api::context_aware_api;
@@ -1649,6 +1650,7 @@ class forest_bank_api : public context_aware_api{
           return context.verify_wood(block_number,account,wood);
       }
 };
+///@}
 
 REGISTER_INJECTED_INTRINSICS(call_depth_api,
    (call_depth_assert,  void()               )
@@ -1853,10 +1855,11 @@ REGISTER_INTRINSICS(memory_api,
    (memset,                 int(int, int, int)  )
 );
 
+/// CELES code: fengdong.ning {@
 REGISTER_INTRINSICS(forest_bank_api,
     (verify_wood, int(int32_t,int64_t,int64_t) ,"verifywood",  bool(forest_bank_api::*)(uint32_t,const account_name&,uint64_t)const )
 );
-
+///@}
 
 REGISTER_INJECTED_INTRINSICS(softfloat_api,
       (_eosio_f32_add,       float(float, float)    )
