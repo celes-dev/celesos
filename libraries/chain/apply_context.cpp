@@ -630,10 +630,11 @@ uint64_t apply_context::next_auth_sequence( account_name actor ) {
    return rs.auth_sequence;
 }
 
+/// CELES code：hubery.zhang {@
 bool apply_context::verify_wood(uint32_t block_number, const account_name& account, uint64_t wood)const{
    static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
    return  forest->verify_wood(block_number, account, wood);
 }
-
+///@}
 
 } } /// eosio::chain
