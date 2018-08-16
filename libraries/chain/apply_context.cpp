@@ -349,6 +349,11 @@ vector<account_name> apply_context::get_active_producers() const {
    return accounts;
 }
 
+bool apply_context::set_difficulty(double diff) const {
+   auto result = control.set_difficulty(diff);
+   return result;
+}
+
 void apply_context::reset_console() {
    _pending_console_output = std::ostringstream();
    _pending_console_output.setf( std::ios::scientific, std::ios::floatfield );

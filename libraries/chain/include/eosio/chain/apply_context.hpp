@@ -567,6 +567,7 @@ class apply_context {
       int get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size )const;
       int get_context_free_data( uint32_t index, char* buffer, size_t buffer_size )const;
       vector<account_name> get_active_producers() const;
+      bool set_difficulty(double diff) const;
       bytes  get_packed_transaction();
 
       uint64_t next_global_sequence();
