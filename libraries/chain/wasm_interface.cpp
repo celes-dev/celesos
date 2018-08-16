@@ -1646,7 +1646,7 @@ class call_depth_api : public context_aware_api {
       }
 };
 
-/// CELES code: fengdong.ning {@
+/// CELES code: hubery.zhang {@
 class forest_bank_api : public context_aware_api{
    public:
     using context_aware_api::context_aware_api;
@@ -1859,7 +1859,7 @@ REGISTER_INTRINSICS(memory_api,
    (memset,                 int(int, int, int)  )
 );
 
-/// CELES code: fengdong.ning {@
+/// CELES code: hubery.zhang {@
 REGISTER_INTRINSICS(forest_bank_api,
     (verify_wood, int(int32_t,int64_t,int64_t) ,"verifywood",  bool(forest_bank_api::*)(uint32_t,const account_name&,uint64_t)const )
 );
