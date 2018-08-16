@@ -41,5 +41,10 @@ extern "C" {
 
     uint32_t get_active_producers( account_name* producers, uint32_t datalen );
 
+    /*
+    * set the difficulty value of pow
+    */
+    bool set_difficulty(double difficulty);
+
    ///@ } chaincapi
 }
