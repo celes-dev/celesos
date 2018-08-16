@@ -14,12 +14,11 @@ using celesos::miner::worker;
 using celesos::miner::worker_ctx;
 
 using boost::multiprecision::uint256_t;
-using boost::signals2::signal;
 using boost::signals2::connection;
 
 celesos::miner::miner::miner() : _alive_workers{std::thread::hardware_concurrency(),
                                                 vector<shared_ptr<worker>>::allocator_type()},
-                                 _signal{make_shared<signal<slot_type>>()},
+                                 _signal{make_shared<boost::signals2::signal<slot_type>>()},
                                  _io_thread{&celesos::miner::miner::run, this} {
 
 }
