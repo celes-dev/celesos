@@ -30,6 +30,13 @@ namespace eosio {
         };
     };
 
+    miner_plugin::miner_plugin() {
+
+    }
+
+    miner_plugin::~miner_plugin() {
+    }
+
     void miner_plugin::set_program_options(options_description &, options_description &cfg) {
         cfg.add_options()
                 ("option-name", bpo::value<string>()->default_value("default value"),
@@ -47,6 +54,28 @@ namespace eosio {
 
     void miner_plugin::plugin_startup() {
         auto &cc = app().get_plugin<chain_plugin>().chain();
+        this->my->the_miner.connect([&cc](const uint256_t &wood) {
+            //TODO 修改相关账户信息的获取方式
+            const chain::name &voter_account{"yale"};
+            const auto &voter_pk = chain::private_key_type::generate();
+            const chain::name &producer_account{"eospacific"};
+
+            //TODO 处理算出nonce的流程
+            const auto &chain_id = cc.get_chain_id();
+            auto tx = chain::signed_transaction{};
+            auto permission_levels = vector<chain::permission_level>{
+                    {voter_account, "active"}};
+
+            auto a_action_vote = miner::action_vote{
+                    .producer = producer_account,
+                    .voter = voter_account,
+                    .wood = wood,
+            };
+            tx.actions.emplace_back(permission_levels, a_action_vote);
+            tx.expiration = cc.head_block_time() + fc::seconds(30);
+            tx.set_reference_block(chain_id);
+            tx.sign(voter_pk, chain_id);
+        });
         this->my->the_miner.start(cc);
     }
 

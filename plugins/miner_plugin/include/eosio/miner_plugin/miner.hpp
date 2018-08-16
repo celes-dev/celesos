@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <boost/signals2.hpp>
+#include <boost/asio/io_service.hpp>
 #include <eosio/chain/controller.hpp>
 #include <eosio/miner_plugin/worker.h>
 
@@ -29,16 +30,23 @@ namespace celesos {
         };
 
         class miner {
+            using slot_type = void(const boost::multiprecision::uint256_t &);
+
         private:
             std::vector<std::shared_ptr<celesos::miner::worker>> _alive_workers;
             std::vector<boost::signals2::connection> _connections;
+            std::shared_ptr<boost::signals2::signal<slot_type>> _signal;
+            std::shared_ptr<boost::asio::io_service::work> _io_work;
+            std::shared_ptr<boost::asio::io_service> _io_service;
+            std::thread _io_thread;
 
             static void string_to_uint256_little(boost::multiprecision::uint256_t &dst, const std::string &str);
 
             static void gen_random_uint256(boost::multiprecision::uint256_t &dst);
 
+            void run();
+
         public:
-            std::shared_ptr<boost::signals2::signal<void(const boost::multiprecision::uint256_t &)>> _signal;
 
             miner();
 
@@ -47,6 +55,8 @@ namespace celesos {
             void start(eosio::chain::controller &controller);
 
             void stop(bool wait = true);
+
+            boost::signals2::connection connect(const std::function<slot_type> &slot);
         };
     }
 }

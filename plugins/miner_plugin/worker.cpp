@@ -27,7 +27,7 @@ namespace celesos {
             auto lock = unique_lock<shared_timed_mutex>{this->_mutex};
             if (this->_state == state::initialized) {
                 this->_state = state::started;
-                this->_alive_thread.emplace(thread{std::bind(&worker::start_impl, this)});
+                this->_alive_thread.emplace(thread{std::bind(&worker::run, this)});
             }
             lock.unlock();
         }
@@ -46,13 +46,13 @@ namespace celesos {
             }
         }
 
-        void worker::start_impl() {
-            const auto &nonce_start = *_ctx.nonce_start;
-            const auto &target = *_ctx.target;
-            const auto &retry_count = *_ctx.retry_count;
-            const auto &dataset = *_ctx.dataset;
-            const auto dataset_count = _ctx.dataset->size();
-            const auto &forest = *_ctx.forest;
+        void worker::run() {
+            const auto &nonce_start = *this->_ctx.nonce_start;
+            const auto &target = *this->_ctx.target;
+            const auto &retry_count = *this->_ctx.retry_count;
+            const auto &dataset = *this->_ctx.dataset;
+            const auto dataset_count = this->_ctx.dataset->size();
+            const auto &forest = *this->_ctx.forest;
             uint256_t nonce_current = nonce_start;
             bool solved = false;
             do {
@@ -74,7 +74,9 @@ namespace celesos {
                 return;
             }
 
-            (*_ctx.signal)(nonce_current);
+            this->_ctx.io_service->post([signal = this->_ctx.signal, &answer = nonce_current]() {
+                (*signal)(answer);
+            });
         }
     }
 }

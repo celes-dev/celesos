@@ -14,23 +14,29 @@ using celesos::miner::worker;
 using celesos::miner::worker_ctx;
 
 using boost::multiprecision::uint256_t;
-using boost::signal2::signal;
+using boost::signals2::signal;
+using boost::signals2::connection;
 
-celesos::miner::miner::miner() : _alive_workers{std::thread::hardware_concurrency(), vector<shared_ptr<worker>>::allocator_type()},
-                                 _signal{signal<void(const uint256_t &)>{}} {
+celesos::miner::miner::miner() : _alive_workers{std::thread::hardware_concurrency(),
+                                                vector<shared_ptr<worker>>::allocator_type()},
+                                 _signal{make_shared<signal<slot_type>>()},
+                                 _io_thread{&celesos::miner::miner::run, this} {
+
 }
 
 miner::miner::~miner() {
+    this->_io_work.reset();
+    this->_signal->disconnect_all_slots();
     this->stop();
 }
 
 void celesos::miner::miner::start(chain::controller &cc) {
+    //TODO 修改相关账户信息的获取方式
     const chain::name &voter_account{"yale"};
     const auto &voter_pk = chain::private_key_type::generate();
     const chain::name &producer_account{"eospacific"};
 
-    //TODO 以单例的形式获取forest_bank
-    forest::forest_bank bank{cc};
+    auto &bank = *forest::forest_bank::getInstance(cc);
     forest::forest_struct forest_info{};
     if (!bank.get_forest(forest_info, voter_account)) {
         //TODO 处理异常流程
@@ -68,6 +74,7 @@ void celesos::miner::miner::start(chain::controller &cc) {
                 .retry_count = retry_count,
                 .nonce_start = nonce_start,
                 .signal = this->_signal,
+                .io_service = this->_io_service,
         };
         this->_alive_workers.push_back(make_shared<worker>(std::move(ctx)));
     }
@@ -88,26 +95,14 @@ void celesos::miner::miner::stop(bool wait) {
     this->_connections.clear();
 }
 
-void submit_wood(chain::controller &cc, const uint256_t &wood) {
-    const chain::name &voter_account{"yale"};
-    const auto &voter_pk = chain::private_key_type::generate();
-    const chain::name &producer_account{"eospacific"};
+connection celesos::miner::miner::connect(const std::function<slot_type> &slot) {
+    return _signal->connect(slot);
+}
 
-    //TODO 处理算出nonce的流程
-    const auto &chain_id = cc.get_chain_id();
-    auto tx = chain::signed_transaction{};
-    auto permission_levels = vector<chain::permission_level>{
-            {voter_account, "active"}};
-
-    auto a_action_vote = miner::action_vote{
-            .producer = producer_account,
-            .voter = voter_account,
-            .wood = wood,
-    };
-    tx.actions.emplace_back(permission_levels, a_action_vote);
-    tx.expiration = cc.head_block_time() + fc::seconds(30);
-    tx.set_reference_block(chain_id);
-    tx.sign(voter_pk, chain_id);
+void celesos::miner::miner::run() {
+    this->_io_service = make_shared<boost::asio::io_service>();
+    this->_io_work = make_shared<boost::asio::io_service::work>(*this->_io_service);
+    this->_io_service->run();
 }
 
 void celesos::miner::miner::string_to_uint256_little(uint256_t &dst, const std::string &str) {
@@ -127,7 +122,7 @@ void celesos::miner::miner::string_to_uint256_little(uint256_t &dst, const std::
     }
 }
 
-void celesos::miner::miner::gen_random_uint256(boost::multiprecision::uint256_t &dst) {
+void celesos::miner::miner::gen_random_uint256(uint256_t &dst) {
     random_device rd{};
     mt19937_64 gen{rd()};
     uniform_int_distribution<uint64_t> dis{};

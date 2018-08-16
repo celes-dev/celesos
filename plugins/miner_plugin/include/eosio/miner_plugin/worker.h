@@ -8,6 +8,7 @@
 #include <thread>
 #include <shared_mutex>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/asio/io_service.hpp>
 #include <boost/optional.hpp>
 #include <eosio/chain/forest_bank.hpp>
 #include <celesos/pow/ethash.h>
@@ -18,13 +19,15 @@ namespace celesos {
         struct worker_ctx {
             using dataset_ptr_type = std::shared_ptr<std::vector<celesos::ethash::node>>;
             using hash_ptr_type = std::shared_ptr<boost::multiprecision::uint256_t>;
+            using slot_type = void(const boost::multiprecision::uint256_t &);
 
             const dataset_ptr_type dataset;
             const std::shared_ptr<std::string> forest;
             const hash_ptr_type nonce_start;
             const hash_ptr_type retry_count;
             const hash_ptr_type target;
-            const std::shared_ptr<boost::signals2::signal<void(const boost::multiprecision::uint256_t&)>> signal;
+            const std::shared_ptr<boost::asio::io_service> io_service;
+            const std::shared_ptr<boost::signals2::signal<slot_type>> signal;
         };
 
         class worker {
@@ -34,7 +37,7 @@ namespace celesos {
             std::shared_timed_mutex _mutex;
             boost::optional<std::thread> _alive_thread;
 
-            void start_impl();
+            void run();
 
         protected:
             worker() = default;
