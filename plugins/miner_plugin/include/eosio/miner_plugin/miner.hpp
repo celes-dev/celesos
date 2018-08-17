@@ -33,17 +33,25 @@ namespace celesos {
             using slot_type = void(const boost::multiprecision::uint256_t &);
 
         private:
+            enum state {
+                initialized,
+                started,
+                stopped,
+            };
+
             std::vector<std::shared_ptr<celesos::miner::worker>> _alive_workers;
             std::vector<boost::signals2::connection> _connections;
             std::shared_ptr<boost::signals2::signal<slot_type>> _signal;
             std::shared_ptr<boost::asio::io_service::work> _io_work;
             std::shared_ptr<boost::asio::io_service> _io_service;
             std::thread _io_thread;
+            state _state;
 
             static void string_to_uint256_little(boost::multiprecision::uint256_t &dst, const std::string &str);
 
             static void gen_random_uint256(boost::multiprecision::uint256_t &dst);
 
+            void on_forest_updated(eosio::chain::controller &cc);
             void run();
 
         public:
