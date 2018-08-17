@@ -32,6 +32,12 @@ namespace celesos {
 
         class worker {
         private:
+            enum state {
+                initialized,
+                started,
+                stopped,
+            };
+
             worker_ctx _ctx;
             boost::multiprecision::uint256_t _state;
             std::shared_timed_mutex _mutex;
@@ -42,13 +48,7 @@ namespace celesos {
         protected:
             worker() = default;
 
-
         public:
-            enum state {
-                initialized,
-                started,
-                stopped,
-            };
 
             worker(worker_ctx ctx);
 

@@ -19,8 +19,8 @@ using boost::signals2::connection;
 celesos::miner::miner::miner() : _alive_workers{std::thread::hardware_concurrency(),
                                                 vector<shared_ptr<worker>>::allocator_type()},
                                  _signal{make_shared<boost::signals2::signal<slot_type>>()},
-                                 _io_thread{&celesos::miner::miner::run, this} {
-
+                                 _io_thread{&celesos::miner::miner::run, this},
+                                 _state{state::initialized} {
 }
 
 miner::miner::~miner() {
@@ -30,6 +30,45 @@ miner::miner::~miner() {
 }
 
 void celesos::miner::miner::start(chain::controller &cc) {
+    ilog("start() attempt");
+    if (this->_state != state::initialized) {
+        return;
+    }
+    ilog("start() begin");
+    this->_state = state::started;
+
+    auto a_connection = cc.accepted_block_header.connect([this, &cc](const chain::block_state_ptr &block) {
+        this->on_forest_updated(cc);
+    });
+    this->_connections.push_back(std::move(a_connection));
+    ilog("start() end");
+}
+
+void celesos::miner::miner::stop(bool wait) {
+    ilog("stop(wait = ${wait}) begin", ("wait", wait));
+    if (this->_state == state::stopped) {
+        return;
+    }
+
+    this->_state = state::stopped;
+    for (auto &&x : this->_alive_workers) {
+        x->stop(wait);
+    }
+    this->_alive_workers.clear();
+    for (auto &&x : this->_connections) {
+        x.disconnect();
+    }
+    this->_connections.clear();
+    ilog("stop(wait = ${wait}) end", ("wait", wait));
+}
+
+connection celesos::miner::miner::connect(const std::function<slot_type> &slot) {
+    return _signal->connect(slot);
+}
+
+void celesos::miner::miner::on_forest_updated(chain::controller &cc) {
+    ilog("on forest updated");
+
     //TODO 修改相关账户信息的获取方式
     const chain::name &voter_account{"yale"};
     const auto &voter_pk = chain::private_key_type::generate();
@@ -39,6 +78,7 @@ void celesos::miner::miner::start(chain::controller &cc) {
     forest::forest_struct forest_info{};
     if (!bank.get_forest(forest_info, voter_account)) {
         //TODO 处理异常流程
+        return;
     }
 
     const auto target = make_shared<uint256_t>(0);
@@ -83,21 +123,6 @@ void celesos::miner::miner::start(chain::controller &cc) {
     }
 }
 
-void celesos::miner::miner::stop(bool wait) {
-    for (auto &&x : this->_alive_workers) {
-        x->stop(wait);
-    }
-    this->_alive_workers.clear();
-    for (auto &&x : this->_connections) {
-        x.disconnect();
-    }
-    this->_connections.clear();
-}
-
-connection celesos::miner::miner::connect(const std::function<slot_type> &slot) {
-    return _signal->connect(slot);
-}
-
 void celesos::miner::miner::run() {
     this->_io_service = make_shared<boost::asio::io_service>();
     this->_io_work = make_shared<boost::asio::io_service::work>(*this->_io_service);
@@ -131,5 +156,3 @@ void celesos::miner::miner::gen_random_uint256(uint256_t &dst) {
         dst |= dis(gen);
     }
 }
-
-
