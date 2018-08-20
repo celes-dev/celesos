@@ -20,7 +20,8 @@ celesos::miner::miner::miner() : _alive_workers{std::thread::hardware_concurrenc
                                                 vector<shared_ptr<worker>>::allocator_type()},
                                  _signal{make_shared<celesos::miner::mine_signal_type>()},
                                  _io_thread{&celesos::miner::miner::run, this},
-                                 _state{state::initialized} {
+                                 _state{state::initialized},
+                                 _failure_retry_interval_us{fc::milliseconds(5000)} {
 }
 
 celesos::miner::miner::~miner() {
@@ -38,8 +39,25 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
     this->_state = state::started;
 
     auto slot = [this, &relative_account, &cc](const chain::block_state_ptr &block) {
-        //TODO 检查forest是否更新
-        this->on_forest_updated(relative_account, cc);
+        if (this->_last_failure_time_us) {
+            auto &&passed_time_us = fc::time_point::now().time_since_epoch() - this->_last_failure_time_us.get();
+            if (passed_time_us < this->_failure_retry_interval_us) {
+                return;
+            }
+        }
+
+        if (this->_next_block_num && block->block_num < this->_next_block_num.get()) {
+            return;
+        }
+
+        try {
+            this->on_forest_updated(relative_account, cc);
+            this->_last_failure_time_us.reset();
+        } catch (...) {
+            //TODO 完善异常处理
+            this->_last_failure_time_us = fc::time_point::now().time_since_epoch();
+            elog("Fail to handle \"on_forest_update\"");
+        }
     };
     auto a_connection = cc.accepted_block_header.connect(std::move(slot));
     this->_connections.push_back(std::move(a_connection));
@@ -77,6 +95,9 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
         //TODO 处理异常流程
         return;
     }
+
+    this->_next_block_num = forest_info.next_block_num;
+    ilog("update field \"next_block_number\" with value: ${block_num}", ("block_num", forest_info.next_block_num));
 
     const auto target = make_shared<uint256_t>(0);
     string_to_uint256_little(*target, forest_info.target.str());

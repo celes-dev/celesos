@@ -161,7 +161,7 @@ void celesos::miner_plugin::plugin_initialize(const variables_map &options) {
         }
 
         this->my->_keosd_provider_timeout_us = fc::milliseconds(
-                options.at("miner-keosd-provider-timeout").as<uint32_t>());
+                options["miner-keosd-provider-timeout"].as<int32_t>());
         ilog("plugin_initialize() end");
     } FC_LOG_AND_RETHROW()
 }
