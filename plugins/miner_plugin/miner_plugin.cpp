@@ -37,17 +37,17 @@ public:
     };
 
     static chain::action create_action(const chain_plugin &the_plugin,
-                                       const vector<chain::permission_level> &auth,
-                                       const chain::account_name &account,
-                                       const chain::action_name &name,
-                                       const fc::mutable_variant_object &args) {
+                                       vector<chain::permission_level> &&auth,
+                                       chain::account_name &&account,
+                                       chain::action_name &&name,
+                                       fc::mutable_variant_object &&args) {
         chain_apis::read_only::abi_json_to_bin_params params{
                 .code = account,
                 .action = name,
                 .args = args,
         };
-        auto ret = the_plugin.get_read_only_api().abi_json_to_bin(params);
-        return chain::action{auth, account, name, std::move(ret.binargs)};
+        auto &&ret = the_plugin.get_read_only_api().abi_json_to_bin(params);
+        return chain::action{auth, account, name, ret.binargs};
     }
 
     static signature_provider_type make_key_signature_provider(const chain::private_key_type &key) {
@@ -171,37 +171,39 @@ void celesos::miner_plugin::plugin_startup() {
         ilog("plugin_startup() begin");
 
         auto &the_chain_plugin = app().get_plugin<chain_plugin>();
-        auto &cc = the_chain_plugin.chain();
-        this->my->_the_miner.start(cc);
+        this->my->_the_miner.start(this->my->_voter_name, the_chain_plugin.chain());
         this->my->_the_miner.connect(
-                [this, &b the_chain_plugin, &cc](const chain::block_num_type block_num, const uint256_t &wood) {
-                    const auto &voter_name = this->my->_voter_name;
-                    const auto &producer_name = this->my->_producer_name;
+                [this, &the_chain_plugin](const chain::block_num_type block_num,
+                                          const uint256_t &wood) {
+                    try {
+                        auto &cc = the_chain_plugin.chain();
+                        const auto &chain_id = cc.get_chain_id();
+                        const auto &voter_name = this->my->_voter_name;
+                        const auto &producer_name = this->my->_producer_name;
 
-                    //TODO 修改相关账户信息的获取方式
-                    const auto &voter_pk = chain::private_key_type::generate();
-
-                    //TODO 处理算出nonce的流程
-                    const auto &chain_id = cc.get_chain_id();
-                    auto tx = chain::signed_transaction{};
-
-                    //TODO 修改voteproducer时传递的wood参数
-                    vector<chain::permission_level> auth{{voter_name, "active"}};
-                    auto &code = chain::config::system_account_name;
-                    auto args = fc::mutable_variant_object{}
-                            ("voter_name", voter_name)
-                            ("woodowner_name", voter_name)
-                            ("wood_info", fc::mutable_variant_object{}
-                                    ("block_number", block_num)
-                                    ("wood", wood))
-                            ("producer_name", producer_name);
-                    auto a_action = miner_plugin_impl::create_action(the_chain_plugin,
-                                                                     std::move(auth), code,
-                                                                     "voteproducer", std::move(args));
-                    tx.actions.push_back(std::move(a_action));
-                    tx.expiration = cc.head_block_time() + fc::seconds(30);
-                    tx.set_reference_block(chain_id);
-                    tx.sign(voter_pk, chain_id);
+                        auto tx = chain::signed_transaction{};
+                        vector<chain::permission_level> auth{{voter_name, "active"}};
+                        const auto &code = chain::config::system_account_name;
+                        chain::action_name action{"voteproducer"};
+                        auto args = fc::mutable_variant_object{}
+                                ("voter_name", voter_name)
+                                ("woodowner_name", voter_name)
+                                ("wood_info", fc::mutable_variant_object{}
+                                        ("block_number", block_num)
+                                        ("wood", wood))
+                                ("producer_name", producer_name);
+                        auto a_action = miner_plugin_impl::create_action(the_chain_plugin,
+                                                                         std::move(auth), code,
+                                                                         std::move(action), std::move(args));
+                        tx.actions.push_back(std::move(a_action));
+                        tx.expiration = cc.head_block_time() + fc::seconds(30);
+                        tx.set_reference_block(chain_id);
+                        for (auto &&pair : this->my->_signature_providers) {
+                            auto &&digest = tx.sig_digest(chain_id, tx.context_free_data);
+                            auto &&signature = pair.second(digest);
+                            tx.signatures.push_back(signature);
+                        }
+                    } FC_LOG_AND_RETHROW()
                 });
         ilog("plugin_startup() end");
     } FC_LOG_AND_RETHROW()

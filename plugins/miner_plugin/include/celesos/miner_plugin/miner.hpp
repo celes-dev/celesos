@@ -34,7 +34,7 @@ namespace celesos {
 
             static void gen_random_uint256(boost::multiprecision::uint256_t &dst);
 
-            void on_forest_updated(eosio::chain::controller &cc);
+            void on_forest_updated(const eosio::chain::account_name &relative_account, eosio::chain::controller &cc);
 
             void run();
 
@@ -44,7 +44,7 @@ namespace celesos {
 
             ~miner();
 
-            void start(eosio::chain::controller &controller);
+            void start(const eosio::chain::account_name &relative_account, eosio::chain::controller &controller);
 
             void stop(bool wait = true);
 
