@@ -29,6 +29,9 @@ namespace celesos {
             std::shared_ptr<boost::asio::io_service> _io_service;
             std::thread _io_thread;
             state _state;
+            boost::optional<eosio::chain::block_num_type> _next_block_num;
+            boost::optional<fc::microseconds> _last_failure_time_us;
+            fc::microseconds _failure_retry_interval_us;
 
             static void string_to_uint256_little(boost::multiprecision::uint256_t &dst, const std::string &str);
 
