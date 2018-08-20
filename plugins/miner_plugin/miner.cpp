@@ -29,7 +29,7 @@ celesos::miner::miner::~miner() {
     this->stop();
 }
 
-void celesos::miner::miner::start(chain::controller &cc) {
+void celesos::miner::miner::start(const chain::account_name &relative_account, chain::controller &cc) {
     ilog("start() attempt");
     if (this->_state != state::initialized) {
         return;
@@ -37,9 +37,11 @@ void celesos::miner::miner::start(chain::controller &cc) {
     ilog("start() begin");
     this->_state = state::started;
 
-    auto a_connection = cc.accepted_block_header.connect([this, &cc](const chain::block_state_ptr &block) {
-        this->on_forest_updated(cc);
-    });
+    auto slot = [this, &relative_account, &cc](const chain::block_state_ptr &block) {
+        //TODO 检查forest是否更新
+        this->on_forest_updated(relative_account, cc);
+    };
+    auto a_connection = cc.accepted_block_header.connect(std::move(slot));
     this->_connections.push_back(std::move(a_connection));
     ilog("start() end");
 }
@@ -66,17 +68,12 @@ connection celesos::miner::miner::connect(const celesos::miner::mine_slot_type &
     return _signal->connect(slot);
 }
 
-void celesos::miner::miner::on_forest_updated(chain::controller &cc) {
+void celesos::miner::miner::on_forest_updated(const chain::account_name &relative_account, chain::controller &cc) {
     ilog("on forest updated");
-
-    //TODO 修改相关账户信息的获取方式
-    const chain::name &voter_account{"yale"};
-    const auto &voter_pk = chain::private_key_type::generate();
-    const chain::name &producer_account{"eospacific"};
 
     auto &bank = *forest::forest_bank::getInstance(cc);
     forest::forest_struct forest_info{};
-    if (!bank.get_forest(forest_info, voter_account)) {
+    if (!bank.get_forest(forest_info, relative_account)) {
         //TODO 处理异常流程
         return;
     }
@@ -130,10 +127,7 @@ void celesos::miner::miner::run() {
 }
 
 void celesos::miner::miner::string_to_uint256_little(uint256_t &dst, const std::string &str) {
-    if (str.size() > 32) {
-        //TODO 兼容string大于uint256数值范围的异常
-        return;
-    }
+    EOS_ASSERT(str.size() <= 32, chain::invalid_arg_exception, "string size() must lge 32");
 
     dst = 0;
 
