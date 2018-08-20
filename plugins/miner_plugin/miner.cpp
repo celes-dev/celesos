@@ -3,8 +3,8 @@
 //
 
 #include <random>
-#include <eosio/miner_plugin/miner.hpp>
 #include <eosio/chain/forest_bank.hpp>
+#include <celesos/miner_plugin/miner.hpp>
 
 using namespace std;
 using namespace eosio;
@@ -18,12 +18,12 @@ using boost::signals2::connection;
 
 celesos::miner::miner::miner() : _alive_workers{std::thread::hardware_concurrency(),
                                                 vector<shared_ptr<worker>>::allocator_type()},
-                                 _signal{make_shared<boost::signals2::signal<slot_type>>()},
+                                 _signal{make_shared<celesos::miner::mine_signal_type>()},
                                  _io_thread{&celesos::miner::miner::run, this},
                                  _state{state::initialized} {
 }
 
-miner::miner::~miner() {
+celesos::miner::miner::~miner() {
     this->_io_work.reset();
     this->_signal->disconnect_all_slots();
     this->stop();
@@ -62,7 +62,7 @@ void celesos::miner::miner::stop(bool wait) {
     ilog("stop(wait = ${wait}) end", ("wait", wait));
 }
 
-connection celesos::miner::miner::connect(const std::function<slot_type> &slot) {
+connection celesos::miner::miner::connect(const celesos::miner::mine_slot_type &slot) {
     return _signal->connect(slot);
 }
 

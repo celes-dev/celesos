@@ -2,36 +2,19 @@
 // Created by yale on 8/14/18.
 //
 
-#ifndef EOSIO_MINER_H
-#define EOSIO_MINER_H
+#ifndef CELESOS_MINER_PLUGIN_MINER_H
+#define CELESOS_MINER_PLUGIN_MINER_H
 
 #include <vector>
 #include <boost/signals2.hpp>
 #include <boost/asio/io_service.hpp>
 #include <eosio/chain/controller.hpp>
-#include <eosio/miner_plugin/worker.h>
+#include <celesos/miner_plugin/types.hpp>
+#include <celesos/miner_plugin/worker.hpp>
 
 namespace celesos {
     namespace miner {
-        //TODO 把投票action对应结构体移到正确的位置
-        struct action_vote {
-            eosio::chain::account_name voter;
-            eosio::chain::account_name proxy;
-            eosio::chain::uint256_t wood;
-            eosio::chain::account_name producer;
-
-            static eosio::chain::account_name get_account() {
-                return eosio::chain::config::system_account_name;
-            }
-
-            static eosio::chain::action_name get_name() {
-                return N(burn_wood);
-            }
-        };
-
         class miner {
-            using slot_type = void(const boost::multiprecision::uint256_t &);
-
         private:
             enum state {
                 initialized,
@@ -41,7 +24,7 @@ namespace celesos {
 
             std::vector<std::shared_ptr<celesos::miner::worker>> _alive_workers;
             std::vector<boost::signals2::connection> _connections;
-            std::shared_ptr<boost::signals2::signal<slot_type>> _signal;
+            celesos::miner::mine_signal_ptr_type _signal;
             std::shared_ptr<boost::asio::io_service::work> _io_work;
             std::shared_ptr<boost::asio::io_service> _io_service;
             std::thread _io_thread;
@@ -52,6 +35,7 @@ namespace celesos {
             static void gen_random_uint256(boost::multiprecision::uint256_t &dst);
 
             void on_forest_updated(eosio::chain::controller &cc);
+
             void run();
 
         public:
@@ -64,11 +48,9 @@ namespace celesos {
 
             void stop(bool wait = true);
 
-            boost::signals2::connection connect(const std::function<slot_type> &slot);
+            boost::signals2::connection connect(const celesos::miner::mine_slot_type &slot);
         };
     }
 }
-
-FC_REFLECT(celesos::miner::action_vote, (voter)(proxy)(wood)(producer))
 
 #endif //EOSIO_MINER_H
