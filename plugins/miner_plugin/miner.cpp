@@ -3,8 +3,8 @@
 //
 
 #include <random>
-#include <eosio/miner_plugin/miner.hpp>
 #include <eosio/chain/forest_bank.hpp>
+#include <celesos/miner_plugin/miner.hpp>
 
 using namespace std;
 using namespace eosio;
@@ -18,28 +18,86 @@ using boost::signals2::connection;
 
 celesos::miner::miner::miner() : _alive_workers{std::thread::hardware_concurrency(),
                                                 vector<shared_ptr<worker>>::allocator_type()},
-                                 _signal{make_shared<boost::signals2::signal<slot_type>>()},
-                                 _io_thread{&celesos::miner::miner::run, this} {
-
+                                 _signal{make_shared<celesos::miner::mine_signal_type>()},
+                                 _io_thread{&celesos::miner::miner::run, this},
+                                 _state{state::initialized},
+                                 _failure_retry_interval_us{fc::milliseconds(5000)} {
 }
 
-miner::miner::~miner() {
+celesos::miner::miner::~miner() {
     this->_io_work.reset();
     this->_signal->disconnect_all_slots();
     this->stop();
 }
 
-void celesos::miner::miner::start(chain::controller &cc) {
-    //TODO 修改相关账户信息的获取方式
-    const chain::name &voter_account{"yale"};
-    const auto &voter_pk = chain::private_key_type::generate();
-    const chain::name &producer_account{"eospacific"};
+void celesos::miner::miner::start(const chain::account_name &relative_account, chain::controller &cc) {
+    ilog("start() attempt");
+    if (this->_state != state::initialized) {
+        return;
+    }
+    ilog("start() begin");
+    this->_state = state::started;
+
+    auto slot = [this, &relative_account, &cc](const chain::block_state_ptr &block) {
+        if (this->_last_failure_time_us) {
+            auto &&passed_time_us = fc::time_point::now().time_since_epoch() - this->_last_failure_time_us.get();
+            if (passed_time_us < this->_failure_retry_interval_us) {
+                return;
+            }
+        }
+
+        if (this->_next_block_num && block->block_num < this->_next_block_num.get()) {
+            return;
+        }
+
+        try {
+            this->on_forest_updated(relative_account, cc);
+            this->_last_failure_time_us.reset();
+        } catch (...) {
+            //TODO 完善异常处理
+            this->_last_failure_time_us = fc::time_point::now().time_since_epoch();
+            elog("Fail to handle \"on_forest_update\"");
+        }
+    };
+    auto a_connection = cc.accepted_block_header.connect(std::move(slot));
+    this->_connections.push_back(std::move(a_connection));
+    ilog("start() end");
+}
+
+void celesos::miner::miner::stop(bool wait) {
+    ilog("stop(wait = ${wait}) begin", ("wait", wait));
+    if (this->_state == state::stopped) {
+        return;
+    }
+
+    this->_state = state::stopped;
+    for (auto &&x : this->_alive_workers) {
+        x->stop(wait);
+    }
+    this->_alive_workers.clear();
+    for (auto &&x : this->_connections) {
+        x.disconnect();
+    }
+    this->_connections.clear();
+    ilog("stop(wait = ${wait}) end", ("wait", wait));
+}
+
+connection celesos::miner::miner::connect(const celesos::miner::mine_slot_type &slot) {
+    return _signal->connect(slot);
+}
+
+void celesos::miner::miner::on_forest_updated(const chain::account_name &relative_account, chain::controller &cc) {
+    ilog("on forest updated");
 
     auto &bank = *forest::forest_bank::getInstance(cc);
     forest::forest_struct forest_info{};
-    if (!bank.get_forest(forest_info, voter_account)) {
+    if (!bank.get_forest(forest_info, relative_account)) {
         //TODO 处理异常流程
+        return;
     }
+
+    this->_next_block_num = forest_info.next_block_num;
+    ilog("update field \"next_block_number\" with value: ${block_num}", ("block_num", forest_info.next_block_num));
 
     const auto target = make_shared<uint256_t>(0);
     string_to_uint256_little(*target, forest_info.target.str());
@@ -83,21 +141,6 @@ void celesos::miner::miner::start(chain::controller &cc) {
     }
 }
 
-void celesos::miner::miner::stop(bool wait) {
-    for (auto &&x : this->_alive_workers) {
-        x->stop(wait);
-    }
-    this->_alive_workers.clear();
-    for (auto &&x : this->_connections) {
-        x.disconnect();
-    }
-    this->_connections.clear();
-}
-
-connection celesos::miner::miner::connect(const std::function<slot_type> &slot) {
-    return _signal->connect(slot);
-}
-
 void celesos::miner::miner::run() {
     this->_io_service = make_shared<boost::asio::io_service>();
     this->_io_work = make_shared<boost::asio::io_service::work>(*this->_io_service);
@@ -105,10 +148,7 @@ void celesos::miner::miner::run() {
 }
 
 void celesos::miner::miner::string_to_uint256_little(uint256_t &dst, const std::string &str) {
-    if (str.size() > 32) {
-        //TODO 兼容string大于uint256数值范围的异常
-        return;
-    }
+    EOS_ASSERT(str.size() <= 32, chain::invalid_arg_exception, "string size() must lge 32");
 
     dst = 0;
 
@@ -131,5 +171,3 @@ void celesos::miner::miner::gen_random_uint256(uint256_t &dst) {
         dst |= dis(gen);
     }
 }
-
-
