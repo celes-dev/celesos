@@ -2,7 +2,7 @@
 // Created by yale on 7/26/18.
 //
 
-#include "celesos/pow/ethash.h"
+#include "celesos/pow/ethash.hpp"
 #include "openssl/sha.h"
 #include "boost/endian/conversion.hpp"
 #include "boost/predef.h"

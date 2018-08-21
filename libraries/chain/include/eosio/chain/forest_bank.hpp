@@ -7,7 +7,7 @@
 #include <eosio/chain/types.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <fc/crypto/sha256.hpp>
-#include "celesos/pow/ethash.h"
+#include "celesos/pow/ethash.hpp"
 #include "eosio/chain/controller.hpp"
 
 namespace celesos{

@@ -10,7 +10,7 @@
 #include <eosio/http_client_plugin/http_client_plugin.hpp>
 
 namespace celesos {
-    
+
     class miner_plugin : public appbase::plugin<miner_plugin> {
     public:
         miner_plugin();
@@ -32,4 +32,4 @@ namespace celesos {
     };
 }
 
-#endif
+#endif //CELESOS_MINER_PLUGIN_H

@@ -11,7 +11,7 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/optional.hpp>
 #include <eosio/chain/forest_bank.hpp>
-#include <celesos/pow/ethash.h>
+#include <celesos/pow/ethash.hpp>
 #include <celesos/miner_plugin/types.hpp>
 
 namespace celesos {
@@ -20,14 +20,14 @@ namespace celesos {
             using dataset_ptr_type = std::shared_ptr<std::vector<celesos::ethash::node>>;
             using hash_ptr_type = std::shared_ptr<boost::multiprecision::uint256_t>;
 
-            const dataset_ptr_type dataset;
-            const std::shared_ptr<std::string> forest;
-            const hash_ptr_type nonce_start;
-            const hash_ptr_type retry_count;
-            const hash_ptr_type target;
+            const dataset_ptr_type dataset_ptr;
+            const std::shared_ptr<std::string> forest_ptr;
+            const hash_ptr_type nonce_start_ptr;
+            const hash_ptr_type retry_count_ptr;
+            const hash_ptr_type target_ptr;
             const eosio::chain::block_num_type block_num;
-            const std::shared_ptr<boost::asio::io_service> io_service;
-            const celesos::miner::mine_signal_ptr_type signal;
+            const std::shared_ptr<boost::asio::io_service> io_service_ptr;
+            const celesos::miner::mine_signal_ptr_type signal_ptr;
         };
 
         class worker {
@@ -39,7 +39,7 @@ namespace celesos {
             };
 
             worker_ctx _ctx;
-            boost::multiprecision::uint256_t _state;
+            state _state;
             std::shared_timed_mutex _mutex;
             boost::optional<std::thread> _alive_thread;
 
@@ -65,4 +65,4 @@ namespace celesos {
     }
 }
 
-#endif //EOSIO_WORKER_H
+#endif //CELESOS_MINER_PLUGIN_WORKER_H

@@ -1,14 +1,14 @@
 
-file(GLOB MY_HEADERS "include/eosio/test/*.h")
+file(GLOB MY_HEADERS "include/eosio/test/*.hpp")
 
-set(MY_SOURCES
-        ethash.cpp)
+set(MY_SOURCES ethash.cpp)
 
 add_library(pow ${MY_SOURCES} ${MY_HEADERS})
 
-target_link_libraries(pow PUBLIC fc)
+target_link_libraries(pow
+        PUBLIC fc)
 
-target_include_directories(pow PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(pow
+        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_subdirectory(test)

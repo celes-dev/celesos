@@ -5,7 +5,7 @@
 #define BOOST_TEST_MODULE pow
 
 #include <random>
-#include "celesos/pow/ethash.h"
+#include "celesos/pow/ethash.hpp"
 #include "boost/test/included/unit_test.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
 #include "boost/optional.hpp"
