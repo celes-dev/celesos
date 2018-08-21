@@ -33,15 +33,16 @@ namespace celesos {
             boost::optional<fc::microseconds> _last_failure_time_us;
             fc::microseconds _failure_retry_interval_us;
 
-            static void string_to_uint256_little(boost::multiprecision::uint256_t &dst, const std::string &str);
-
-            static void gen_random_uint256(boost::multiprecision::uint256_t &dst);
 
             void on_forest_updated(const eosio::chain::account_name &relative_account, eosio::chain::controller &cc);
 
             void run();
 
         public:
+
+            static void string_to_uint256_little(boost::multiprecision::uint256_t &dst, const std::string &str);
+
+            static void gen_random_uint256(boost::multiprecision::uint256_t &dst);
 
             miner();
 
@@ -56,4 +57,4 @@ namespace celesos {
     }
 }
 
-#endif //EOSIO_MINER_H
+#endif //CELESOS_MINER_PLUGIN_MINER_H

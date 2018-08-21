@@ -8,7 +8,7 @@
 #include <fc/exception/exception.hpp>
 #include <fc/filesystem.hpp>
 #include <eosio/chain/exceptions.hpp>
-#include <celesos/pow/ethash.h>
+#include <celesos/pow/ethash.hpp>
 #include <eosio/chain/forest_bank.hpp>
 #include <eosio/chain_plugin/chain_plugin.hpp>
 #include <celesos/miner_plugin/miner.hpp>
@@ -173,8 +173,13 @@ void celesos::miner_plugin::plugin_startup() {
         auto &the_chain_plugin = app().get_plugin<chain_plugin>();
         this->my->_the_miner.start(this->my->_voter_name, the_chain_plugin.chain());
         this->my->_the_miner.connect(
-                [this, &the_chain_plugin](const chain::block_num_type block_num,
-                                          const uint256_t &wood) {
+                [this, &the_chain_plugin](auto is_success,
+                                          auto block_num,
+                                          auto wood) {
+                    if (!is_success) {
+                        //TODO 完善算不出hash的流程
+                        return;
+                    }
                     try {
                         auto &cc = the_chain_plugin.chain();
                         const auto &chain_id = cc.get_chain_id();
@@ -190,7 +195,7 @@ void celesos::miner_plugin::plugin_startup() {
                                 ("woodowner_name", voter_name)
                                 ("wood_info", fc::mutable_variant_object{}
                                         ("block_number", block_num)
-                                        ("wood", wood))
+                                        ("wood", wood.get()))
                                 ("producer_name", producer_name);
                         auto a_action = miner_plugin_impl::create_action(the_chain_plugin,
                                                                          std::move(auth), code,

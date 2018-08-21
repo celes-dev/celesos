@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <random>
-#include <celesos/pow/ethash.h>
+#include <celesos/pow/ethash.hpp>
 #include <celesos/miner_plugin/worker.hpp>
 
 using namespace std;
@@ -44,36 +44,31 @@ void celesos::miner::worker::stop(bool wait) {
 }
 
 void celesos::miner::worker::run() {
-    const auto &nonce_start = *this->_ctx.nonce_start;
-    const auto &target = *this->_ctx.target;
-    const auto &retry_count = *this->_ctx.retry_count;
-    const auto &dataset = *this->_ctx.dataset;
-    const auto dataset_count = this->_ctx.dataset->size();
-    const auto &forest = *this->_ctx.forest;
+    const auto &nonce_start = *this->_ctx.nonce_start_ptr;
+    const auto &target = *this->_ctx.target_ptr;
+    const auto &retry_count = *this->_ctx.retry_count_ptr;
+    const auto &dataset = *this->_ctx.dataset_ptr;
+    const auto dataset_count = dataset.size();
+    const auto &forest = *this->_ctx.forest_ptr;
     uint256_t nonce_current = nonce_start;
-    bool solved = false;
+    boost::optional<uint256_t> wood_opt{};
     do {
         auto lock = shared_lock<shared_timed_mutex>{this->_mutex};
-        if (_state == state::stopped) {
+        if (this->_state == state::stopped) {
             break;
         }
         lock.unlock();
 
         if (ethash::hash_full(forest, nonce_current, dataset_count, dataset) <= target) {
-            solved = true;
+            wood_opt = nonce_current;
             break;
         }
         ++nonce_current;
     } while (nonce_current >= nonce_start);
 
-    if (!solved) {
-        ilog("Fail to solve correct nonce");
-        return;
-    }
-
-    this->_ctx.io_service->post(
-            [signal = this->_ctx.signal, block_num = this->_ctx.block_num, &wood = nonce_current]() {
-                (*signal)(block_num, wood);
+    this->_ctx.io_service_ptr->post(
+            [signal = this->_ctx.signal_ptr, block_num = this->_ctx.block_num, wood_opt = wood_opt]() {
+                (*signal)(!!wood_opt, block_num, wood_opt);
             });
 }
 

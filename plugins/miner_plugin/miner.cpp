@@ -111,7 +111,7 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
     string_to_uint256_little(*target, forest_info.target.str());
     const auto forest = make_shared<string>(forest_info.forest.str());
 
-    // prepare cache and dataset
+    // prepare cache and dataset_ptr
     const auto cache_count = forest::cache_count();
     const auto cache = make_shared<vector<ethash::node>>(cache_count, vector<ethash::node>::allocator_type());
     ethash::calc_cache(*cache, cache_count, forest_info.seed);
@@ -133,13 +133,13 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
     for (int i = 0; i < core_count; ++i) {
         auto &&nonce_start = make_shared<uint256_t>(nonce_init + (*retry_count) * i);
         worker_ctx ctx{
-                .forest = forest,
-                .target = target,
-                .dataset = dataset,
-                .retry_count = retry_count,
-                .nonce_start = nonce_start,
-                .signal = this->_signal,
-                .io_service = this->_io_service,
+                .forest_ptr = forest,
+                .target_ptr = target,
+                .dataset_ptr = dataset,
+                .retry_count_ptr = retry_count,
+                .nonce_start_ptr = nonce_start,
+                .signal_ptr = this->_signal,
+                .io_service_ptr = this->_io_service,
         };
         this->_alive_workers.push_back(make_shared<worker>(std::move(ctx)));
     }

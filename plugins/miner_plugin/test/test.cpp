@@ -1,0 +1,84 @@
+//
+// Created by yalez on 2018/8/21.
+//
+
+#define BOOST_TEST_MODULE miner_plugin
+
+#include <boost/test/unit_test.hpp>
+#include <boost/asio.hpp>
+#include <boost/signals2.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
+#include <celesos/pow/ethash.hpp>
+#include <celesos/miner_plugin/worker.hpp>
+#include <celesos/miner_plugin/miner.hpp>
+#include <celesos/miner_plugin/miner_plugin.hpp>
+
+using namespace celesos;
+
+using boost::multiprecision::uint256_t;
+
+BOOST_AUTO_TEST_SUITE(worker)
+
+    BOOST_AUTO_TEST_CASE(worker_test) {
+        const static uint32_t HASH_BYTES = 64;
+        const static uint64_t CACHE_BYTES = 1024;
+        const static uint64_t DATASET_BYTES = 1024 * 32;
+
+        const static auto CACHE_COUNT = static_cast<uint32_t>(CACHE_BYTES / HASH_BYTES);
+        const static auto DATASET_COUNT = static_cast<uint32_t>(DATASET_BYTES / HASH_BYTES);
+
+        auto target_ptr = std::make_shared<uint256_t>(197);
+        auto &target = *target_ptr;
+        target |= uint256_t{90} << 1;
+        for (int i = 2; i < 30; ++i) {
+            target |= uint256_t{255} << i * 8;
+        }
+
+        auto nonce_start_ptr = std::make_shared<uint256_t>();
+        miner::miner::gen_random_uint256(*nonce_start_ptr);
+
+        auto retry_count_ptr = std::make_shared<uint256_t>(-1);
+
+        auto io_service_ptr = std::make_shared<boost::asio::io_service>();
+        auto signal_ptr = std::make_shared<miner::mine_signal_type>();
+        signal_ptr->connect([](auto is_success, auto block_num, auto wood) {
+            BOOST_ASSERT(is_success == true);
+        });
+
+        auto seed_ptr = std::make_shared<std::string>("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        auto &forest_ptr = seed_ptr;
+
+        BOOST_TEST_MESSAGE("preparing cache with count: " << CACHE_COUNT);
+        auto cache_ptr = std::make_shared<std::vector<ethash::node>>(CACHE_COUNT);
+        ethash::calc_cache(*cache_ptr, CACHE_COUNT, *seed_ptr);
+
+        BOOST_TEST_MESSAGE("preparing dataset with count: " << DATASET_COUNT);
+        auto dataset_ptr = std::make_shared<std::vector<ethash::node>>(DATASET_COUNT);
+        ethash::calc_dataset(*dataset_ptr, DATASET_COUNT, *cache_ptr);
+
+        miner::worker_ctx ctx{
+                .block_num = 1024,
+                .io_service_ptr = io_service_ptr,
+                .signal_ptr = signal_ptr,
+                .nonce_start_ptr = nonce_start_ptr,
+                .retry_count_ptr = retry_count_ptr,
+                .forest_ptr = forest_ptr,
+                .target_ptr = target_ptr,
+                .dataset_ptr = dataset_ptr,
+        };
+        miner::worker worker{std::move(ctx)};
+        worker.start();
+
+        boost::asio::io_service::work work{*io_service_ptr};
+        io_service_ptr->run_one();
+    }
+
+BOOST_AUTO_TEST_SUITE_END()
+
+//BOOST_AUTO_TEST_SUITE(miner)
+//
+//BOOST_AUTO_TEST_SUITE_END()
+//
+//BOOST_AUTO_TEST_SUITE(miner_plugin)
+//
+//BOOST_AUTO_TEST_SUITE_END()
