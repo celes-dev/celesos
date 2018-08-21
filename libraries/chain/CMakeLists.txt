@@ -40,7 +40,6 @@ add_library( eosio_chain
 
              webassembly/wavm.cpp
              webassembly/binaryen.cpp
-
 #             get_config.cpp
 #             global_property_object.cpp
 #
@@ -59,6 +58,7 @@ target_include_directories( eosio_chain
                                    "${CMAKE_CURRENT_SOURCE_DIR}/../wasm-jit/Include"
                                    "${CMAKE_CURRENT_SOURCE_DIR}/../../externals/binaryen/src"
                             )
+add_subdirectory(test)
 
 install( TARGETS eosio_chain
    RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}

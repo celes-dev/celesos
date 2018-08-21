@@ -22,9 +22,9 @@ namespace celesos{
             return 262144;
         }
 
-        static forest_bank *instance = NULL;
+        static forest_bank *instance = nullptr;
         forest_bank* forest_bank::getInstance(controller &control){
-            if (instance == NULL)
+            if (instance == nullptr)
             {
                 instance = new forest_bank(control);
             }
@@ -40,45 +40,6 @@ namespace celesos{
         forest_bank::~forest_bank(){}
 
 
-
-//        forest_bank& forest_bank::get_instance(){
-//
-//            if(nullptr == instance){
-//                instance = new forest_bank();
-//            }
-//            return *instance;
-//        }
-
-
-//        int get_index_of_signs(char ch) {
-//            if(ch >= '0' && ch <= '9')
-//            {
-//                return ch - '0';
-//            }
-//            if(ch >= 'A' && ch <='F')
-//            {
-//                return ch - 'A' + 10;
-//            }
-//            if(ch >= 'a' && ch <= 'f')
-//            {
-//                return ch - 'a' + 10;
-//            }
-//            return -1;
-//        }
-//        boost::multiprecision::uint512_t hex_to_dec(const char *source) {
-//            boost::multiprecision::uint512_t sum = 0;
-//            boost::multiprecision::uint512_t t = 1;
-//            size_t i;
-//
-//            size_t len = strlen(source);
-//            for(i=len-1; i>=0; i--)
-//            {
-//                sum += t * get_index_of_signs(*(source + i));
-//                t *= 16;
-//            }
-//
-//            return sum;
-//        }
         bool forest_bank::verify_wood(uint32_t block_number, const account_name& account, const uint64_t wood){
             uint32_t current_block_number = chain.head_block_num();
             if(block_number <= current_block_number - question_period){
@@ -93,7 +54,7 @@ namespace celesos{
                 //get forest target
                 optional<double> diff = block_ptr->difficulty;
                 double double_target = *diff;
-                uint256_t original_target("0x00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+                uint256_t original_target("0x00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
                 double target_value = (original_target.template convert_to<double>())/double_target;
                 uint256_t target = static_cast<uint256_t>(target_value);
                 //prepare parameter for ethash
@@ -143,7 +104,7 @@ namespace celesos{
         bool forest_bank::get_forest(forest_struct& forest, const account_name& account){
             uint32_t current_block_number = chain.head_block_num();
 
-            uint32_t current_forest_number = current_block_number/question_space_number * question_space_number;
+            uint32_t current_forest_number = current_block_number/question_space_number * question_space_number+1;
 
             if((forest.target == 0) || (current_forest_number != forest.block_number)){
                 block_id_type result_value = chain.get_block_id_for_num(current_forest_number);
@@ -155,8 +116,12 @@ namespace celesos{
                 //计算难度
                 signed_block_ptr block_ptr = chain.fetch_block_by_number(current_forest_number);
                 optional<double> diff = block_ptr->difficulty;
-                double double_target = *diff;
-                uint256_t original_target("0x00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+                double double_target = 1.0;
+                if(diff.valid()){
+                    double_target = *diff;
+                }
+
+                uint256_t original_target("0x00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
                 double target_value = (original_target.template convert_to<double>())/double_target;
                 uint256_t value = static_cast<uint256_t>(target_value);
 
