@@ -67,7 +67,7 @@ void celesos::miner::worker::run() {
     } while (nonce_current >= nonce_start);
 
     if (!solved) {
-        //TODO 处理没有算出正确nonce的流程
+        ilog("Fail to solve correct nonce");
         return;
     }
 

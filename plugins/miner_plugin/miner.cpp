@@ -50,14 +50,20 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
             return;
         }
 
+        bool exception_occured = true;
         try {
             this->on_forest_updated(relative_account, cc);
-            this->_last_failure_time_us.reset();
-        } catch (...) {
-            //TODO 完善异常处理
+            exception_occured = false;
+        } FC_LOG_AND_DROP()
+
+        if (exception_occured) {
             this->_last_failure_time_us = fc::time_point::now().time_since_epoch();
             elog("Fail to handle \"on_forest_update\"");
+            return;
         }
+
+        // clear last_failure_time_us for performance
+        this->_last_failure_time_us.reset();
     };
     auto a_connection = cc.accepted_block_header.connect(std::move(slot));
     this->_connections.push_back(std::move(a_connection));
@@ -92,8 +98,10 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
     auto &bank = *forest::forest_bank::getInstance(cc);
     forest::forest_struct forest_info{};
     if (!bank.get_forest(forest_info, relative_account)) {
-        //TODO 处理异常流程
-        return;
+        //TODO 考虑是否需要定制一个exception
+        FC_THROW_EXCEPTION(fc::unhandled_exception,
+                           "Fail to get forest with account: ${account}",
+                           ("account", relative_account));
     }
 
     this->_next_block_num = forest_info.next_block_num;
