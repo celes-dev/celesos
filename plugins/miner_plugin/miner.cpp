@@ -98,8 +98,10 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
     auto &bank = *forest::forest_bank::getInstance(cc);
     forest::forest_struct forest_info{};
     if (!bank.get_forest(forest_info, relative_account)) {
-        //TODO 处理异常流程
-        return;
+        //TODO 考虑是否需要定制一个exception
+        FC_THROW_EXCEPTION(fc::unhandled_exception,
+                           "Fail to get forest with account: ${account}",
+                           ("account", relative_account));
     }
 
     this->_next_block_num = forest_info.next_block_num;
