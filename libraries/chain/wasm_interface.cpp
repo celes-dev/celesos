@@ -1647,13 +1647,15 @@ class call_depth_api : public context_aware_api {
 };
 
 /// CELES code: hubery.zhang {@
-class forest_bank_api : public context_aware_api{
-   public:
-    using context_aware_api::context_aware_api;
-      bool verify_wood(uint32_t block_number, const account_name& account, uint64_t wood)const {
-          return context.verify_wood(block_number,account,wood);
-      }
-};
+        class forest_bank_api : public context_aware_api {
+        public:
+            forest_bank_api(apply_context &ctx)
+                    : context_aware_api(ctx, true) {}
+
+            bool verify_wood(uint32_t block_number, const account_name account, uint64_t wood) const {
+               return context.verify_wood(block_number, account, wood);
+            }
+        };
 ///@}
 
 REGISTER_INJECTED_INTRINSICS(call_depth_api,
@@ -1724,6 +1726,7 @@ REGISTER_INJECTED_INTRINSICS(transaction_context,
 
 REGISTER_INTRINSICS(producer_api,
    (get_active_producers,      int(int, int) )
+   (set_difficulty,            int(double)  )
 );
 
 #define DB_SECONDARY_INDEX_METHODS_SIMPLE(IDX) \
@@ -1861,7 +1864,7 @@ REGISTER_INTRINSICS(memory_api,
 
 /// CELES code: hubery.zhang {@
 REGISTER_INTRINSICS(forest_bank_api,
-    (verify_wood, int(int32_t,int64_t,int64_t) ,"verifywood",  bool(forest_bank_api::*)(uint32_t,const account_name&,uint64_t)const )
+    (verify_wood, int(int32_t,int64_t,int64_t) ,"verify_wood",  bool(forest_bank_api::*)(uint32_t,const account_name,uint64_t)const )
 );
 ///@}
 
