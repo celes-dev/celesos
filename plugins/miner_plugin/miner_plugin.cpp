@@ -175,7 +175,7 @@ void celesos::miner_plugin::plugin_startup() {
         this->my->_the_miner.connect(
                 [this, &the_chain_plugin](auto is_success,
                                           auto block_num,
-                                          auto wood) {
+                                          const auto &wood_opt) {
                     if (!is_success) {
                         //TODO 完善算不出hash的流程
                         return;
@@ -186,7 +186,7 @@ void celesos::miner_plugin::plugin_startup() {
                         const auto &voter_name = this->my->_voter_name;
                         const auto &producer_name = this->my->_producer_name;
 
-                        auto tx = chain::signed_transaction{};
+                        chain::signed_transaction tx{};
                         vector<chain::permission_level> auth{{voter_name, "active"}};
                         const auto &code = chain::config::system_account_name;
                         chain::action_name action{"voteproducer"};
@@ -195,7 +195,7 @@ void celesos::miner_plugin::plugin_startup() {
                                 ("woodowner_name", voter_name)
                                 ("wood_info", fc::mutable_variant_object{}
                                         ("block_number", block_num)
-                                        ("wood", wood.get()))
+                                        ("wood", wood_opt.get()))
                                 ("producer_name", producer_name);
                         auto a_action = miner_plugin_impl::create_action(the_chain_plugin,
                                                                          std::move(auth), code,

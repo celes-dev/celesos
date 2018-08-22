@@ -12,7 +12,8 @@
 
 namespace celesos {
     namespace miner {
-        using mine_callback_type = void(bool is_success, const eosio::chain::block_num_type block_num,
+        using mine_callback_type = void(bool is_success,
+                                        eosio::chain::block_num_type block_num,
                                         const boost::optional<boost::multiprecision::uint256_t> &);
         using mine_slot_type = std::function<mine_callback_type>;
         using mine_signal_type = boost::signals2::signal<mine_callback_type>;

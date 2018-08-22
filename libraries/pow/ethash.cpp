@@ -86,7 +86,7 @@ namespace celesos {
                 sha512(cache[i].bytes, cache[i - 1].bytes, NODE_BYTES);
             }
 
-            auto tmp = node{};
+            node tmp{};
             for (uint32_t _ = 0; _ < CACHE_ROUNDS; ++_) {
                 for (uint32_t i = 0; i < cache_count; ++i) {
                     const auto &first = cache[(cache_count - 1 + i) % cache_count].words;
@@ -141,7 +141,7 @@ namespace celesos {
             auto nonce = native_to_little(nonce_template);
             memcpy(buffer + 32, &nonce, 32);
 
-            auto forest = node{};
+            node forest{};
             sha512(forest.bytes, buffer, 64);
             fix_endian_arr32(forest.words, NODE_WORDS);
 
@@ -184,7 +184,7 @@ namespace celesos {
 
             byte ret_hash[32];
             sha256(ret_hash, forest_cmix, NODE_BYTES + MIX_BYTES / 4);
-            auto ret_uint256 = uint256_t{0};
+            uint256_t ret_uint256{0};
             bytes_to_uint256(ret_uint256, ret_hash, 32);
             const auto &ret_little_uint256 = native_to_little(ret_uint256);
             return ret_little_uint256;
