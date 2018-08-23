@@ -7,44 +7,48 @@
 #include <eosio/chain/forest_bank.hpp>
 #include <eosio/chain/controller.hpp>
 #include <eosio/testing/tester.hpp>
-
+#include <boost/optional.hpp>
 #include "boost/test/included/unit_test.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
 
+boost::optional<eosio::testing::tester> tester_opt{};
 
-using tester = eosio::testing::tester;
+struct global_fixture {
 
-BOOST_FIXTURE_TEST_SUITE(forest_bank_test, tester)
+    global_fixture() {
+        tester_opt.emplace();
+    }
 
+    ~global_fixture() {
+        tester_opt.reset();
+    }
+};
+
+BOOST_GLOBAL_FIXTURE(global_fixture);
+
+BOOST_AUTO_TEST_SUITE(forest_bank_test)
 
 BOOST_AUTO_TEST_CASE(verify_wood_test)
     {
-        tester test;
-        eosio::chain::controller *control = test.control.get();
+        auto &control = *tester_opt->control;
 
-        celesos::forest::forest_bank *forest_bank = celesos::forest::forest_bank::getInstance(*control);
+        celesos::forest::forest_bank *forest_bank = celesos::forest::forest_bank::getInstance(control);
         bool isRight = forest_bank->verify_wood(1,123,123456789);
         BOOST_REQUIRE(&isRight);
 
-
-        celesos::forest::forest_struct forest = {};
-        bool isRight1 = forest_bank->get_forest(forest,123456789);
-        BOOST_REQUIRE(&forest);
-        BOOST_REQUIRE(&isRight1);
     }
 
 
-//    BOOST_AUTO_TEST_CASE(get_forest_test)
-//    {
-//        tester test;
-//        eosio::chain::controller *control = test.control.get();
-//
-//        celesos::forest::forest_struct forest = {};
-//
-//        celesos::forest::forest_bank *forest_bank = celesos::forest::forest_bank::getInstance(*control);
-//        bool isRight = forest_bank->get_forest(forest,123456789);
-//        BOOST_REQUIRE(&forest);
-//        BOOST_REQUIRE(&isRight);
-//    }
+    BOOST_AUTO_TEST_CASE(get_forest_test)
+    {
+        auto &control = *tester_opt->control;
+
+        celesos::forest::forest_struct forest = {};
+
+        celesos::forest::forest_bank *forest_bank = celesos::forest::forest_bank::getInstance(control);
+        bool isRight = forest_bank->get_forest(forest,123456789);
+        BOOST_REQUIRE(&forest);
+        BOOST_REQUIRE(&isRight);
+    }
 
 BOOST_AUTO_TEST_SUITE_END()
