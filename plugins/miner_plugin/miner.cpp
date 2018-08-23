@@ -129,16 +129,17 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
                old_forest_opt->forest != new_forest.forest ||
                *old_cache_count_opt != new_cache_count;
     };
-//    const uint32_t cache_count{512};
+//    const uint32_t new_cache_count{512};
     const auto new_cache_count = forest::cache_count();
     const auto is_cache_changed = is_cache_changed_func(this->_target_forest_info_opt, forest_info,
                                                         this->_target_cache_count_opt, new_cache_count);
 
     shared_ptr<vector<ethash::node>> cache_ptr{};
     if (is_cache_changed) {
-        ilog("prepare cache with count: ${count}", ("count", new_cache_count));
+        ilog("begin prepare cache with count: ${count}", ("count", new_cache_count));
         cache_ptr = make_shared<vector<ethash::node>>(new_cache_count, vector<ethash::node>::allocator_type());
         ethash::calc_cache(*cache_ptr, new_cache_count, forest_info.seed);
+        ilog("end prepare cache with count: ${count}", ("count", new_cache_count));
     } else {
         ilog("use cache generated");
         cache_ptr = *this->_target_cache_ptr_opt;
@@ -151,17 +152,18 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
                !old_dataset_count_opt ||
                old_dataset_count_opt != new_dataset_count;
     };
-//    const uint32_t dataset_count{512 * 16};
+//    const uint32_t new_dataset_count{512 * 16};
     const auto new_dataset_count = forest::dataset_count();
 
     const auto is_dataset_changed = is_dataset_changed_func(is_cache_changed,
                                                             this->_target_dataset_count_opt, new_dataset_count);
     shared_ptr<vector<ethash::node>> dataset_ptr{};
     if (is_dataset_changed) {
-        ilog("prepare dataset with count: ${count}", ("count", new_dataset_count));
-        const auto dataset_ptr = make_shared<vector<ethash::node>>(new_dataset_count,
+        ilog("begin prepare dataset with count: ${count}", ("count", new_dataset_count));
+        dataset_ptr = make_shared<vector<ethash::node>>(new_dataset_count,
                                                                    vector<ethash::node>::allocator_type());
         ethash::calc_dataset(*dataset_ptr, new_dataset_count, *cache_ptr);
+        ilog("end prepare dataset with count: ${count}", ("count", new_dataset_count));
     } else {
         ilog("use dataset generated");
         dataset_ptr = *this->_target_dataset_ptr_opt;
