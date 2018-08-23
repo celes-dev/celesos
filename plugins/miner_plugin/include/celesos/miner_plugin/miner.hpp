@@ -9,6 +9,7 @@
 #include <boost/signals2.hpp>
 #include <boost/asio/io_service.hpp>
 #include <eosio/chain/controller.hpp>
+#include <eosio/chain/forest_bank.hpp>
 #include <celesos/miner_plugin/types.hpp>
 #include <celesos/miner_plugin/worker.hpp>
 
@@ -29,7 +30,11 @@ namespace celesos {
             std::shared_ptr<boost::asio::io_service> _io_service_ptr;
             std::thread _io_thread;
             state _state;
-            boost::optional<eosio::chain::block_num_type> _next_block_num_opt;
+            boost::optional<std::shared_ptr<std::vector<celesos::ethash::node>>> _target_cache_ptr_opt;
+            boost::optional<std::shared_ptr<std::vector<celesos::ethash::node>>> _target_dataset_ptr_opt;
+            boost::optional<celesos::forest::forest_struct> _target_forest_info_opt;
+            boost::optional<uint32_t> _target_cache_count_opt;
+            boost::optional<uint32_t> _target_dataset_count_opt;
             boost::optional<fc::microseconds> _last_failure_time_us;
             fc::microseconds _failure_retry_interval_us;
 

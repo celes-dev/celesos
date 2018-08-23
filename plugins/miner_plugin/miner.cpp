@@ -51,7 +51,7 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
             }
         }
 
-        if (this->_next_block_num_opt && block->block_num < this->_next_block_num_opt.get()) {
+        if (this->_target_forest_info_opt && block->block_num < this->_target_forest_info_opt->next_block_num) {
             return;
         }
 
@@ -112,7 +112,6 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
                            ("account", relative_account));
     }
 
-    this->_next_block_num_opt = forest_info.next_block_num;
     ilog("update field \"next_block_number\" with value: ${block_num}", ("block_num", forest_info.next_block_num));
 
 //    const auto target_ptr = make_shared<uint256_t>(
@@ -122,47 +121,97 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
     const auto forest_ptr = make_shared<string>(forest_info.forest.str());
 
     // prepare cache and dataset_ptr
+    const static auto is_cache_changed_func = [](const boost::optional<forest::forest_struct> &old_forest_opt,
+                                                 const forest::forest_struct &new_forest,
+                                                 const boost::optional<uint32_t> old_cache_count_opt,
+                                                 uint32_t new_cache_count) {
+        return !old_forest_opt || !old_cache_count_opt ||
+               old_forest_opt->forest != new_forest.forest ||
+               *old_cache_count_opt != new_cache_count;
+    };
 //    const uint32_t cache_count{512};
-    const auto cache_count = forest::cache_count();
+    const auto new_cache_count = forest::cache_count();
+    const auto is_cache_changed = is_cache_changed_func(this->_target_forest_info_opt, forest_info,
+                                                        this->_target_cache_count_opt, new_cache_count);
 
-    ilog("prepare cache with count: ${count}", ("count", cache_count));
-    const auto cache_ptr = make_shared<vector<ethash::node>>(cache_count, vector<ethash::node>::allocator_type());
-    ethash::calc_cache(*cache_ptr, cache_count, forest_info.seed);
+    shared_ptr<vector<ethash::node>> cache_ptr{};
+    if (is_cache_changed) {
+        ilog("prepare cache with count: ${count}", ("count", new_cache_count));
+        cache_ptr = make_shared<vector<ethash::node>>(new_cache_count, vector<ethash::node>::allocator_type());
+        ethash::calc_cache(*cache_ptr, new_cache_count, forest_info.seed);
+    } else {
+        ilog("use cache generated");
+        cache_ptr = *this->_target_cache_ptr_opt;
+    }
 
+    const static auto is_dataset_changed_func = [](bool is_cache_changed,
+                                                   const boost::optional<uint32_t> &old_dataset_count_opt,
+                                                   uint32_t new_dataset_count) {
+        return is_cache_changed ||
+               !old_dataset_count_opt ||
+               old_dataset_count_opt != new_dataset_count;
+    };
 //    const uint32_t dataset_count{512 * 16};
-    const auto dataset_count = forest::dataset_count();
+    const auto new_dataset_count = forest::dataset_count();
 
-    ilog("prepare dataset with count: ${count}", ("count", dataset_count));
-    const auto dataset_ptr = make_shared<vector<ethash::node>>(dataset_count, vector<ethash::node>::allocator_type());
-    ethash::calc_dataset(*dataset_ptr, dataset_count, *cache_ptr);
-
-    this->stop(true);
-
-    const auto core_count = std::max(std::thread::hardware_concurrency() - 1, 1u);
-    auto retry_count_ptr = make_shared<uint256_t>(-1);
-    *retry_count_ptr /= core_count;
-
-    uint256_t nonce_init{0};
-    gen_random_uint256(nonce_init);
-
-    this->_alive_worker_ptrs.resize(core_count);
-    for (int i = 0; i < core_count; ++i) {
-        auto nonce_start_ptr = make_shared<uint256_t>(nonce_init + (*retry_count_ptr) * i);
-        worker_ctx ctx{
-                .forest_ptr = forest_ptr,
-                .target_ptr = target_ptr,
-                .dataset_ptr = dataset_ptr,
-                .retry_count_ptr = retry_count_ptr,
-                .nonce_start_ptr = std::move(nonce_start_ptr),
-                .signal_ptr = this->_signal_ptr,
-                .io_service_ptr = this->_io_service_ptr,
-        };
-        this->_alive_worker_ptrs[i] = make_shared<worker>(std::move(ctx));
+    const auto is_dataset_changed = is_dataset_changed_func(is_cache_changed,
+                                                            this->_target_dataset_count_opt, new_dataset_count);
+    shared_ptr<vector<ethash::node>> dataset_ptr{};
+    if (is_dataset_changed) {
+        ilog("prepare dataset with count: ${count}", ("count", new_dataset_count));
+        const auto dataset_ptr = make_shared<vector<ethash::node>>(new_dataset_count,
+                                                                   vector<ethash::node>::allocator_type());
+        ethash::calc_dataset(*dataset_ptr, new_dataset_count, *cache_ptr);
+    } else {
+        ilog("use dataset generated");
+        dataset_ptr = *this->_target_dataset_ptr_opt;
     }
 
-    for (auto &x : this->_alive_worker_ptrs) {
-        x->start();
+    const static auto is_work_changed_func = [](bool is_dataset_changed,
+                                                const boost::optional<forest::forest_struct> &old_forest_opt,
+                                                const forest::forest_struct &new_forest) {
+        return is_dataset_changed ||
+               !old_forest_opt ||
+               old_forest_opt->forest != new_forest.forest;
+    };
+
+    const auto is_work_changed = is_work_changed_func(is_dataset_changed, this->_target_forest_info_opt, forest_info);
+    if (is_work_changed) {
+        this->stop(true);
+
+        const auto core_count = std::max(std::thread::hardware_concurrency() - 1, 1u);
+        auto retry_count_ptr = make_shared<uint256_t>(-1);
+        *retry_count_ptr /= core_count;
+
+        uint256_t nonce_init{0};
+        gen_random_uint256(nonce_init);
+
+        this->_alive_worker_ptrs.resize(core_count);
+        for (int i = 0; i < core_count; ++i) {
+            auto nonce_start_ptr = make_shared<uint256_t>(nonce_init + (*retry_count_ptr) * i);
+            worker_ctx ctx{
+                    .forest_ptr = forest_ptr,
+                    .target_ptr = target_ptr,
+                    .dataset_ptr = dataset_ptr,
+                    .retry_count_ptr = retry_count_ptr,
+                    .nonce_start_ptr = std::move(nonce_start_ptr),
+                    .signal_ptr = this->_signal_ptr,
+                    .io_service_ptr = this->_io_service_ptr,
+            };
+            this->_alive_worker_ptrs[i] = make_shared<worker>(std::move(ctx));
+        }
+
+        for (auto &x : this->_alive_worker_ptrs) {
+            x->start();
+        }
     }
+
+    // update target fields
+    this->_target_forest_info_opt = forest_info;
+    this->_target_cache_ptr_opt = cache_ptr;
+    this->_target_dataset_ptr_opt = dataset_ptr;
+    this->_target_cache_count_opt = new_cache_count;
+    this->_target_dataset_count_opt = new_dataset_count;
 }
 
 void celesos::miner::miner::run() {
