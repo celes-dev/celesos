@@ -13,6 +13,7 @@ namespace celesos{
     namespace forest {
         static uint32_t question_space_number = 600;//问题间隔块数
         static uint32_t question_period = 21600;//问题有效期
+        uint256_t original_target("0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 
         uint32_t dataset_count(){
             return 16777216;
@@ -54,7 +55,6 @@ namespace celesos{
                 //get forest target
                 optional<double> diff = block_ptr->difficulty;
                 double double_target = *diff;
-                uint256_t original_target("0x00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
                 uint256_t target_int = static_cast<uint256_t>(double_target*100);
                 uint256_t target = (original_target)/target_int/100;
                 //prepare parameter for ethash
@@ -120,9 +120,7 @@ namespace celesos{
                 if(diff.valid()){
                     double_target = *diff;
                 }
-
-
-                uint256_t original_target("0x00000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+                
                 uint256_t target_int = static_cast<uint256_t>(double_target*100);
                 uint256_t value = (original_target)/target_int/100;
 
