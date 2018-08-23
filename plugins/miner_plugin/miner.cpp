@@ -3,6 +3,8 @@
 //
 
 #include <random>
+#include <cmath>
+#include <boost/algorithm/hex.hpp>
 #include <eosio/chain/forest_bank.hpp>
 #include <celesos/miner_plugin/miner.hpp>
 
@@ -16,18 +18,21 @@ using celesos::miner::worker_ctx;
 using boost::multiprecision::uint256_t;
 using boost::signals2::connection;
 
-celesos::miner::miner::miner() : _alive_workers{std::thread::hardware_concurrency(),
-                                                vector<shared_ptr<worker>>::allocator_type()},
-                                 _signal{make_shared<celesos::miner::mine_signal_type>()},
+celesos::miner::miner::miner() : _alive_worker_ptrs{std::thread::hardware_concurrency(),
+                                                    vector<shared_ptr<worker>>::allocator_type()},
+                                 _signal_ptr{make_shared<celesos::miner::mine_signal_type>()},
                                  _io_thread{&celesos::miner::miner::run, this},
                                  _state{state::initialized},
                                  _failure_retry_interval_us{fc::milliseconds(5000)} {
 }
 
 celesos::miner::miner::~miner() {
-    this->_io_work.reset();
-    this->_signal->disconnect_all_slots();
+    this->_io_work_ptr.reset();
+    this->_signal_ptr->disconnect_all_slots();
     this->stop();
+    if (this->_io_thread.joinable()) {
+        this->_io_thread.detach();
+    }
 }
 
 void celesos::miner::miner::start(const chain::account_name &relative_account, chain::controller &cc) {
@@ -46,7 +51,7 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
             }
         }
 
-        if (this->_next_block_num && block->block_num < this->_next_block_num.get()) {
+        if (this->_next_block_num_opt && block->block_num < this->_next_block_num_opt.get()) {
             return;
         }
 
@@ -77,11 +82,14 @@ void celesos::miner::miner::stop(bool wait) {
     }
 
     this->_state = state::stopped;
-    for (auto &&x : this->_alive_workers) {
-        x->stop(wait);
+    for (auto &x : this->_alive_worker_ptrs) {
+        if (x) {
+            x->stop(wait);
+            x.reset();
+        }
     }
-    this->_alive_workers.clear();
-    for (auto &&x : this->_connections) {
+    this->_alive_worker_ptrs.clear();
+    for (auto &x : this->_connections) {
         x.disconnect();
     }
     this->_connections.clear();
@@ -89,7 +97,7 @@ void celesos::miner::miner::stop(bool wait) {
 }
 
 connection celesos::miner::miner::connect(const celesos::miner::mine_slot_type &slot) {
-    return _signal->connect(slot);
+    return _signal_ptr->connect(slot);
 }
 
 void celesos::miner::miner::on_forest_updated(const chain::account_name &relative_account, chain::controller &cc) {
@@ -104,59 +112,70 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
                            ("account", relative_account));
     }
 
-    this->_next_block_num = forest_info.next_block_num;
+    this->_next_block_num_opt = forest_info.next_block_num;
     ilog("update field \"next_block_number\" with value: ${block_num}", ("block_num", forest_info.next_block_num));
 
-    const auto target = make_shared<uint256_t>(0);
-    string_to_uint256_little(*target, forest_info.target.str());
-    const auto forest = make_shared<string>(forest_info.forest.str());
+//    const auto target_ptr = make_shared<uint256_t>(
+//            "0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+    const auto target_ptr = make_shared<uint256_t>(forest_info.target);
+
+    const auto forest_ptr = make_shared<string>(forest_info.forest.str());
 
     // prepare cache and dataset_ptr
+//    const uint32_t cache_count{512};
     const auto cache_count = forest::cache_count();
-    const auto cache = make_shared<vector<ethash::node>>(cache_count, vector<ethash::node>::allocator_type());
-    ethash::calc_cache(*cache, cache_count, forest_info.seed);
+
+    ilog("prepare cache with count: ${count}", ("count", cache_count));
+    const auto cache_ptr = make_shared<vector<ethash::node>>(cache_count, vector<ethash::node>::allocator_type());
+    ethash::calc_cache(*cache_ptr, cache_count, forest_info.seed);
+
+//    const uint32_t dataset_count{512 * 16};
     const auto dataset_count = forest::dataset_count();
-    const auto dataset = make_shared<vector<ethash::node>>(dataset_count, vector<ethash::node>::allocator_type());
-    ethash::calc_dataset(*dataset, dataset_count, *cache);
+
+    ilog("prepare dataset with count: ${count}", ("count", dataset_count));
+    const auto dataset_ptr = make_shared<vector<ethash::node>>(dataset_count, vector<ethash::node>::allocator_type());
+    ethash::calc_dataset(*dataset_ptr, dataset_count, *cache_ptr);
 
     this->stop(true);
 
-    const auto &core_count = std::thread::hardware_concurrency();
-
-    auto retry_count = make_shared<uint256_t>(static_cast<uint256_t>(-1));
-    *retry_count /= core_count;
+    const auto core_count = std::max(std::thread::hardware_concurrency() - 1, 1u);
+    auto retry_count_ptr = make_shared<uint256_t>(-1);
+    *retry_count_ptr /= core_count;
 
     uint256_t nonce_init{0};
     gen_random_uint256(nonce_init);
 
-    this->_alive_workers.resize(core_count);
+    this->_alive_worker_ptrs.resize(core_count);
     for (int i = 0; i < core_count; ++i) {
-        auto &&nonce_start = make_shared<uint256_t>(nonce_init + (*retry_count) * i);
+        auto nonce_start_ptr = make_shared<uint256_t>(nonce_init + (*retry_count_ptr) * i);
         worker_ctx ctx{
-                .forest_ptr = forest,
-                .target_ptr = target,
-                .dataset_ptr = dataset,
-                .retry_count_ptr = retry_count,
-                .nonce_start_ptr = nonce_start,
-                .signal_ptr = this->_signal,
-                .io_service_ptr = this->_io_service,
+                .forest_ptr = forest_ptr,
+                .target_ptr = target_ptr,
+                .dataset_ptr = dataset_ptr,
+                .retry_count_ptr = retry_count_ptr,
+                .nonce_start_ptr = std::move(nonce_start_ptr),
+                .signal_ptr = this->_signal_ptr,
+                .io_service_ptr = this->_io_service_ptr,
         };
-        this->_alive_workers.push_back(make_shared<worker>(std::move(ctx)));
+        this->_alive_worker_ptrs[i] = make_shared<worker>(std::move(ctx));
     }
 
-    for (auto &&x : this->_alive_workers) {
+    for (auto &x : this->_alive_worker_ptrs) {
         x->start();
     }
 }
 
 void celesos::miner::miner::run() {
-    this->_io_service = make_shared<boost::asio::io_service>();
-    this->_io_work = make_shared<boost::asio::io_service::work>(*this->_io_service);
-    this->_io_service->run();
+    this->_io_service_ptr = make_shared<boost::asio::io_service>();
+    this->_io_work_ptr = make_shared<boost::asio::io_service::work>(*this->_io_service_ptr);
+    this->_io_service_ptr->run();
 }
 
 void celesos::miner::miner::string_to_uint256_little(uint256_t &dst, const std::string &str) {
-    EOS_ASSERT(str.size() <= 32, chain::invalid_arg_exception, "string size() must lge 32");
+    EOS_ASSERT(
+            str.size() <= 32,
+            chain::invalid_arg_exception, "string: ${str} size() must lte 32",
+            ("str", str.c_str()));
 
     dst = 0;
 

@@ -4,20 +4,26 @@
 
 #define BOOST_TEST_MODULE miner_plugin
 
+#ifndef CELESOS_TEST_MOUDLE_MINER_PLUGIN_ON
+#define CELESOS_TEST_MOUDLE_MINER_PLUGIN_ON
+#endif //CELESOS_TEST_MOUDLE_MINER_PLUGIN_ON
+
 #include <boost/test/unit_test.hpp>
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <eosio/testing/tester.hpp>
 #include <celesos/pow/ethash.hpp>
 #include <celesos/miner_plugin/worker.hpp>
 #include <celesos/miner_plugin/miner.hpp>
 #include <celesos/miner_plugin/miner_plugin.hpp>
 
 using namespace celesos;
+using namespace eosio;
 
 using boost::multiprecision::uint256_t;
 
-BOOST_AUTO_TEST_SUITE(worker)
+BOOST_AUTO_TEST_SUITE(worker_suite)
 
     BOOST_AUTO_TEST_CASE(worker_test) {
         const static uint32_t HASH_BYTES = 64;
@@ -30,7 +36,7 @@ BOOST_AUTO_TEST_SUITE(worker)
         auto target_ptr = std::make_shared<uint256_t>(197);
         auto &target = *target_ptr;
         target |= uint256_t{90} << 1;
-        for (int i = 2; i < 30; ++i) {
+        for (int i = 2; i < 31; ++i) {
             target |= uint256_t{255} << i * 8;
         }
 
@@ -42,19 +48,21 @@ BOOST_AUTO_TEST_SUITE(worker)
         auto io_service_ptr = std::make_shared<boost::asio::io_service>();
         auto signal_ptr = std::make_shared<miner::mine_signal_type>();
         signal_ptr->connect([](auto is_success, auto block_num, auto wood) {
-            BOOST_ASSERT(is_success == true);
+            BOOST_CHECK_EQUAL(is_success, true);
         });
 
         auto seed_ptr = std::make_shared<std::string>("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         auto &forest_ptr = seed_ptr;
 
-        BOOST_TEST_MESSAGE("preparing cache with count: " << CACHE_COUNT);
+        BOOST_TEST_MESSAGE("begin prepare cache with count: " << CACHE_COUNT);
         auto cache_ptr = std::make_shared<std::vector<ethash::node>>(CACHE_COUNT);
         ethash::calc_cache(*cache_ptr, CACHE_COUNT, *seed_ptr);
+        BOOST_TEST_MESSAGE("end prepare cache with count: " << CACHE_COUNT);
 
-        BOOST_TEST_MESSAGE("preparing dataset with count: " << DATASET_COUNT);
+        BOOST_TEST_MESSAGE("begin prepare dataset with count: " << DATASET_COUNT);
         auto dataset_ptr = std::make_shared<std::vector<ethash::node>>(DATASET_COUNT);
         ethash::calc_dataset(*dataset_ptr, DATASET_COUNT, *cache_ptr);
+        BOOST_TEST_MESSAGE("end prepare dataset with count: " << DATASET_COUNT);
 
         miner::worker_ctx ctx{
                 .block_num = 1024,
@@ -69,16 +77,41 @@ BOOST_AUTO_TEST_SUITE(worker)
         miner::worker worker{std::move(ctx)};
         worker.start();
 
+        BOOST_TEST_MESSAGE("begin solve nonce");
         boost::asio::io_service::work work{*io_service_ptr};
         io_service_ptr->run_one();
+        BOOST_TEST_MESSAGE("end solve nonce");
     }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-//BOOST_AUTO_TEST_SUITE(miner)
-//
-//BOOST_AUTO_TEST_SUITE_END()
-//
-//BOOST_AUTO_TEST_SUITE(miner_plugin)
+BOOST_AUTO_TEST_SUITE(miner_suite)
+
+    BOOST_FIXTURE_TEST_CASE(miner_test, testing::tester) {
+        auto &controller_ref = *this->control;
+
+        std::mutex mutex{};
+        std::unique_lock<std::mutex> lock{mutex};
+        std::condition_variable stop_signal{};
+        miner::miner miner{};
+        miner.connect([&stop_signal](auto is_success, auto block_num, const auto &wood_opt) {
+            BOOST_TEST_MESSAGE("receive wood from callback");
+            stop_signal.notify_all();
+        });
+
+        BOOST_TEST_MESSAGE("begin solve wood by miner");
+        chain::account_name relative_account{"yale"};
+        miner.start(std::move(relative_account), controller_ref);
+
+        produce_blocks(1024);
+        stop_signal.wait(lock);
+        BOOST_TEST_MESSAGE("after wait");
+        miner.stop();
+        BOOST_TEST_MESSAGE("end solve wood by miner");
+    }
+
+BOOST_AUTO_TEST_SUITE_END()
+
+//BOOST_AUTO_TEST_SUITE(miner_plugin_suite)
 //
 //BOOST_AUTO_TEST_SUITE_END()

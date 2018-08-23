@@ -34,26 +34,26 @@ BOOST_AUTO_TEST_CASE(fnv_hash_check) {
 }
 
 BOOST_AUTO_TEST_CASE(sha256_test) {
-    auto input = std::string{"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"};
+    std::string input{"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"};
     unsigned char buffer[32];
     sha256(buffer, input.c_str(), input.size());
 
-    auto actual = std::string{std::cbegin(buffer), std::cend(buffer)};
+    std::string actual{std::cbegin(buffer), std::cend(buffer)};
     actual = fc::to_hex(actual.c_str(), static_cast<uint32_t>(actual.size()));
 
-    auto expect = std::string{"3af805c48a2c0ebeed554ca823ab935ac1be570533b651122cf517791fa1561c"};
+    std::string expect{"3af805c48a2c0ebeed554ca823ab935ac1be570533b651122cf517791fa1561c"};
     BOOST_REQUIRE_EQUAL(actual, expect);
 }
 
 BOOST_AUTO_TEST_CASE(sha512_test) {
-    auto input = std::string{"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"};
+    std::string input{"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"};
     unsigned char buffer[64];
     sha512(buffer, input.c_str(), input.size());
 
-    auto actual = std::string{std::cbegin(buffer), std::cend(buffer)};
+    std::string actual{std::cbegin(buffer), std::cend(buffer)};
     actual = fc::to_hex(actual.c_str(), static_cast<uint32_t>(actual.size()));
 
-    auto expect = std::string{
+    std::string expect{
             "f259c589d93341b291ffa906b1ac62977221b86b96535ca61b14fa30f7be0559fa858fa1b7256cd500543f55171a44846decd52c8e667b0685529086d481e0b3"};
     BOOST_REQUIRE_EQUAL(actual, expect);
 }
@@ -66,13 +66,13 @@ BOOST_AUTO_TEST_CASE(light_and_full_client_checks) {
     const static auto CACHE_COUNT = static_cast<uint32_t>(CACHE_BYTES / HASH_BYTES);
     const static auto DATASET_COUNT = static_cast<uint32_t>(DATASET_BYTES / HASH_BYTES);
 
-    auto target = uint256_t{197};
+    uint256_t target{197};
     target |= uint256_t{90} << 1;
     for (int i = 2; i < 32; ++i) {
         target |= uint256_t{255} << i * 8;
     }
 
-    auto seed = std::string{"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"};
+    std::string seed{"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"};
     auto &forest = seed;
 
     auto cache = std::vector<node>{CACHE_COUNT, std::vector<node>::allocator_type()};

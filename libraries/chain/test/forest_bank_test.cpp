@@ -7,9 +7,7 @@
 #include <eosio/chain/forest_bank.hpp>
 #include <eosio/chain/controller.hpp>
 #include <eosio/testing/tester.hpp>
-#include <boost/optional.hpp>
-#include "boost/test/included/unit_test.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
+
 
 boost::optional<eosio::testing::tester> tester_opt{};
 

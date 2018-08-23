@@ -32,6 +32,10 @@ namespace celesos {
 
         class worker {
         private:
+            using mutex_type = std::shared_timed_mutex;
+            using write_lock_type = std::unique_lock<mutex_type>;
+            using read_lock_type = std::shared_lock<mutex_type>;
+
             enum state {
                 initialized,
                 started,
@@ -40,8 +44,8 @@ namespace celesos {
 
             worker_ctx _ctx;
             state _state;
-            std::shared_timed_mutex _mutex;
-            boost::optional<std::thread> _alive_thread;
+            mutex_type _mutex;
+            boost::optional<std::thread> _alive_thread_opt;
 
             void run();
 
