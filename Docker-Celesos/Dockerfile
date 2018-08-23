@@ -2,7 +2,11 @@ FROM eosio/builder as builder
 ARG branch=master
 ARG symbol=SYS
 
-RUN git clone -b $branch http://${GIT_USER_NAME}:${GIT_PASSWORD}@172.12.0.11/celesos/src.git --recursive ./eos \
+RUN git config --global http.proxy "${GIT_HTTP_PROXY}" \
+    && git config --global https.proxy "${GIT_HTTPS_PROXY}" \
+    && git clone -b $branch http://${GIT_CRENDENTIAL}172.12.0.11/celesos/src.git --recursive ./eos \
+    && git config --global --unset http.proxy \
+    && git config --global --unset https.proxy \
     && cd eos && echo "$branch:$(git rev-parse HEAD)" > /etc/eosio-version \
     && cmake -H. -B"/tmp/build" -GNinja -DCMAKE_BUILD_TYPE=Release -DWASM_ROOT=/opt/wasm -DCMAKE_CXX_COMPILER=clang++ \
        -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX=/tmp/build  -DSecp256k1_ROOT_DIR=/usr/local -DBUILD_MONGO_DB_PLUGIN=true -DCORE_SYMBOL_NAME=$symbol \
