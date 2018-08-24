@@ -1,6 +1,9 @@
 FROM eosio/builder as builder
 ARG branch=master
 ARG symbol=SYS
+ARG http_proxy=""
+ARG https_proxy=""
+ARG no_proxy=""
 ARG git_http_proxy=""
 ARG git_https_proxy=""
 ARG git_crendential=""
