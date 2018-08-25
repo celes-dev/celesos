@@ -37,7 +37,7 @@ celesos::miner::miner::~miner() {
 
 void celesos::miner::miner::start(const chain::account_name &relative_account, chain::controller &cc) {
     ilog("start() attempt");
-    if (this->_state != state::initialized) {
+    if (this->_state == state::started) {
         return;
     }
     ilog("start() begin");
@@ -75,13 +75,7 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
     ilog("start() end");
 }
 
-void celesos::miner::miner::stop(bool wait) {
-    ilog("stop(wait = ${wait}) begin", ("wait", wait));
-    if (this->_state == state::stopped) {
-        return;
-    }
-
-    this->_state = state::stopped;
+void celesos::miner::miner::stop_workers(bool wait) {
     for (auto &x : this->_alive_worker_ptrs) {
         if (x) {
             x->stop(wait);
@@ -89,10 +83,22 @@ void celesos::miner::miner::stop(bool wait) {
         }
     }
     this->_alive_worker_ptrs.clear();
+}
+
+void celesos::miner::miner::stop(bool wait) {
+    ilog("stop(wait = ${wait}) begin", ("wait", wait));
+    if (this->_state == state::stopped) {
+        return;
+    }
+    this->_state = state::stopped;
+
     for (auto &x : this->_connections) {
         x.disconnect();
     }
     this->_connections.clear();
+
+    this->stop_workers(wait);
+
     ilog("stop(wait = ${wait}) end", ("wait", wait));
 }
 
@@ -161,7 +167,7 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
     if (is_dataset_changed) {
         ilog("begin prepare dataset with count: ${count}", ("count", new_dataset_count));
         dataset_ptr = make_shared<vector<ethash::node>>(new_dataset_count,
-                                                                   vector<ethash::node>::allocator_type());
+                                                        vector<ethash::node>::allocator_type());
         ethash::calc_dataset(*dataset_ptr, new_dataset_count, *cache_ptr);
         ilog("end prepare dataset with count: ${count}", ("count", new_dataset_count));
     } else {
@@ -179,7 +185,7 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
 
     const auto is_work_changed = is_work_changed_func(is_dataset_changed, this->_target_forest_info_opt, forest_info);
     if (is_work_changed) {
-        this->stop(true);
+        this->stop_workers(true);
 
         const auto core_count = std::max(std::thread::hardware_concurrency() - 1, 1u);
         auto retry_count_ptr = make_shared<uint256_t>(-1);

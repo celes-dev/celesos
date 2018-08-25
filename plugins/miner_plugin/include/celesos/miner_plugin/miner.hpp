@@ -43,6 +43,8 @@ namespace celesos {
 
             void run();
 
+            void stop_workers(bool wait);
+
         public:
 
             static void string_to_uint256_little(boost::multiprecision::uint256_t &dst, const std::string &str);
