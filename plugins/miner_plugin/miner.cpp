@@ -70,7 +70,10 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
         // clear last_failure_time_us for performance
         this->_last_failure_time_us.reset();
     };
-    auto a_connection = cc.accepted_block_header.connect(std::move(slot));
+    auto a_connection = cc.accepted_block_header.connect(
+            [this, slot = std::move(slot)](const chain::block_state_ptr &block_ptr) {
+                this->_io_service_ptr->post(std::bind(slot, std::cref(block_ptr)));
+            });
     this->_connections.push_back(std::move(a_connection));
     ilog("start() end");
 }
@@ -224,7 +227,7 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
 
 void celesos::miner::miner::run() {
     this->_io_service_ptr = make_shared<boost::asio::io_service>();
-    this->_io_work_ptr = make_shared<boost::asio::io_service::work>(*this->_io_service_ptr);
+    this->_io_work_ptr = make_shared<boost::asio::io_service::work>(std::ref(*this->_io_service_ptr));
     this->_io_service_ptr->run();
 }
 
