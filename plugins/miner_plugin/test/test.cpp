@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_SUITE(worker_suite)
         });
 
         auto seed_ptr = std::make_shared<std::string>("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        auto &forest_ptr = seed_ptr;
+        auto forest_ptr = seed_ptr;
 
         BOOST_TEST_MESSAGE("begin prepare cache with count: " << CACHE_COUNT);
         auto cache_ptr = std::make_shared<std::vector<ethash::node>>(CACHE_COUNT);
