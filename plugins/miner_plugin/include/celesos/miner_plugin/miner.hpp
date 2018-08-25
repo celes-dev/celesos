@@ -38,7 +38,6 @@ namespace celesos {
             boost::optional<fc::microseconds> _last_failure_time_us;
             fc::microseconds _failure_retry_interval_us;
 
-
             void on_forest_updated(const eosio::chain::account_name &relative_account, eosio::chain::controller &cc);
 
             void run();

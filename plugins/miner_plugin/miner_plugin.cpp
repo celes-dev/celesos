@@ -176,6 +176,7 @@ void celesos::miner_plugin::plugin_startup() {
                 [this, &the_chain_plugin](auto is_success,
                                           auto block_num,
                                           const auto &wood_opt) {
+                    //TODO 考虑系统合约未安装的情况
                     if (!is_success) {
                         //TODO 完善算不出hash的流程
                         return;

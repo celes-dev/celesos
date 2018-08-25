@@ -43,7 +43,7 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
     ilog("start() begin");
     this->_state = state::started;
 
-    auto slot = [this, &relative_account, &cc](const chain::block_state_ptr &block) {
+    auto slot = [this, &relative_account, &cc](const chain::block_state_ptr &block_ptr) {
         if (this->_last_failure_time_us) {
             auto &&passed_time_us = fc::time_point::now().time_since_epoch() - this->_last_failure_time_us.get();
             if (passed_time_us < this->_failure_retry_interval_us) {
@@ -51,7 +51,7 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
             }
         }
 
-        if (this->_target_forest_info_opt && block->block_num < this->_target_forest_info_opt->next_block_num) {
+        if (this->_target_forest_info_opt && block_ptr->block_num < this->_target_forest_info_opt->next_block_num) {
             return;
         }
 
@@ -187,7 +187,10 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
     };
 
     const auto is_work_changed = is_work_changed_func(is_dataset_changed, this->_target_forest_info_opt, forest_info);
-    if (is_work_changed) {
+    if (!is_work_changed) {
+        ilog("work not changed,no need to restart workers");
+    } else {
+        ilog("restart workers to logging");
         this->stop_workers(true);
 
         const auto core_count = std::max(std::thread::hardware_concurrency() - 1, 1u);
