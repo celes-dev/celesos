@@ -332,15 +332,15 @@ namespace eosiosystem {
 
 } /// eosiosystem
 
-EOSIO_ABI(eosiosystem::system_contract,
-// native.hpp (newaccount definition is actually in eosio.system.cpp)
-          (newaccount)(updateauth)(deleteauth)(linkauth)(unlinkauth)(canceldelay)(onerror)
-                  // eosio.system.cpp
-                  (setram)(setparams)(setpriv)(rmvproducer)(bidname)
-                  // delegate_bandwidth.cpp
-                  (buyrambytes)(buyram)(sellram)(delegatebw)(undelegatebw)(refund)
-                  // voting.cpp
-                  (regproducer)(unregprod)(voteproducer)(regproxy)
-                  // producer_pay.cpp
-                  (onblock)(claimrewards)
-)
+//EOSIO_ABI(eosiosystem::system_contract,
+//// native.hpp (newaccount definition is actually in eosio.system.cpp)
+//          (newaccount)(updateauth)(deleteauth)(linkauth)(unlinkauth)(canceldelay)(onerror)
+//                  // eosio.system.cpp
+//                  (setram)(setparams)(setpriv)(rmvproducer)(bidname)
+//                  // delegate_bandwidth.cpp
+//                  (buyrambytes)(buyram)(sellram)(delegatebw)(undelegatebw)(refund)
+//                  // voting.cpp
+//                  (regproducer)(unregprod)(voteproducer)(regproxy)
+//                  // producer_pay.cpp
+//                  (onblock)(claimrewards)
+//)
