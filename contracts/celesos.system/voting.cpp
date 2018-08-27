@@ -233,51 +233,60 @@ namespace eosiosystem {
         }
     }
 
-    void system_contract::voteproducer(const account_name voter_name, const account_name woodowner_name,
-                                       const wood_info &wood_info, const account_name producer_name) {
+    void system_contract::voteproducer(const account_name voter_name, const account_name wood_owner_name,
+                                       const uint64_t wood,
+                                       const uint32_t block_number, const account_name producer_name) {
 
         require_auth(voter_name);
-        system_contract::update_vote(voter_name, woodowner_name, wood_info, producer_name);
+        system_contract::update_vote(voter_name, wood_owner_name, wood, block_number, producer_name);
     }
 
-    bool system_contract::verify(const wood_info &wood, const account_name woodowner_name) {
+    bool system_contract::verify(const uint64_t wood, const uint32_t block_number, const account_name wood_owner_name) {
 
-        auto voter_wood = (((uint128_t) woodowner_name) << 64 | (uint128_t) wood.wood);
+        auto voter_wood = (((uint128_t) wood_owner_name) << 64 | (uint128_t) wood);
         auto idx = _burninfos.get_index<N(voter_wood)>();
 
         auto itl = idx.lower_bound(voter_wood);
         auto itu = idx.upper_bound(voter_wood);
 
         while (itl != itu) {
-            if (itl->block_number == wood.block_number) {
+            if (itl->block_number == block_number) {
                 return false;
             }
             ++itl;
         }
 
-        return verify_wood(wood.block_number, woodowner_name, wood.wood);
+        if(block_number)
+        {
+            return verify_wood(block_number, wood_owner_name, wood);
+        }
+        else
+        {
+            return true;
+        }
+
     }
 
-    void system_contract::update_vote(const account_name voter_name, const account_name woodowner_name,
-                                      const wood_info &wood_info, const account_name producer_name) {
+    void system_contract::update_vote(const account_name voter_name, const account_name wood_owner_name,
+                                      const uint64_t wood, const uint32_t block_number, const account_name producer_name) {
 
         //validate input
         eosio_assert(producer_name > 0, "cannot vote with no producer");
-        eosio_assert(wood_info.block_number > 0, "invalid wood");
-        eosio_assert(wood_info.wood > 0, "invalid wood");
+        eosio_assert(block_number > 0, "invalid wood");
+        eosio_assert(wood > 0, "invalid wood");
 
-        if (woodowner_name && voter_name != woodowner_name) {
-            auto wood_owner = _voters.find(woodowner_name);
+        if (wood_owner_name && voter_name != wood_owner_name) {
+            auto wood_owner = _voters.find(wood_owner_name);
             eosio_assert(wood_owner->proxy == voter_name, "cannot proxy for woodowner");
-            require_recipient(woodowner_name);
+            require_recipient(wood_owner_name);
 
             auto voter = _voters.find(voter_name);
             eosio_assert(voter != _voters.end() && voter->is_proxy, "voter is not a proxy");
         }
 
-        auto &owner = woodowner_name ? woodowner_name : voter_name;
+        auto &owner = wood_owner_name ? wood_owner_name : voter_name;
 
-        eosio_assert(system_contract::verify(wood_info, owner), "invalid wood");
+        eosio_assert(system_contract::verify(wood, block_number, owner), "invalid wood");
 
         // 记录总计投票数
         _gstate.total_activated_stake++;
@@ -297,8 +306,8 @@ namespace eosiosystem {
         _burninfos.emplace(N(voter_name), [&](auto &burn) {
             burn.rowid = _burninfos.available_primary_key();
             burn.voter = owner;
-            burn.wood = wood_info.wood;
-            burn.block_number = wood_info.block_number;
+            burn.wood = wood;
+            burn.block_number = block_number;
         });
 
         // producer 统计
@@ -310,7 +319,7 @@ namespace eosiosystem {
         bool isSuccess = false;
 
         while (itl != itu) {
-            if (itl->block_number == wood_info.block_number) {
+            if (itl->block_number == block_number) {
                 isSuccess = true;
                 break;
             } else {
@@ -326,20 +335,20 @@ namespace eosiosystem {
             _burnproducerstatinfos.emplace(N(eosio), [&](auto &p) {
                 p.rowid = _burnproducerstatinfos.available_primary_key();
                 p.producer = producer_name;
-                p.block_number = wood_info.block_number;
+                p.block_number = block_number;
                 p.stat = 1;
             });
         }
 
         {
-            auto temp = _burnblockstatinfos.find((uint64_t) wood_info.block_number);
+            auto temp = _burnblockstatinfos.find((uint64_t) block_number);
             if (temp != _burnblockstatinfos.end()) {
                 _burnblockstatinfos.modify(temp, 0, [&](auto &p) {
-                    p.stat = p.stat + wood_info.block_number;
+                    p.stat = p.stat + block_number;
                 });
             } else {
                 _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
-                    p.block_number = wood_info.block_number;
+                    p.block_number = block_number;
                     p.stat = 1;
                 });
             }

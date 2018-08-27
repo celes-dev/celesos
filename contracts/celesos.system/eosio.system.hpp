@@ -287,8 +287,8 @@ namespace eosiosystem {
 
         void setproxy(const account_name voter_name, const account_name proxy_name);
 
-        void voteproducer(const account_name voter_name, const account_name woodowner_name, const wood_info &wood_info,
-                          const account_name producer_name);
+        void voteproducer(const account_name voter_name, const account_name wood_owner_name, const uint64_t wood,
+                          const uint32_t block_number, const account_name producer_name);
 
         void regproxy(const account_name proxy, bool isproxy);
 
@@ -306,7 +306,7 @@ namespace eosiosystem {
     private:
         void update_elected_producers(block_timestamp timestamp);
 
-        bool verify(const wood_info &wood, const account_name wood_owner_name);
+        bool verify(const uint64_t wood, const uint32_t block_number, const account_name wood_owner_name);
 
         uint32_t clean_dirty_stat_producers(uint32_t block_number, uint32_t maxline);
 
@@ -325,9 +325,22 @@ namespace eosiosystem {
         //defined in voting.hpp
         static eosio_global_state get_default_parameters();
 
-        void update_vote(const account_name voter, const account_name wood_owner,
-                         const wood_info &wood_info, const account_name producer);
+        void update_vote(const account_name voter_name, const account_name wood_owner_name,
+                         const uint64_t wood, const uint32_t block_number, const account_name producer_name);
 
     };
 
 } /// eosiosystem
+
+EOSIO_ABI(eosiosystem::system_contract,
+// native.hpp (newaccount definition is actually in eosio.system.cpp)
+          (newaccount)(updateauth)(deleteauth)(linkauth)(unlinkauth)(canceldelay)(onerror)
+                  // eosio.system.cpp
+                  (setram)(setparams)(setpriv)(rmvproducer)(bidname)
+                  // delegate_bandwidth.cpp
+                  (buyrambytes)(buyram)(sellram)(delegatebw)(undelegatebw)(refund)
+                  // voting.cpp
+                  (regproducer)(unregprod)(voteproducer)(regproxy)
+                  // producer_pay.cpp
+                  (onblock)(claimrewards)
+)

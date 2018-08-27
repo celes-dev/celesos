@@ -193,7 +193,7 @@ void celesos::miner_plugin::plugin_startup() {
                         chain::action_name action{"voteproducer"};
                         auto args = fc::mutable_variant_object{}
                                 ("voter_name", voter_name)
-                                ("woodowner_name", voter_name)
+                                ("wood_owner_name", voter_name)
                                 ("wood_info", fc::mutable_variant_object{}
                                         ("block_number", block_num)
                                         ("wood", wood_opt.get()))
