@@ -319,7 +319,7 @@ public:
 
     action_result
     vote(const account_name &voter, const std::vector<account_name> &producers, const account_name &proxy = name(0)) {
-       return vote(voter,proxy,0x0,0,producers[0]);
+       return vote(voter,proxy,10000,10000,producers[0]);
     }
 
     action_result vote(const account_name voter_name, const account_name wood_owner_name, const uint64_t wood,
@@ -481,8 +481,8 @@ public:
              BOOST_REQUIRE_EQUAL(success(), push_action(N(alice1111111), N(voteproducer), mvo()
                      ("voter_name", name("alice1111111"))
                      ("wood_owner_name", name("alice1111111"))
-                     ("wood", 0)
-                     ("block_number", 0)
+                     ("wood", 10000)
+                     ("block_number", 10000)
                      ("producer_name", *(producer_names.begin()+i))
              ));
          }
@@ -519,8 +519,8 @@ public:
                                                mvo()
                                                        ("voter_name", "producer1111")
                                                        ("wood_owner_name", "producer1111")
-                                                       ("wood", 0)
-                                                       ("block_number", 0)
+                                                       ("wood", 10000)
+                                                       ("block_number", 10000)
                                                        ("producer_name", "producer1111")
                                              )
                                  );

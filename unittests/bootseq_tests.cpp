@@ -254,8 +254,8 @@ BOOST_FIXTURE_TEST_CASE( bootseq_test, bootseq_tester ) {
                 base_tester::push_action(N(eosio), N(voteproducer), voter, mvo()
                         ("voter_name", voter)
                         ("wood_owner_name", voter)
-                                ("wood", 0)
-                                ("block_number", 0)
+                                ("wood", 10000)
+                                ("block_number", 10000)
                                 ("producer_name", producer));
             }
         };

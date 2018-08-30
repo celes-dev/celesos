@@ -11,13 +11,17 @@
 #include <eosiolib/singleton.hpp>
 #include <celesos.system/exchange_state.hpp>
 
+#include <musl/upstream/include/bits/stdint.h>
+
 #include <string>
+
+#define LOG_ENABLE 1
 
 namespace eosiosystem {
 
-    const uint32_t block_per_forest = 600; // 每隔600块出个题目
-    const uint32_t wood_period = 900; // 每个wood的有效期（从题目生成开始计算）
-    const uint32_t target_wood_number = 500; // 每个周期内目标wood个数
+    const uint32_t block_per_forest = 600; // one forest per 600 block
+    const uint32_t wood_period = 900; // wood's Validity period
+    const uint32_t target_wood_number = 500; // target wood count per cycle
 
     using eosio::asset;
     using eosio::indexed_by;
@@ -136,7 +140,7 @@ namespace eosiosystem {
                                  reserved2)(reserved3))
     };
 
-    struct wood_burn_info { // 木头明细表，过期数据定期去除（未校验通过的数据不记入）
+    struct wood_burn_info { // wood burn detail
         uint64_t rowid = 0;
         account_name voter = 0; /// the voter
         uint32_t block_number = 0;
@@ -152,7 +156,7 @@ namespace eosiosystem {
         EOSLIB_SERIALIZE(wood_burn_info, (rowid)(voter)(block_number)(wood))
     };
 
-    struct wood_burn_producer_block_stat // 木头焚烧按照BP及block_number统计的表
+    struct wood_burn_producer_block_stat //  wood burn per bp and block stat(木头焚烧按照BP及block_number统计的表)
     {
         uint64_t rowid = 0;
         account_name producer = 0; /// the producer
@@ -313,6 +317,8 @@ namespace eosiosystem {
         void clean_diff_stat_history(uint32_t block_number);
 
         uint32_t clean_dirty_wood_history(uint32_t block_number, uint32_t maxline);
+
+        void onblock_clean_burn_stat(uint32_t block_number, uint32_t maxline);
 
         double calc_diff(uint32_t block_number);
 

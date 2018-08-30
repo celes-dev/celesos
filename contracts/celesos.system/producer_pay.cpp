@@ -6,7 +6,8 @@
 namespace eosiosystem {
 
     const int64_t min_pervote_daily_pay = 100'0000;
-    const int64_t min_activated_stake = 150'000'000'0000;
+//    const int64_t min_activated_stake = 150'000'000'0000;
+    const int64_t min_activated_stake = 1;
     const double continuous_rate = 0.04879;          // 5% annual rate
     const double perblock_rate = 0.0025;           // 0.25%
     const double standby_rate = 0.0075;           // 0.75%
@@ -49,6 +50,7 @@ namespace eosiosystem {
         if (temp == 0) {
             set_difficulty(calc_diff(timestamp.slot - temp));
             clean_diff_stat_history(timestamp.slot - temp);
+            clean_dirty_stat_producers(timestamp.slot - temp,30);
         }
 
         /// only update block producers once every minute, block_timestamp is in half seconds

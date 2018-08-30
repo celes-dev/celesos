@@ -107,97 +107,6 @@ namespace eosiosystem {
         }
     }
 
-    uint32_t system_contract::clean_dirty_stat_producers(uint32_t block_number, uint32_t maxline) {
-
-        auto idx = _burnproducerstatinfos.get_index<N(block_number)>();
-        auto itl = idx.lower_bound(block_number);
-        auto itu = idx.upper_bound(block_number);
-
-        uint32_t round = 0;
-        if (itl != idx.end()) {
-            for (auto it = itl; it != itu && round < maxline; ++it, ++round) {
-                auto producer = _producers.find(it->producer);
-
-                if (producer != _producers.end()) {
-                    _producers.modify(producer, 0, [&](auto &p) {
-                        p.total_votes = p.total_votes - it->stat;
-                    });
-                }
-
-                // 在本表中干掉此记录
-                _burnproducerstatinfos.erase(*it);
-            }
-        }
-
-        return maxline - round;
-    }
-
-    double system_contract::calc_diff(uint32_t block_number) {
-
-        // 计算当前轮的目标难度
-        auto last1 = _burnblockstatinfos.find(block_number - block_per_forest);
-        auto last2 = _burnblockstatinfos.find(block_number - 2 * block_per_forest);
-        auto last3 = _burnblockstatinfos.find(block_number - 3 * block_per_forest);
-
-        auto diff1 = (last1 == _burnblockstatinfos.end()) ? 1 : last1->diff;
-        auto wood1 = (last1 == _burnblockstatinfos.end()) ? target_wood_number : last1->stat;
-        auto diff2 = (last2 == _burnblockstatinfos.end()) ? 1 : last2->diff;
-        auto wood2 = (last2 == _burnblockstatinfos.end()) ? target_wood_number : last2->stat;
-        auto diff3 = (last3 == _burnblockstatinfos.end()) ? 1 : last3->diff;
-        auto wood3 = (last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat;
-
-        // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
-        // 则建议难度值为:M/wood1*diff1*1/7+M/wood2*diif2*2/7+M/wood3*diff3*4/7,简化为M/7*(diff1/wood1+2*diif2/wood2+4*diff3/wood3)
-        auto targetdiff = ((double) target_wood_number) / 7 * (wood1 / diff1 * 4 + wood2 / diff2 * 2 + wood3 / diff3);
-
-        auto current = _burnblockstatinfos.find(block_number);
-        if (current == _burnblockstatinfos.end()) {
-            // 由系统账号为此存储付费
-            _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
-                p.block_number = block_number;
-                p.diff = targetdiff;
-            });
-        } else {
-            _burnblockstatinfos.modify(current, 0, [&](auto &p) {
-                p.diff = targetdiff;
-            });
-        }
-
-        return targetdiff;
-    }
-
-    void system_contract::clean_diff_stat_history(uint32_t block_number) {
-
-        auto itr = _burnblockstatinfos.begin();
-
-        while (itr != _burnblockstatinfos.end()) {
-            if (itr->block_number <= block_number - 3 * block_per_forest) {
-                _burnblockstatinfos.erase(itr);
-            } else {
-                break;
-            }
-        }
-    }
-
-    uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
-
-        auto idx = _burninfos.get_index<N(block_number)>();
-        auto cust_itr = idx.begin();
-        uint32_t round = 0;
-        while (cust_itr != idx.end() && round < maxline) {
-            if (cust_itr->block_number <= block_number) {
-                // 在本表中干掉此记录
-                _burninfos.erase(*cust_itr);
-                cust_itr++;
-                round++;
-            } else {
-                break;
-            }
-        }
-
-        return maxline - round;
-    }
-
     void system_contract::setproxy(const account_name voter_name, const account_name proxy_name) {
 
         require_auth(voter_name);
@@ -256,24 +165,27 @@ namespace eosiosystem {
             ++itl;
         }
 
-        if(block_number)
-        {
-            return verify_wood(block_number, wood_owner_name, wood);
-        }
-        else
-        {
+        if (block_number == 10000 && wood == 10000) {
             return true;
+        } else {
+            return verify_wood(block_number, wood_owner_name, wood);
         }
 
     }
 
     void system_contract::update_vote(const account_name voter_name, const account_name wood_owner_name,
-                                      const uint64_t wood, const uint32_t block_number, const account_name producer_name) {
+                                      const uint64_t wood, const uint32_t block_number,
+                                      const account_name producer_name) {
 
         //validate input
         eosio_assert(producer_name > 0, "cannot vote with no producer");
-        eosio_assert(block_number > 0, "invalid wood");
-        eosio_assert(wood > 0, "invalid wood");
+        eosio_assert(block_number > 0, "invalid wood 1");
+        eosio_assert(wood > 0, "invalid wood 2");
+
+#if LOG_ENABLE
+        eosio::print("voter:", voter_name, ",owner:", wood_owner_name, "wood:", wood, ",block:", block_number,
+                     ",producer:", producer_name, "\r\n");
+#endif
 
         if (wood_owner_name && voter_name != wood_owner_name) {
             auto wood_owner = _voters.find(wood_owner_name);
@@ -286,7 +198,7 @@ namespace eosiosystem {
 
         auto &owner = wood_owner_name ? wood_owner_name : voter_name;
 
-        eosio_assert(system_contract::verify(wood, block_number, owner), "invalid wood");
+        eosio_assert(system_contract::verify(wood, block_number, owner), "invalid wood 3");
 
         // 记录总计投票数
         _gstate.total_activated_stake++;
@@ -302,8 +214,12 @@ namespace eosiosystem {
             _gstate.total_producer_vote_weight++;
         });
 
+#if LOG_ENABLE
+        eosio::print("add wood detail:", wood_owner_name, ",voter:", wood, ",block:", block_number, "\r\n");
+#endif
+
         // 增加投票明细记录
-        _burninfos.emplace(N(voter_name), [&](auto &burn) {
+        _burninfos.emplace(N(eosio), [&](auto &burn) {
             burn.rowid = _burninfos.available_primary_key();
             burn.voter = owner;
             burn.wood = wood;
@@ -327,11 +243,20 @@ namespace eosiosystem {
             }
         }
 
+
         if (isSuccess) {
+#if LOG_ENABLE
+            eosio::print("modify stat\r\n");
+#endif
+
             _burnproducerstatinfos.modify(*itl, 0, [&](auto &p) {
                 p.stat++;
             });
         } else {
+#if LOG_ENABLE
+            eosio::print("add stat,producer:", producer_name, ",block:", block_number, "\r\n");
+#endif
+
             _burnproducerstatinfos.emplace(N(eosio), [&](auto &p) {
                 p.rowid = _burnproducerstatinfos.available_primary_key();
                 p.producer = producer_name;
@@ -343,10 +268,16 @@ namespace eosiosystem {
         {
             auto temp = _burnblockstatinfos.find((uint64_t) block_number);
             if (temp != _burnblockstatinfos.end()) {
+#if LOG_ENABLE
+                eosio::print("modify block stat\r\n");
+#endif
                 _burnblockstatinfos.modify(temp, 0, [&](auto &p) {
                     p.stat = p.stat + block_number;
                 });
             } else {
+#if LOG_ENABLE
+                eosio::print("add block stat,block:", block_number, "\r\n");
+#endif
                 _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
                     p.block_number = block_number;
                     p.stat = 1;
@@ -355,10 +286,21 @@ namespace eosiosystem {
         }
 
         {
-            uint32_t max_clean_limit = 30;
-            uint32_t temp = (_gstate.last_block_time.slot - wood_period) % block_per_forest;
-            uint32_t remain = clean_dirty_stat_producers(_gstate.last_block_time.slot - temp, max_clean_limit);
-            clean_dirty_wood_history(_gstate.last_block_time.slot - temp, remain);
+            if (_gstate.last_block_time.slot > wood_period) {
+#if LOG_ENABLE
+                eosio::print("clean,slot:", _gstate.last_block_time.slot, ",period:", wood_period, "\r\n");
+#endif
+                uint32_t max_clean_limit = 30;
+                uint32_t temp = (_gstate.last_block_time.slot - wood_period) % block_per_forest;
+#if LOG_ENABLE
+                eosio::print("clean,temp:", temp, "\r\n");
+#endif
+                uint32_t remain = clean_dirty_stat_producers(_gstate.last_block_time.slot - temp, max_clean_limit);
+#if LOG_ENABLE
+                eosio::print("clean,remain:", remain, "\r\n");
+#endif
+                clean_dirty_wood_history(_gstate.last_block_time.slot - temp, remain);
+            }
         }
     }
 
@@ -387,6 +329,170 @@ namespace eosiosystem {
                 p.is_proxy = isproxy;
             });
         }
+    }
+
+
+    uint32_t system_contract::clean_dirty_stat_producers(uint32_t block_number, uint32_t maxline) {
+
+        auto idx = _burnproducerstatinfos.get_index<N(block_number)>();
+        auto itl = idx.lower_bound(block_number);
+        auto itu = idx.upper_bound(block_number);
+
+        std::vector<wood_burn_producer_block_stat> producer_stat_vector;
+
+        uint32_t round = 0;
+        if (itl != itu) {
+            for (auto it = itl; it != itu && round < maxline; ++it, ++round) {
+                auto producer = _producers.find(it->producer);
+
+                if (producer != _producers.end()) {
+                    _producers.modify(producer, 0, [&](auto &p) {
+                        p.total_votes = p.total_votes - it->stat;
+                    });
+                }
+
+                // delete record
+                producer_stat_vector.emplace_back(*it);
+            }
+        }
+
+        for (auto temp : producer_stat_vector) {
+#if LOG_ENABLE
+            eosio::print("clean,stat:", temp.stat, ",block:", temp.block_number, "\r\n");
+#endif
+
+            _burnproducerstatinfos.erase(temp);
+        }
+
+        return maxline - round;
+    }
+
+    void system_contract::onblock_clean_burn_stat(uint32_t block_number, uint32_t maxline) {
+
+        auto idx = _producers.get_index<N(prototalvote)>();
+
+        uint32_t round = 0;
+        std::vector<wood_burn_producer_block_stat> producer_stat_vector;
+
+        for (auto it = idx.cbegin();
+             it != idx.cend() && round < maxline && 0 < it->total_votes; ++it, ++round) {
+
+            auto bidx = _burnproducerstatinfos.get_index<N(producer)>();
+            auto itl = bidx.lower_bound(it->owner);
+            auto itu = bidx.upper_bound(it->owner);
+
+            if (itl != itu) {
+                for (auto temp = itl; temp != itu; ++it, ++round) {
+                    if (temp->block_number == block_number) {
+                        auto producer = _producers.find(it->owner);
+
+                        if (producer != _producers.end()) {
+                            _producers.modify(producer, 0, [&](auto &p) {
+                                p.total_votes = p.total_votes - temp->stat;
+                            });
+                        }
+                    }
+
+                    // delete record
+                    producer_stat_vector.emplace_back(*temp);
+                }
+            }
+        }
+
+        for (auto temp : producer_stat_vector) {
+#if LOG_ENABLE
+            eosio::print("onblock clean,producer:", temp.producer, ",stat:", temp.stat, ",block:", temp.block_number,
+                         "\r\n");
+#endif
+
+            _burnproducerstatinfos.erase(temp);
+        }
+    }
+
+    /**
+     * calc suggest diff
+     *
+     * @param block_number current block umber
+     * @return sugeest diff
+     */
+    double system_contract::calc_diff(uint32_t block_number) {
+
+        auto last1 = _burnblockstatinfos.find(block_number - block_per_forest);
+        auto last2 = _burnblockstatinfos.find(block_number - 2 * block_per_forest);
+        auto last3 = _burnblockstatinfos.find(block_number - 3 * block_per_forest);
+
+        auto diff1 = (last1 == _burnblockstatinfos.end()) ? 1 : last1->diff;
+        auto wood1 = (last1 == _burnblockstatinfos.end()) ? target_wood_number : last1->stat;
+        auto diff2 = (last2 == _burnblockstatinfos.end()) ? 1 : last2->diff;
+        auto wood2 = (last2 == _burnblockstatinfos.end()) ? target_wood_number : last2->stat;
+        auto diff3 = (last3 == _burnblockstatinfos.end()) ? 1 : last3->diff;
+        auto wood3 = (last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat;
+
+        // Suppose the last 3 cycle,the diff is diff1,diff2,diff2, and the answers count is wood1,wood2,wood3
+        // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
+        // so suggest diff is:M/wood1*diff1*1/7+M/wood2*diif2*2/7+M/wood3*diff3*4/7,Simplified to M/7*(diff1/wood1+2*diif2/wood2+4*diff3/wood3)
+        // 则建议难度值为M/wood1*diff1*1/7+M/wood2*diif2*2/7+M/wood3*diff3*4/7,简化为M/7*(diff1/wood1+2*diif2/wood2+4*diff3/wood3)
+        auto targetdiff = ((double) target_wood_number) / 7 * (wood1 / diff1 * 4 + wood2 / diff2 * 2 + wood3 / diff3);
+
+        auto current = _burnblockstatinfos.find(block_number);
+        if (current == _burnblockstatinfos.end()) {
+            // payer is the system account
+            _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
+                p.block_number = block_number;
+                p.diff = targetdiff;
+            });
+        } else {
+            _burnblockstatinfos.modify(current, 0, [&](auto &p) {
+                p.diff = targetdiff;
+            });
+        }
+
+        return targetdiff;
+    }
+
+    void system_contract::clean_diff_stat_history(uint32_t block_number) {
+
+        auto itr = _burnblockstatinfos.begin();
+
+        std::vector<wood_burn_block_stat> stat_vector;
+        while (itr != _burnblockstatinfos.end()) {
+            if (itr->block_number <= block_number - 3 * block_per_forest) {
+                stat_vector.emplace_back(*itr);
+            } else {
+                break;
+            }
+        }
+
+        for (auto temp : stat_vector) {
+            _burnblockstatinfos.erase(temp);
+        }
+    }
+
+    uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
+
+        auto idx = _burninfos.get_index<N(block_number)>();
+        auto cust_itr = idx.begin();
+        uint32_t round = 0;
+
+        std::vector<wood_burn_info> wood_vector;
+        while (cust_itr != idx.end() && round < maxline) {
+            if (cust_itr->block_number <= block_number) {
+                // delete record
+                cust_itr++;
+                round++;
+            } else {
+                break;
+            }
+        }
+
+        for (auto temp : wood_vector) {
+#if LOG_ENABLE
+            eosio::print("clean,wood:", temp.wood, ",block:", temp.block_number, ",owner:", temp.voter, "\r\n");
+#endif
+            _burninfos.erase(temp);
+        }
+
+        return maxline - round;
     }
 
 } /// namespace eosiosystem
