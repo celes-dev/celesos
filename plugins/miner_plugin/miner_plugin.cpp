@@ -176,11 +176,16 @@ void celesos::miner_plugin::plugin_startup() {
                 [this, &the_chain_plugin](auto is_success,
                                           auto block_num,
                                           const auto &wood_opt) {
+                    ilog('Receive mine callback with is_success: ${is_success} block_num: ${block_num}',
+                         ("is_success", is_success)("block_num", block_num))
+
                     //TODO 考虑系统合约未安装的情况
                     if (!is_success) {
                         //TODO 完善算不出hash的流程
                         return;
                     }
+
+
                     try {
                         auto &cc = the_chain_plugin.chain();
                         const auto &chain_id = cc.get_chain_id();
@@ -209,6 +214,9 @@ void celesos::miner_plugin::plugin_startup() {
                             auto &&signature = pair.second(digest);
                             tx.signatures.push_back(signature);
                         }
+                        auto metadata_ptr = make_shared<chain::transaction_metadata>(std::move(tx));
+                        auto deadline = fc::time_point::now() + fc::milliseconds(30);
+                        cc.push_transaction(metadata_ptr, deadline);
                     } FC_LOG_AND_RETHROW()
                 });
         ilog("plugin_startup() end");
