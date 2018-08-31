@@ -281,6 +281,7 @@ namespace eosiosystem {
                 _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
                     p.block_number = block_number;
                     p.stat = 1;
+                    p.diff = 1;
                 });
             }
         }
