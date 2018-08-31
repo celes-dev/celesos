@@ -16,6 +16,14 @@
 #include <string>
 
 #define LOG_ENABLE 1
+#define BP_COUNT 3
+#define BP_MIN_COUNT 2
+
+//#define LOG_ENABLE 0
+//#define BP_COUNT 21
+//#define BP_MIN_COUNT 21
+
+
 
 namespace eosiosystem {
 
