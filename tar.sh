@@ -1,5 +1,6 @@
 #!/bin/bash
   
 current=`date "+%Y%m%d%H%M%S"`
-fileName="celesos."${current}".tar.gz"
+#fileName="celesos."${current}".tar.gz"
+fileName="celesos.tar.gz"
 tar -zcvf ${fileName} ./build
