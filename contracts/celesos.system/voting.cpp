@@ -82,7 +82,7 @@ namespace eosiosystem {
         top_producers.reserve(21);
 
         for (auto it = idx.cbegin();
-             it != idx.cend() && top_producers.size() < 21 && 0 < it->total_votes && it->active(); ++it) {
+             it != idx.cend() && top_producers.size() < 21 &&  it->active(); ++it) {
             top_producers.emplace_back(
                     std::pair<eosio::producer_key, uint16_t>({{it->owner, it->producer_key}, it->location}));
         }
