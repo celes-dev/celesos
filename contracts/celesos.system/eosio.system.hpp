@@ -181,7 +181,7 @@ namespace eosiosystem {
         uint64_t primary_key() const { return (uint64_t) block_number; }
 
         // explicit serialization macro is not necessary, used here only to improve compilation time
-        EOSLIB_SERIALIZE(wood_burn_block_stat, (block_number)(stat))
+        EOSLIB_SERIALIZE(wood_burn_block_stat, (block_number)(stat)(diff))
     }; // 按照block_number统计的表，用于难度调整
 
     typedef eosio::multi_index<N(voters), voter_info> voters_table;
