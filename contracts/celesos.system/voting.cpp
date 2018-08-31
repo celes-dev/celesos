@@ -272,7 +272,7 @@ namespace eosiosystem {
                 eosio::print("modify block stat\r\n");
 #endif
                 _burnblockstatinfos.modify(temp, 0, [&](auto &p) {
-                    p.stat = p.stat + block_number;
+                    p.stat = p.stat + 1;
                 });
             } else {
 #if LOG_ENABLE
