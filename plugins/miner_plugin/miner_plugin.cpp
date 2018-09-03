@@ -199,9 +199,8 @@ void celesos::miner_plugin::plugin_startup() {
                         auto args = fc::mutable_variant_object{}
                                 ("voter_name", voter_name)
                                 ("wood_owner_name", voter_name)
-                                ("wood_info", fc::mutable_variant_object{}
-                                        ("block_number", block_num)
-                                        ("wood", wood_opt.get()))
+                                ("wood", wood_opt.get())
+                                ("block_number", block_num)
                                 ("producer_name", producer_name);
                         auto a_action = miner_plugin_impl::create_action(the_chain_plugin,
                                                                          std::move(auth), code,
