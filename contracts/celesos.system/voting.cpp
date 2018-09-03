@@ -91,7 +91,11 @@ namespace eosiosystem {
             _gstate.is_network_active = true; // active the network
         }
 
+        eosio::print("active the network2...");
+
         if (top_producers.size() >= BP_MIN_COUNT) {
+
+            eosio::print("active the network...");
 
             /// sort by producer name
             std::sort(top_producers.begin(), top_producers.end());

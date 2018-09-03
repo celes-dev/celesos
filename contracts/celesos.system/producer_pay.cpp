@@ -25,19 +25,15 @@ namespace eosiosystem {
 
         require_auth(N(eosio));
 
-        /** until activated stake crosses this threshold no new rewards are paid */
-        if (_gstate.total_activated_stake < min_activated_stake)
-            return;
-
-        if (_gstate.last_pervote_bucket_fill == 0)  /// start the presses
-            _gstate.last_pervote_bucket_fill = current_time();
-
-
         /**
          * At startup the initial producer may not be one that is registered / elected
          * and therefore there may be no producer object for them.
          */
         if (_gstate.is_network_active) {
+
+            if (_gstate.last_pervote_bucket_fill == 0)  /// start the presses
+                _gstate.last_pervote_bucket_fill = current_time();
+
             auto prod = _producers.find(producer);
             if (prod != _producers.end()) {
                 _gstate.total_unpaid_blocks++;
