@@ -211,9 +211,6 @@ namespace eosiosystem {
         eosio_assert(pitr.is_active, "");
         _producers.modify(pitr, 0, [&](auto &p) {
             p.total_votes++;
-            if (p.total_votes < 0) { // floating point arithmetics can give small negative numbers
-                p.total_votes = 0;
-            }
             _gstate.total_producer_vote_weight++;
         });
 

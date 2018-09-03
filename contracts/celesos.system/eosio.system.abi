@@ -624,7 +624,7 @@
                 },
                 {
                     "name": "total_votes",
-                    "type": "float64"
+                    "type": "uint64"
                 },
                 {
                     "name": "producer_key",
