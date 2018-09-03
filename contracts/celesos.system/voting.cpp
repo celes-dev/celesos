@@ -87,23 +87,26 @@ namespace eosiosystem {
                     std::pair<eosio::producer_key, uint16_t>({{it->owner, it->producer_key}, it->location}));
         }
 
-        if (top_producers.size() < BP_MIN_COUNT) {
-            return;
+        if (top_producers.size() >= BP_COUNT && !_gstate.is_network_active) {
+            _gstate.is_network_active = true; // active the network
         }
 
-        /// sort by producer name
-        std::sort(top_producers.begin(), top_producers.end());
+        if (top_producers.size() >= BP_MIN_COUNT) {
 
-        std::vector<eosio::producer_key> producers;
+            /// sort by producer name
+            std::sort(top_producers.begin(), top_producers.end());
 
-        producers.reserve(top_producers.size());
-        for (const auto &item : top_producers)
-            producers.push_back(item.first);
+            std::vector<eosio::producer_key> producers;
 
-        bytes packed_schedule = pack(producers);
+            producers.reserve(top_producers.size());
+            for (const auto &item : top_producers)
+                producers.push_back(item.first);
 
-        if (set_proposed_producers(packed_schedule.data(), packed_schedule.size()) >= 0) {
-            _gstate.last_producer_schedule_size = static_cast<decltype(_gstate.last_producer_schedule_size)>( top_producers.size());
+            bytes packed_schedule = pack(producers);
+
+            if (set_proposed_producers(packed_schedule.data(), packed_schedule.size()) >= 0) {
+                _gstate.last_producer_schedule_size = static_cast<decltype(_gstate.last_producer_schedule_size)>( top_producers.size());
+            }
         }
     }
 
@@ -165,7 +168,7 @@ namespace eosiosystem {
             ++itl;
         }
 
-        if (block_number == 10000 && wood == 10000) {
+        if (block_number <= 100000 && wood <= 10000) {
             return true;
         } else {
             return verify_wood(block_number, wood_owner_name, wood);

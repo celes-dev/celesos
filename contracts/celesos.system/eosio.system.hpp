@@ -16,8 +16,8 @@
 #include <string>
 
 #define LOG_ENABLE 1
-#define BP_COUNT 3
-#define BP_MIN_COUNT 2
+#define BP_COUNT 2 // target bp count(reach this number,then active the network)
+#define BP_MIN_COUNT 1 // mini bp count
 
 //#define LOG_ENABLE 0
 //#define BP_COUNT 21
@@ -70,6 +70,7 @@ namespace eosiosystem {
         double total_producer_vote_weight = 0; /// the sum of all producer votes
         block_timestamp last_name_close;
         block_timestamp last_block_time;
+        bool is_network_active;
 
         // explicit serialization macro is not necessary, used here only to improve compilation time
         EOSLIB_SERIALIZE_DERIVED(eosio_global_state, eosio::blockchain_parameters,
@@ -78,12 +79,12 @@ namespace eosiosystem {
                                          (pervote_bucket)(perblock_bucket)(total_unpaid_blocks)(total_activated_stake)(
                                          thresh_activated_stake_time)
                                          (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(
-                                         last_block_time))
+                                         last_block_time)(is_network_active))
     };
 
     struct producer_info {
         account_name owner;
-        double total_votes = 0;
+        uint64_t total_votes = 0;
         eosio::public_key producer_key; /// a packed public key object
         bool is_active = true;
         std::string url;
