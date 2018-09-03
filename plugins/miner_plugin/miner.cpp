@@ -51,7 +51,10 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
             }
         }
 
-        if (this->_target_forest_info_opt && block_ptr->block_num < this->_target_forest_info_opt->next_block_num) {
+        if (this->_target_forest_info_opt && (
+                this->_target_forest_info_opt->next_block_num == 0 ||
+                block_ptr->block_num < this->_target_forest_info_opt->next_block_num
+        )) {
             return;
         }
 
@@ -59,7 +62,8 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
         try {
             this->on_forest_updated(relative_account, cc);
             exception_occured = false;
-        } FC_LOG_AND_DROP()
+        }
+        FC_LOG_AND_DROP()
 
         if (exception_occured) {
             this->_last_failure_time_us = fc::time_point::now().time_since_epoch();
