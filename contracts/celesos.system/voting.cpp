@@ -182,7 +182,6 @@ namespace eosiosystem {
 
         //validate input
         eosio_assert(producer_name > 0, "cannot vote with no producer");
-        eosio_assert(block_number > 0, "invalid wood 1");
         eosio_assert(wood > 0, "invalid wood 2");
 
 #if LOG_ENABLE
