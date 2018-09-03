@@ -16,8 +16,8 @@
 #include <string>
 
 #define LOG_ENABLE 1
-#define BP_COUNT 2 // target bp count(reach this number,then active the network)
-#define BP_MIN_COUNT 1 // mini bp count
+#define BP_COUNT 3 // target bp count
+#define BP_MIN_COUNT 2 // mini bp count(reach this number,then active the network)
 
 //#define LOG_ENABLE 0
 //#define BP_COUNT 21

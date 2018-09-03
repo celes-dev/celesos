@@ -87,7 +87,7 @@ namespace eosiosystem {
                     std::pair<eosio::producer_key, uint16_t>({{it->owner, it->producer_key}, it->location}));
         }
 
-        if (top_producers.size() >= BP_COUNT && !_gstate.is_network_active) {
+        if (top_producers.size() >= BP_MIN_COUNT && !_gstate.is_network_active) {
             _gstate.is_network_active = true; // active the network
         }
 

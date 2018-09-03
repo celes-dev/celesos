@@ -16,11 +16,13 @@ namespace celesos{
         uint256_t original_target("0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 
         uint32_t dataset_count(){
-            return 16777216;
+//            return 1024*1024*1024/64;
+            return 512*16;
+
         }
         uint32_t cache_count(){
-            //1024*10248*16/64
-            return 262144;
+//            return 1024*1024*16/64;
+            return 512;
         }
 
         static forest_bank *instance = nullptr;
