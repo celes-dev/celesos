@@ -84,7 +84,7 @@ namespace eosiosystem {
 
     struct producer_info {
         account_name owner;
-        uint64_t total_votes = 0;
+        double total_votes = 0;
         eosio::public_key producer_key; /// a packed public key object
         bool is_active = true;
         std::string url;
