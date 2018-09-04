@@ -191,6 +191,8 @@ void celesos::miner_plugin::plugin_startup() {
                         const auto &chain_id = cc.get_chain_id();
                         const auto &voter_name = this->my->_voter_name;
                         const auto &producer_name = this->my->_producer_name;
+                        std::string wood_hex{130, char{}, std::string::allocator_type{}};
+                        ethash::uint256_to_hex(wood_hex, wood_opt.get());
 
                         chain::signed_transaction tx{};
                         vector<chain::permission_level> auth{{voter_name, "active"}};
@@ -199,7 +201,7 @@ void celesos::miner_plugin::plugin_startup() {
                         auto args = fc::mutable_variant_object{}
                                 ("voter_name", voter_name)
                                 ("wood_owner_name", voter_name)
-                                ("wood", wood_opt.get())
+                                ("wood", wood_hex)
                                 ("block_number", block_num)
                                 ("producer_name", producer_name);
                         auto a_action = miner_plugin_impl::create_action(the_chain_plugin,

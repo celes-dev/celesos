@@ -35,15 +35,31 @@ namespace celesos {
 
         boost::multiprecision::uint256_t
         hash_light(const std::string &forest,
-                   const boost::multiprecision::uint256_t &nonce,
+                   const boost::multiprecision::uint256_t &wood,
                    uint32_t dataset_count,
                    const std::vector<node> &cache);
 
         boost::multiprecision::uint256_t
         hash_full(const std::string &forest,
-                  const boost::multiprecision::uint256_t &nonce,
+                  const boost::multiprecision::uint256_t &wood,
                   uint32_t dataset_count,
                   const std::vector<node> &dataset);
+
+        bool uint256_to_hex(std::string &dst, const boost::multiprecision::uint256_t &src);
+
+        bool hex_to_uint256(boost::multiprecision::uint256_t &dst, const std::string &src);
+
+        boost::multiprecision::uint256_t
+        hash_light_hex(const std::string &forest,
+                       const std::string &wood_hex,
+                       uint32_t dataset_count,
+                       const std::vector<node> &cache);
+
+        boost::multiprecision::uint256_t
+        hash_full_hex(const std::string &forest,
+                      const std::string &wood_hex,
+                      uint32_t dataset_count,
+                      const std::vector<node> &dataset);
     }
 }
 
