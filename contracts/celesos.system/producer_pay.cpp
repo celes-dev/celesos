@@ -80,7 +80,7 @@ namespace eosiosystem {
             }
         }
 
-        _gstate.last_block_time = timestamp;
+
     }
 
     using namespace eosio;
