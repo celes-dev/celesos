@@ -784,7 +784,7 @@
                 },
                 {
                     "name": "wood",
-                    "type": "uint64"
+                    "type": "string"
                 },
                 {
                     "name": "block_number",
