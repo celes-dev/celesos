@@ -6,4 +6,6 @@
 #include <eosiolib/types.h>
 extern "C" {
     bool verify_wood(uint32_t block_number, account_name account, const char* wood);
+
+    uint32_t get_chain_head_num();
 }

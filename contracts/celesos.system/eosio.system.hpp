@@ -67,7 +67,6 @@ namespace eosiosystem {
         uint16_t last_producer_schedule_size = 0;
         double total_producer_vote_weight = 0; /// the sum of all producer votes
         block_timestamp last_name_close;
-        block_timestamp last_block_time;
         bool is_network_active;
 
         // explicit serialization macro is not necessary, used here only to improve compilation time
@@ -76,8 +75,7 @@ namespace eosiosystem {
                                          (last_producer_schedule_update)(last_pervote_bucket_fill)
                                          (pervote_bucket)(perblock_bucket)(total_unpaid_blocks)(total_activated_stake)(
                                          thresh_activated_stake_time)
-                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(
-                                         last_block_time)(is_network_active))
+                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(is_network_active))
     };
 
     struct producer_info {

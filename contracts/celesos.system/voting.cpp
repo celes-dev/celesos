@@ -286,20 +286,22 @@ namespace eosiosystem {
         }
 
         {
-            if (_gstate.last_block_time.slot > wood_period) {
+            uint32_t head_block_number = get_chain_head_num();
+
+            if (head_block_number > wood_period) {
 #if LOG_ENABLE
-                eosio::print("clean,slot:", _gstate.last_block_time.slot, ",period:", wood_period, "\r\n");
+                eosio::print("clean,head_block_number:", head_block_number, ",period:", wood_period, "\r\n");
 #endif
                 uint32_t max_clean_limit = 30;
-                uint32_t temp = (_gstate.last_block_time.slot - wood_period) % block_per_forest;
+                uint32_t temp = (head_block_number - wood_period) % block_per_forest;
 #if LOG_ENABLE
                 eosio::print("clean,temp:", temp, "\r\n");
 #endif
-                uint32_t remain = clean_dirty_stat_producers(_gstate.last_block_time.slot - temp, max_clean_limit);
+                uint32_t remain = clean_dirty_stat_producers(head_block_number - temp, max_clean_limit);
 #if LOG_ENABLE
                 eosio::print("clean,remain:", remain, "\r\n");
 #endif
-                clean_dirty_wood_history(_gstate.last_block_time.slot - temp, remain);
+                clean_dirty_wood_history(head_block_number - temp, remain);
             }
         }
     }
@@ -347,6 +349,9 @@ namespace eosiosystem {
 
                 if (producer != _producers.end()) {
                     _producers.modify(producer, 0, [&](auto &p) {
+#if LOG_ENABLE
+                        eosio::print("clean,total:", p.total_votes, ",this:", it->stat, "\r\n");
+#endif
                         p.total_votes = p.total_votes - it->stat;
                     });
                 }

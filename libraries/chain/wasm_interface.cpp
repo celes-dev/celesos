@@ -1655,6 +1655,10 @@ class call_depth_api : public context_aware_api {
             bool verify_wood(uint32_t block_number, const account_name &account, char *wood) const {
                 return context.verify_wood(block_number, account, wood);
             }
+
+            uint32_t get_chain_head_num() {
+                return context.head_block_num();
+            }
         };
 ///@}
 
@@ -1864,7 +1868,8 @@ REGISTER_INTRINSICS(memory_api,
 
 /// CELES code: hubery.zhang {@
 REGISTER_INTRINSICS(forest_bank_api,
-   (verify_wood,             int(int32_t,int64_t,int))
+   (verify_wood,             int(int,int64_t,int))
+   (get_chain_head_num,      int())
 );
 ///@}
 
