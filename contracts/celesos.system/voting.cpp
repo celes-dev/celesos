@@ -214,7 +214,7 @@ namespace eosiosystem {
         });
 
 #if LOG_ENABLE
-        eosio::print("add wood detail:", wood_owner_name, ",voter:", wood, ",block:", block_number, "\r\n");
+        eosio::print("add wood detail:", wood, ",voter:", owner, ",block:", block_number, "\r\n");
 #endif
 
         // 增加投票明细记录

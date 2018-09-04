@@ -45,6 +45,10 @@ namespace eosiosystem {
 
         uint32_t temp = (timestamp.slot - wood_period) % block_per_forest;
 
+#if LOG_ENABLED
+        eosio::print("slot:",timestamp.slot);
+#endif
+
         if (temp == 0) {
             set_difficulty(calc_diff(timestamp.slot - temp));
             clean_diff_stat_history(timestamp.slot - temp);
