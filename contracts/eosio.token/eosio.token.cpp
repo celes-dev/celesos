@@ -31,11 +31,15 @@ void token::create( account_name issuer,
 
 void token::issue( account_name to, asset quantity, string memo )
 {
+    eosio::print("--------------------------2----");
+    eosio::print(memo.c_str());
+    eosio::print("--------------------------3----");
     auto sym = quantity.symbol;
     eosio_assert( sym.is_valid(), "invalid symbol name" );
     eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
 
     auto sym_name = sym.name();
+
     stats statstable( _self, sym_name );
     auto existing = statstable.find( sym_name );
     eosio_assert( existing != statstable.end(), "token with symbol does not exist, create token before issue" );
