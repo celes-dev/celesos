@@ -45,7 +45,7 @@ namespace eosiosystem {
 
         uint32_t temp = (timestamp.slot - wood_period) % block_per_forest;
 
-#if LOG_ENABLED
+#if LOG_ENABLE
         eosio::print("slot:",timestamp.slot);
 #endif
 
