@@ -13,7 +13,7 @@ namespace celesos{
     namespace forest {
         static uint32_t question_space_number = 600;//问题间隔块数
         static uint32_t question_period = 21600;//问题有效期
-        uint256_t original_target("0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+        uint256_t original_target("0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 
         uint32_t dataset_count(){
 //            return 1024*1024*1024/64;
