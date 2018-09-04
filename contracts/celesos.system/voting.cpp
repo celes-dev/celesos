@@ -145,44 +145,44 @@ namespace eosiosystem {
         }
     }
 
-    void system_contract::voteproducer(const account_name voter_name, const account_name wood_owner_name,
-                                       const uint64_t wood,
-                                       const uint32_t block_number, const account_name producer_name) {
+    void
+    system_contract::voteproducer(const account_name voter_name, const account_name wood_owner_name, const std::string wood,
+                                  const uint32_t block_number, const account_name producer_name) {
 
         require_auth(voter_name);
         system_contract::update_vote(voter_name, wood_owner_name, wood, block_number, producer_name);
     }
 
-    bool system_contract::verify(const uint64_t wood, const uint32_t block_number, const account_name wood_owner_name) {
+    bool system_contract::verify(const std::string wood, const uint32_t block_number, const account_name wood_owner_name) {
 
-        auto voter_wood = (((uint128_t) wood_owner_name) << 64 | (uint128_t) wood);
-        auto idx = _burninfos.get_index<N(voter_wood)>();
+        auto voter_block = (((uint128_t) wood_owner_name) << 64 | (uint128_t) block_number);
+        auto idx = _burninfos.get_index<N(voter_block)>();
 
-        auto itl = idx.lower_bound(voter_wood);
-        auto itu = idx.upper_bound(voter_wood);
+        auto itl = idx.lower_bound(voter_block);
+        auto itu = idx.upper_bound(voter_block);
 
         while (itl != itu) {
-            if (itl->block_number == block_number) {
+            if (itl->wood == wood) {
                 return false;
             }
             ++itl;
         }
 
-        if (block_number <= 100000 && wood <= 10000) {
+        if (block_number <= 100000) {
             return true;
         } else {
-            return verify_wood(block_number, wood_owner_name, wood);
+            return verify_wood(block_number, wood_owner_name, wood.c_str());
         }
 
     }
 
     void system_contract::update_vote(const account_name voter_name, const account_name wood_owner_name,
-                                      const uint64_t wood, const uint32_t block_number,
+                                      const std::string wood, const uint32_t block_number,
                                       const account_name producer_name) {
 
         //validate input
         eosio_assert(producer_name > 0, "cannot vote with no producer");
-        eosio_assert(wood > 0, "invalid wood 2");
+        eosio_assert(wood.length() > 0, "invalid wood 2");
 
 #if LOG_ENABLE
         eosio::print("voter:", voter_name, ",owner:", wood_owner_name, "wood:", wood, ",block:", block_number,

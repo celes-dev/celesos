@@ -653,20 +653,6 @@
             ]
         },
         {
-            "name": "wood_info",
-            "base": "",
-            "fields": [
-                {
-                    "name": "wood",
-                    "type": "uint64"
-                },
-                {
-                    "name": "block_number",
-                    "type": "uint32"
-                }
-            ]
-        },
-        {
             "name": "wood_burn_info",
             "base": "",
             "fields": [
@@ -684,7 +670,7 @@
                 },
                 {
                     "name": "wood",
-                    "type": "uint64"
+                    "type": "string"
                 }
             ]
         },

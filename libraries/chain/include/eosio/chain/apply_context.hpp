@@ -615,7 +615,7 @@ class apply_context {
     /// CELES code：hubery.zhang {@
     /// forest bank method
     public:
-      bool verify_wood(uint32_t block_number, const account_name& account, uint64_t wood)const;
+      bool verify_wood(uint32_t block_number, const account_name& account, const char* wood)const;
     ///@}
 };
 
