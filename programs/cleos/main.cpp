@@ -1120,7 +1120,7 @@ struct get_schedule_subcommand {
 };
 
 struct vote_producer_subcommand {
-    uint64_t wood;
+    string wood;
     string wood_owner_str;
     uint32_t block_number;
     string producer_str;

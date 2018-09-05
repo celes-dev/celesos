@@ -2,6 +2,7 @@
 
 #include <eosio.token/eosio.token.hpp>
 #include <eosiolib/chain.h>
+#include <eosiolib/forest_bank.h>
 
 namespace eosiosystem {
 
@@ -43,12 +44,17 @@ namespace eosiosystem {
             }
         }
 
-        uint32_t temp = (timestamp.slot - wood_period) % block_per_forest;
+        uint32_t head_block_number = get_chain_head_num();
 
-        if (temp == 0) {
-            set_difficulty(calc_diff(timestamp.slot - temp));
-            clean_diff_stat_history(timestamp.slot - temp);
-            clean_dirty_stat_producers(timestamp.slot - temp, 30);
+#if LOG_ENABLE
+        eosio::print("head_block_number:", head_block_number);
+#endif
+
+        if (head_block_number >= wood_period) {
+            uint32_t temp = (head_block_number - wood_period) % block_per_forest;
+            set_difficulty(calc_diff(head_block_number - temp));
+            clean_diff_stat_history(head_block_number - temp);
+            clean_dirty_stat_producers(head_block_number - temp, 30);
         }
 
         /// only update block producers once every minute, block_timestamp is in half seconds
@@ -74,7 +80,7 @@ namespace eosiosystem {
             }
         }
 
-        _gstate.last_block_time = timestamp;
+
     }
 
     using namespace eosio;

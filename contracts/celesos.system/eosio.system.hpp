@@ -23,8 +23,6 @@
 //#define BP_COUNT 21
 //#define BP_MIN_COUNT 21
 
-
-
 namespace eosiosystem {
 
     const uint32_t block_per_forest = 600; // one forest per 600 block
@@ -69,7 +67,6 @@ namespace eosiosystem {
         uint16_t last_producer_schedule_size = 0;
         double total_producer_vote_weight = 0; /// the sum of all producer votes
         block_timestamp last_name_close;
-        block_timestamp last_block_time;
         bool is_network_active;
 
         // explicit serialization macro is not necessary, used here only to improve compilation time
@@ -78,8 +75,7 @@ namespace eosiosystem {
                                          (last_producer_schedule_update)(last_pervote_bucket_fill)
                                          (pervote_bucket)(perblock_bucket)(total_unpaid_blocks)(total_activated_stake)(
                                          thresh_activated_stake_time)
-                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(
-                                         last_block_time)(is_network_active))
+                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(is_network_active))
     };
 
     struct producer_info {
@@ -106,14 +102,6 @@ namespace eosiosystem {
         // explicit serialization macro is not necessary, used here only to improve compilation time
         EOSLIB_SERIALIZE(producer_info, (owner)(total_votes)(producer_key)(is_active)(url)
                 (unpaid_blocks)(last_claim_time)(location))
-    };
-
-    struct wood_info {
-        uint64_t wood = 0;
-        uint32_t block_number = 0;
-
-        // explicit serialization macro is not necessary, used here only to improve compilation time
-        EOSLIB_SERIALIZE(wood_info, (wood)(block_number))
     };
 
     struct voter_info {
@@ -153,11 +141,11 @@ namespace eosiosystem {
         uint64_t rowid = 0;
         account_name voter = 0; /// the voter
         uint32_t block_number = 0;
-        uint64_t wood = 0;
+        std::string wood;
 
         uint64_t primary_key() const { return rowid; }
 
-        uint128_t get_voter_wood() const { return ((uint128_t) voter) << 64 | (uint128_t) wood; }
+        uint128_t get_voter_block() const { return ((uint128_t) voter) << 64 | (uint128_t) block_number; }
 
         uint64_t get_block_number() const { return (uint64_t) block_number; }
 
@@ -196,7 +184,7 @@ namespace eosiosystem {
     typedef eosio::multi_index<N(voters), voter_info> voters_table;
 
     typedef eosio::multi_index<N(woodburns), wood_burn_info, indexed_by<N(
-            voter_wood), const_mem_fun<wood_burn_info, uint128_t, &wood_burn_info::get_voter_wood>>, indexed_by<N(
+            voter_block), const_mem_fun<wood_burn_info, uint128_t, &wood_burn_info::get_voter_block>>, indexed_by<N(
             block_number), const_mem_fun<wood_burn_info, uint64_t, &wood_burn_info::get_block_number>>> wood_burn_table;
 
     typedef eosio::multi_index<N(woodbpblocks), wood_burn_producer_block_stat, indexed_by<N(
@@ -300,7 +288,7 @@ namespace eosiosystem {
 
         void setproxy(const account_name voter_name, const account_name proxy_name);
 
-        void voteproducer(const account_name voter_name, const account_name wood_owner_name, const uint64_t wood,
+        void voteproducer(const account_name voter_name, const account_name wood_owner_name, std::string wood,
                           const uint32_t block_number, const account_name producer_name);
 
         void regproxy(const account_name proxy, bool isproxy);
@@ -319,7 +307,7 @@ namespace eosiosystem {
     private:
         void update_elected_producers(block_timestamp timestamp);
 
-        bool verify(const uint64_t wood, const uint32_t block_number, const account_name wood_owner_name);
+        bool verify(const std::string wood, const uint32_t block_number, const account_name wood_owner_name);
 
         uint32_t clean_dirty_stat_producers(uint32_t block_number, uint32_t maxline);
 
@@ -341,7 +329,7 @@ namespace eosiosystem {
         static eosio_global_state get_default_parameters();
 
         void update_vote(const account_name voter_name, const account_name wood_owner_name,
-                         const uint64_t wood, const uint32_t block_number, const account_name producer_name);
+                         const std::string wood, const uint32_t block_number, const account_name producer_name);
 
     };
 

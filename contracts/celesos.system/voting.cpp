@@ -145,44 +145,44 @@ namespace eosiosystem {
         }
     }
 
-    void system_contract::voteproducer(const account_name voter_name, const account_name wood_owner_name,
-                                       const uint64_t wood,
-                                       const uint32_t block_number, const account_name producer_name) {
+    void
+    system_contract::voteproducer(const account_name voter_name, const account_name wood_owner_name, const std::string wood,
+                                  const uint32_t block_number, const account_name producer_name) {
 
         require_auth(voter_name);
         system_contract::update_vote(voter_name, wood_owner_name, wood, block_number, producer_name);
     }
 
-    bool system_contract::verify(const uint64_t wood, const uint32_t block_number, const account_name wood_owner_name) {
+    bool system_contract::verify(const std::string wood, const uint32_t block_number, const account_name wood_owner_name) {
 
-        auto voter_wood = (((uint128_t) wood_owner_name) << 64 | (uint128_t) wood);
-        auto idx = _burninfos.get_index<N(voter_wood)>();
+        auto voter_block = (((uint128_t) wood_owner_name) << 64 | (uint128_t) block_number);
+        auto idx = _burninfos.get_index<N(voter_block)>();
 
-        auto itl = idx.lower_bound(voter_wood);
-        auto itu = idx.upper_bound(voter_wood);
+        auto itl = idx.lower_bound(voter_block);
+        auto itu = idx.upper_bound(voter_block);
 
         while (itl != itu) {
-            if (itl->block_number == block_number) {
+            if (itl->wood == wood) {
                 return false;
             }
             ++itl;
         }
 
-        if (block_number <= 100000 && wood <= 10000) {
+        if (block_number <= 100000) {
             return true;
         } else {
-            return verify_wood(block_number, wood_owner_name, wood);
+            return verify_wood(block_number, wood_owner_name, wood.c_str());
         }
 
     }
 
     void system_contract::update_vote(const account_name voter_name, const account_name wood_owner_name,
-                                      const uint64_t wood, const uint32_t block_number,
+                                      const std::string wood, const uint32_t block_number,
                                       const account_name producer_name) {
 
         //validate input
         eosio_assert(producer_name > 0, "cannot vote with no producer");
-        eosio_assert(wood > 0, "invalid wood 2");
+        eosio_assert(wood.length() > 0, "invalid wood 2");
 
 #if LOG_ENABLE
         eosio::print("voter:", voter_name, ",owner:", wood_owner_name, "wood:", wood, ",block:", block_number,
@@ -214,7 +214,7 @@ namespace eosiosystem {
         });
 
 #if LOG_ENABLE
-        eosio::print("add wood detail:", wood_owner_name, ",voter:", wood, ",block:", block_number, "\r\n");
+        eosio::print("add wood detail:", wood, ",voter:", owner, ",block:", block_number, "\r\n");
 #endif
 
         // 增加投票明细记录
@@ -286,20 +286,22 @@ namespace eosiosystem {
         }
 
         {
-            if (_gstate.last_block_time.slot > wood_period) {
+            uint32_t head_block_number = get_chain_head_num();
+
+            if (head_block_number > wood_period) {
 #if LOG_ENABLE
-                eosio::print("clean,slot:", _gstate.last_block_time.slot, ",period:", wood_period, "\r\n");
+                eosio::print("clean,head_block_number:", head_block_number, ",period:", wood_period, "\r\n");
 #endif
                 uint32_t max_clean_limit = 30;
-                uint32_t temp = (_gstate.last_block_time.slot - wood_period) % block_per_forest;
+                uint32_t temp = (head_block_number - wood_period) % block_per_forest;
 #if LOG_ENABLE
                 eosio::print("clean,temp:", temp, "\r\n");
 #endif
-                uint32_t remain = clean_dirty_stat_producers(_gstate.last_block_time.slot - temp, max_clean_limit);
+                uint32_t remain = clean_dirty_stat_producers(head_block_number - temp, max_clean_limit);
 #if LOG_ENABLE
                 eosio::print("clean,remain:", remain, "\r\n");
 #endif
-                clean_dirty_wood_history(_gstate.last_block_time.slot - temp, remain);
+                clean_dirty_wood_history(head_block_number - temp, remain);
             }
         }
     }
@@ -347,6 +349,9 @@ namespace eosiosystem {
 
                 if (producer != _producers.end()) {
                     _producers.modify(producer, 0, [&](auto &p) {
+#if LOG_ENABLE
+                        eosio::print("clean,total:", p.total_votes, ",this:", it->stat, "\r\n");
+#endif
                         p.total_votes = p.total_votes - it->stat;
                     });
                 }

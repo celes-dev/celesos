@@ -30,7 +30,7 @@ namespace celesos{
          static forest_bank* getInstance(eosio::chain::controller &control);
 
          bool get_forest(forest_struct& forest, const eosio::chain::account_name& account);
-         bool verify_wood(uint32_t block_number, const eosio::chain::account_name& account, uint64_t wood);
+         bool verify_wood(uint32_t block_number, const eosio::chain::account_name& account, const char* wood);
 
 
         private:
