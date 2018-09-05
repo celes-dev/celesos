@@ -55,10 +55,25 @@ namespace eosiosystem {
 #endif
 
         if (head_block_number >= wood_period) {
+#if LOG_ENABLE
+            eosio::print("head_block_number21:", head_block_number);
+#endif
             uint32_t temp = (head_block_number - wood_period) % block_per_forest;
+#if LOG_ENABLE
+            eosio::print("head_block_number22:", head_block_number);
+#endif
             set_difficulty(calc_diff(head_block_number - temp));
+#if LOG_ENABLE
+            eosio::print("head_block_number23:", head_block_number);
+#endif
             clean_diff_stat_history(head_block_number - temp);
+#if LOG_ENABLE
+            eosio::print("head_block_number24:", head_block_number);
+#endif
             clean_dirty_stat_producers(head_block_number - temp, 30);
+#if LOG_ENABLE
+            eosio::print("head_block_number25:", head_block_number);
+#endif
         }
 
 #if LOG_ENABLE
