@@ -450,12 +450,14 @@ namespace eosiosystem {
         if (current == _burnblockstatinfos.end()) {
 #if LOG_ENABLE
             eosio::print("insert:",targetdiff,"\r\n");
+            eosio::print("block_number:",block_number,"\r\n");
+            eosio::print("targetdiff:",targetdiff,"\r\n");
 #endif
-//            // payer is the system account
-//            _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
-//                p.block_number = block_number;
-//                p.diff = targetdiff;
-//            });
+            // payer is the system account
+            _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
+                p.block_number = block_number;
+                p.diff = targetdiff;
+            });
         }
 //        else {
 //            _burnblockstatinfos.modify(current, 0, [&](auto &p) {
