@@ -446,21 +446,21 @@ namespace eosiosystem {
 #if LOG_ENABLE
         eosio::print("diff.......4:",targetdiff);
 #endif
-        auto current = _burnblockstatinfos.find(block_number);
-        if (current == _burnblockstatinfos.end()) {
-            // payer is the system account
-            _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
-                p.block_number = block_number;
-                p.diff = targetdiff;
-            });
-        } else {
-            _burnblockstatinfos.modify(current, 0, [&](auto &p) {
-                p.diff = targetdiff;
-            });
-        }
-#if LOG_ENABLE
-        eosio::print("diff.......5:",targetdiff);
-#endif
+//        auto current = _burnblockstatinfos.find(block_number);
+//        if (current == _burnblockstatinfos.end()) {
+//            // payer is the system account
+//            _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
+//                p.block_number = block_number;
+//                p.diff = targetdiff;
+//            });
+//        } else {
+//            _burnblockstatinfos.modify(current, 0, [&](auto &p) {
+//                p.diff = targetdiff;
+//            });
+//        }
+//#if LOG_ENABLE
+//        eosio::print("diff.......5:",targetdiff);
+//#endif
         return targetdiff;
     }
 
