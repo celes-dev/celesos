@@ -50,12 +50,20 @@ namespace eosiosystem {
             }
         }
 
+#if LOG_ENABLE
+        eosio::print("head_block_number2:", head_block_number);
+#endif
+
         if (head_block_number >= wood_period) {
             uint32_t temp = (head_block_number - wood_period) % block_per_forest;
             set_difficulty(calc_diff(head_block_number - temp));
             clean_diff_stat_history(head_block_number - temp);
             clean_dirty_stat_producers(head_block_number - temp, 30);
         }
+
+#if LOG_ENABLE
+        eosio::print("head_block_number3:", head_block_number);
+#endif
 
         /// only update block producers once every minute, block_timestamp is in half seconds
         if (timestamp.slot - _gstate.last_producer_schedule_update.slot > 120) {
@@ -79,7 +87,9 @@ namespace eosiosystem {
                 }
             }
         }
-
+#if LOG_ENABLE
+        eosio::print("head_block_number4:", head_block_number);
+#endif
 
     }
 
