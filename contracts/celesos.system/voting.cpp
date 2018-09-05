@@ -438,14 +438,14 @@ namespace eosiosystem {
         eosio::print("diff.......wood1:",wood1,",wood2:",wood2,",wood3",wood3);
         eosio::print("diff.......diff1:",diff1,",diff2:",diff2,",diff3",diff3);
 #endif
-//        // Suppose the last 3 cycle,the diff is diff1,diff2,diff2, and the answers count is wood1,wood2,wood3
-//        // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
-//        // so suggest diff is:M/wood1*diff1*1/7+M/wood2*diif2*2/7+M/wood3*diff3*4/7,Simplified to M/7*(diff1/wood1+2*diif2/wood2+4*diff3/wood3)
-//        // 则建议难度值为M/wood1*diff1*1/7+M/wood2*diif2*2/7+M/wood3*diff3*4/7,简化为M/7*(diff1/wood1+2*diif2/wood2+4*diff3/wood3)
-//        auto targetdiff = ((double) target_wood_number) / 7 * (wood1 / diff1 * 4 + wood2 / diff2 * 2 + wood3 / diff3);
-//#if LOG_ENABLE
-//        eosio::print("diff.......4:");
-//#endif
+        // Suppose the last 3 cycle,the diff is diff1,diff2,diff2, and the answers count is wood1,wood2,wood3
+        // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
+        // so suggest diff is:M/wood1*diff1*1/7+M/wood2*diif2*2/7+M/wood3*diff3*4/7,Simplified to M/7*(diff1/wood1+2*diif2/wood2+4*diff3/wood3)
+        // 则建议难度值为M/wood1*diff1*1/7+M/wood2*diif2*2/7+M/wood3*diff3*4/7,简化为M/7*(diff1/wood1+2*diif2/wood2+4*diff3/wood3)
+        auto targetdiff = ((double) target_wood_number) / 7 * (wood1 / diff1 * 4 + wood2 / diff2 * 2 + wood3 / diff3);
+#if LOG_ENABLE
+        eosio::print("diff.......4:",targetdiff);
+#endif
 //        auto current = _burnblockstatinfos.find(block_number);
 //        if (current == _burnblockstatinfos.end()) {
 //            // payer is the system account
