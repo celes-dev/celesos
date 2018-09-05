@@ -66,7 +66,7 @@ namespace eosiosystem {
 #if LOG_ENABLE
             eosio::print("head_block_number2diff:", diff);
 #endif
-            set_difficulty(diff);
+//            set_difficulty(diff);
 #if LOG_ENABLE
             eosio::print("head_block_number23:", head_block_number);
 #endif
