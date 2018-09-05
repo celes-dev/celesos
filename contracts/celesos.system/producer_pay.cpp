@@ -26,21 +26,6 @@ namespace eosiosystem {
 
         require_auth(N(eosio));
 
-        uint32_t head_block_number = get_chain_head_num();
-
-#if LOG_ENABLE
-        eosio::print("head_block_number:", head_block_number);
-#endif
-
-        // payer is the system account
-        _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
-            p.block_number = head_block_number;
-            p.diff = 1.0f;
-        });
-
-
-
-
         /**
          * At startup the initial producer may not be one that is registered / elected
          * and therefore there may be no producer object for them.
@@ -59,39 +44,20 @@ namespace eosiosystem {
             }
         }
 
-#if LOG_ENABLE
-        eosio::print("head_block_number2:", head_block_number);
-#endif
+        uint32_t head_block_number = get_chain_head_num();
 
         if (head_block_number >= wood_period) {
-#if LOG_ENABLE
-            eosio::print("head_block_number21:", head_block_number);
-#endif
-            uint32_t temp = (head_block_number - wood_period) % block_per_forest;
-#if LOG_ENABLE
-            eosio::print("head_block_number22:", head_block_number);
-#endif
-            double diff = calc_diff(head_block_number - temp);
-#if LOG_ENABLE
-            eosio::print("head_block_number2diff:", diff);
-#endif
-            set_difficulty(diff);
-#if LOG_ENABLE
-            eosio::print("head_block_number23:", head_block_number);
-#endif
-            clean_diff_stat_history(head_block_number - temp);
-#if LOG_ENABLE
-            eosio::print("head_block_number24:", head_block_number);
-#endif
-            clean_dirty_stat_producers(head_block_number - temp, 30);
-#if LOG_ENABLE
-            eosio::print("head_block_number25:", head_block_number);
-#endif
-        }
+            uint32_t temp = (head_block_number + 10 - wood_period) % block_per_forest;
+            if (temp <= 10) {
+                clean_diff_stat_history(head_block_number - temp);
+                clean_dirty_stat_producers(head_block_number - temp, 30);
+            }
 
-#if LOG_ENABLE
-        eosio::print("head_block_number3:", head_block_number);
-#endif
+            if (temp == 10) {
+                double diff = calc_diff(head_block_number - temp);
+                set_difficulty(diff);
+            }
+        }
 
         /// only update block producers once every minute, block_timestamp is in half seconds
         if (timestamp.slot - _gstate.last_producer_schedule_update.slot > 120) {
@@ -115,10 +81,6 @@ namespace eosiosystem {
                 }
             }
         }
-#if LOG_ENABLE
-        eosio::print("head_block_number4:", head_block_number);
-#endif
-
     }
 
     using namespace eosio;

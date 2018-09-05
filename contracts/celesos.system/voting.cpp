@@ -422,9 +422,6 @@ namespace eosiosystem {
      */
     double system_contract::calc_diff(uint32_t block_number) {
 
-#if LOG_ENABLE
-        eosio::print("diff.......1:");
-#endif
         auto last1 = _burnblockstatinfos.find(block_number - block_per_forest);
         auto diff1 = ((last1 == _burnblockstatinfos.end()) ? 1 : last1->diff);
         auto wood1 = ((last1 == _burnblockstatinfos.end()) ? target_wood_number : last1->stat);
@@ -434,25 +431,14 @@ namespace eosiosystem {
         auto last3 = _burnblockstatinfos.find(block_number - 3 * block_per_forest);
         auto diff3 = ((last3 == _burnblockstatinfos.end()) ? 1 : last3->diff);
         auto wood3 = ((last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat);
-#if LOG_ENABLE
-        eosio::print("diff.......wood1:",wood1,",wood2:",wood2,",wood3",wood3);
-        eosio::print("diff.......diff1:",diff1,",diff2:",diff2,",diff3",diff3);
-#endif
+
         // Suppose the last 3 cycle,the diff is diff1,diff2,diff2, and the answers count is wood1,wood2,wood3
         // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
         // so suggest diff is:M/wood1*diff1*1/7+M/wood2*diif2*2/7+M/wood3*diff3*4/7,Simplified to M/7*(diff1/wood1+2*diif2/wood2+4*diff3/wood3)
         // 则建议难度值为M/wood1*diff1*1/7+M/wood2*diif2*2/7+M/wood3*diff3*4/7,简化为M/7*(diff1/wood1+2*diif2/wood2+4*diff3/wood3)
-        double targetdiff = ((double) target_wood_number) / 7 * (diff1 / wood1 * 4 + diff2 / wood2 * 2 + diff3 / wood3);
-#if LOG_ENABLE
-        eosio::print("diff.......4:",targetdiff,"\r\n");
-#endif
+        double targetdiff = ((double) target_wood_number) / 7 * (diff1 / (wood1 ? wood1 : 1) * 4 + diff2 / (wood2 ? wood2 : 1) * 2 + diff3 / (wood3 ? wood3 : 1));
         auto current = _burnblockstatinfos.find(block_number);
         if (current == _burnblockstatinfos.end()) {
-#if LOG_ENABLE
-            eosio::print("insert:",targetdiff,"\r\n");
-            eosio::print("block_number:",block_number,"\r\n");
-            eosio::print("targetdiff:",targetdiff,"\r\n");
-#endif
 //            // payer is the system account
 //            _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
 //                p.block_number = block_number;
@@ -464,9 +450,6 @@ namespace eosiosystem {
 //                p.diff = targetdiff;
 //            });
 //        }
-#if LOG_ENABLE
-        eosio::print("diff.......5:",targetdiff);
-#endif
         return targetdiff;
     }
 
