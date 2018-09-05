@@ -431,14 +431,14 @@ namespace eosiosystem {
 #if LOG_ENABLE
         eosio::print("diff.......2:");
 #endif
-//        auto diff1 = (last1 == _burnblockstatinfos.end()) ? 1 : last1->diff;
-//        auto wood1 = (last1 == _burnblockstatinfos.end()) ? target_wood_number : last1->stat;
-//        auto diff2 = (last2 == _burnblockstatinfos.end()) ? 1 : last2->diff;
-//        auto wood2 = (last2 == _burnblockstatinfos.end()) ? target_wood_number : last2->stat;
-//        auto diff3 = (last3 == _burnblockstatinfos.end()) ? 1 : last3->diff;
-//        auto wood3 = (last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat;
-//#if LOG_ENABLE
-//        eosio::print("diff.......3:");
+        auto diff1 = (last1 == _burnblockstatinfos.end()) ? 1 : last1->diff;
+        auto wood1 = (last1 == _burnblockstatinfos.end()) ? target_wood_number : last1->stat;
+        auto diff2 = (last2 == _burnblockstatinfos.end()) ? 1 : last2->diff;
+        auto wood2 = (last2 == _burnblockstatinfos.end()) ? target_wood_number : last2->stat;
+        auto diff3 = (last3 == _burnblockstatinfos.end()) ? 1 : last3->diff;
+        auto wood3 = (last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat;
+#if LOG_ENABLE
+        eosio::print("diff.......3:");
 //#endif
 //        // Suppose the last 3 cycle,the diff is diff1,diff2,diff2, and the answers count is wood1,wood2,wood3
 //        // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
@@ -463,7 +463,9 @@ namespace eosiosystem {
 //#if LOG_ENABLE
 //        eosio::print("diff.......5:");
 //#endif
-        return targetdiff;
+//        return targetdiff;
+
+        return 1;
     }
 
     void system_contract::clean_diff_stat_history(uint32_t block_number) {
