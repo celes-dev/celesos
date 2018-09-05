@@ -426,17 +426,19 @@ namespace eosiosystem {
         eosio::print("diff.......1:");
 #endif
         auto last1 = _burnblockstatinfos.find(block_number - block_per_forest);
-        auto last2 = _burnblockstatinfos.find(block_number - 2 * block_per_forest);
-        auto last3 = _burnblockstatinfos.find(block_number - 3 * block_per_forest);
+        auto diff1 = ((last1 == _burnblockstatinfos.end()) ? 1 : last1->diff);
+        auto wood1 = ((last1 == _burnblockstatinfos.end()) ? target_wood_number : last1->stat);
+
 #if LOG_ENABLE
         eosio::print("diff.......2:");
 #endif
-        auto diff1 = (last1 == _burnblockstatinfos.end()) ? 1 : last1->diff;
-        auto wood1 = (last1 == _burnblockstatinfos.end()) ? target_wood_number : last1->stat;
-        auto diff2 = (last2 == _burnblockstatinfos.end()) ? 1 : last2->diff;
-        auto wood2 = (last2 == _burnblockstatinfos.end()) ? target_wood_number : last2->stat;
-        auto diff3 = (last3 == _burnblockstatinfos.end()) ? 1 : last3->diff;
-        auto wood3 = (last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat;
+
+        auto last2 = _burnblockstatinfos.find(block_number - 2 * block_per_forest);
+        auto diff2 = ((last2 == _burnblockstatinfos.end()) ? 1 : last2->diff);
+        auto wood2 = ((last2 == _burnblockstatinfos.end()) ? target_wood_number : last2->stat);
+        auto last3 = _burnblockstatinfos.find(block_number - 3 * block_per_forest);
+        auto diff3 = ((last3 == _burnblockstatinfos.end()) ? 1 : last3->diff);
+        auto wood3 = ((last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat);
 #if LOG_ENABLE
         eosio::print("diff.......3:");
 #endif
