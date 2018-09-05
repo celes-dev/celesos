@@ -62,7 +62,11 @@ namespace eosiosystem {
 #if LOG_ENABLE
             eosio::print("head_block_number22:", head_block_number);
 #endif
-            set_difficulty(calc_diff(head_block_number - temp));
+            double diff = calc_diff(head_block_number - temp);
+#if LOG_ENABLE
+            eosio::print("head_block_number2diff:", diff);
+#endif
+            set_difficulty(diff);
 #if LOG_ENABLE
             eosio::print("head_block_number23:", head_block_number);
 #endif

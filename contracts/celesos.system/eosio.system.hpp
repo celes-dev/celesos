@@ -25,8 +25,8 @@
 
 namespace eosiosystem {
 
-    const uint32_t block_per_forest = 60; // one forest per 600 block
-    const uint32_t wood_period = 120; // wood's Validity period
+    const uint32_t block_per_forest = 30; // one forest per 600 block
+    const uint32_t wood_period = 60; // wood's Validity period
     const uint32_t target_wood_number = 500; // target wood count per cycle
 
     using eosio::asset;
