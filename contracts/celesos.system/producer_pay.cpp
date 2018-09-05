@@ -26,6 +26,12 @@ namespace eosiosystem {
 
         require_auth(N(eosio));
 
+        uint32_t head_block_number = get_chain_head_num();
+
+#if LOG_ENABLE
+        eosio::print("head_block_number:", head_block_number);
+#endif
+
         /**
          * At startup the initial producer may not be one that is registered / elected
          * and therefore there may be no producer object for them.
@@ -43,12 +49,6 @@ namespace eosiosystem {
                 });
             }
         }
-
-        uint32_t head_block_number = get_chain_head_num();
-
-#if LOG_ENABLE
-        eosio::print("head_block_number:", head_block_number);
-#endif
 
         if (head_block_number >= wood_period) {
             uint32_t temp = (head_block_number - wood_period) % block_per_forest;
