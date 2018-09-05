@@ -453,11 +453,11 @@ namespace eosiosystem {
             eosio::print("block_number:",block_number,"\r\n");
             eosio::print("targetdiff:",targetdiff,"\r\n");
 #endif
-            // payer is the system account
-            _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
-                p.block_number = block_number;
-                p.diff = targetdiff;
-            });
+//            // payer is the system account
+//            _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
+//                p.block_number = block_number;
+//                p.diff = targetdiff;
+//            });
         }
 //        else {
 //            _burnblockstatinfos.modify(current, 0, [&](auto &p) {
