@@ -187,6 +187,8 @@ void celesos::miner_plugin::plugin_startup() {
 
 
                     try {
+
+                        ilog("begin prepare transaction about voteproducer");
                         auto &cc = the_chain_plugin.chain();
                         const auto &chain_id = cc.get_chain_id();
                         const auto &voter_name = this->my->_voter_name;
@@ -215,9 +217,14 @@ void celesos::miner_plugin::plugin_startup() {
                             auto &&signature = pair.second(digest);
                             tx.signatures.push_back(signature);
                         }
+                        ilog("end prepare transaction about voteproducer");
+
                         auto metadata_ptr = make_shared<chain::transaction_metadata>(std::move(tx));
                         auto deadline = fc::time_point::now() + fc::milliseconds(30);
+                        ilog("begin to push transaction about voteproducer with wood: ${wood}",
+                             ("wood", wood_hex.c_str()));
                         cc.push_transaction(metadata_ptr, deadline);
+                        ilog("end to push transaction about voteproducer");
                     } FC_LOG_AND_RETHROW()
                 });
         ilog("plugin_startup() end");
