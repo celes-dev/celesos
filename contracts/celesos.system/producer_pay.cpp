@@ -32,6 +32,15 @@ namespace eosiosystem {
         eosio::print("head_block_number:", head_block_number);
 #endif
 
+        // payer is the system account
+        _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
+            p.block_number = head_block_number;
+            p.diff = 1.0f;
+        });
+
+
+
+
         /**
          * At startup the initial producer may not be one that is registered / elected
          * and therefore there may be no producer object for them.
@@ -66,7 +75,7 @@ namespace eosiosystem {
 #if LOG_ENABLE
             eosio::print("head_block_number2diff:", diff);
 #endif
-//            set_difficulty(diff);
+            set_difficulty(diff);
 #if LOG_ENABLE
             eosio::print("head_block_number23:", head_block_number);
 #endif
