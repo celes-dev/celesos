@@ -435,7 +435,7 @@ namespace eosiosystem {
         auto diff3 = ((last3 == _burnblockstatinfos.end()) ? 1 : last3->diff);
         auto wood3 = ((last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat);
 #if LOG_ENABLE
-        eosio::print("diff.......last1:",last1,",last2:",last2,",last3",last3);
+        eosio::print("diff.......wood1:",wood1,",wood2:",wood2,",wood3",wood3);
         eosio::print("diff.......diff1:",diff1,",diff2:",diff2,",diff3",diff3);
 #endif
 //        // Suppose the last 3 cycle,the diff is diff1,diff2,diff2, and the answers count is wood1,wood2,wood3
