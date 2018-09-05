@@ -216,14 +216,18 @@ void celesos::miner_plugin::plugin_startup() {
                             auto &&digest = tx.sig_digest(chain_id, tx.context_free_data);
                             auto &&signature = pair.second(digest);
                             tx.signatures.push_back(signature);
+
+                            ilog("sign..sign ..sign..");
+
                         }
                         ilog("end prepare transaction about voteproducer");
 
                         auto metadata_ptr = make_shared<chain::transaction_metadata>(std::move(tx));
                         auto deadline = fc::time_point::now() + fc::milliseconds(30);
                         ilog("begin to push transaction about voteproducer with wood: ${wood}",
-                             ("wood", wood_hex.c_str()));
+                             ("wood", wood_hex));
                         cc.push_transaction(metadata_ptr, deadline);
+
                         ilog("end to push transaction about voteproducer");
                     } FC_LOG_AND_RETHROW()
                 });
