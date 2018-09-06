@@ -20,7 +20,7 @@
 #include <cmath>
 
 #include <stdio.h>
-#include <sys/time.h>
+#include <time.h>
 
 namespace eosiosystem {
     using eosio::indexed_by;
