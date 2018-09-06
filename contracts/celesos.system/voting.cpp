@@ -480,7 +480,7 @@ namespace eosiosystem {
     }
 
 
-    long getCurrentTime()
+    long system_contract::getCurrentTime()
     {
         long long time_last;
         time_last = time(NULL);

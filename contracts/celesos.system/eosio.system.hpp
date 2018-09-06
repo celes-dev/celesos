@@ -319,6 +319,8 @@ namespace eosiosystem {
 
         double calc_diff(uint32_t block_number, account_name producer);
 
+        long getCurrentTime();
+
         // Implementation details:
 
         //defind in delegate_bandwidth.cpp
