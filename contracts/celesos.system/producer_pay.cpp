@@ -46,6 +46,10 @@ namespace eosiosystem {
 
         uint32_t head_block_number = get_chain_head_num();
 
+#if LOG_ENABLE
+        eosio::print("producer",producer,",blockNum=",head_block_number,"\r\n");
+#endif
+
         if (head_block_number >= wood_period) {
             uint32_t temp = (head_block_number + 10 - wood_period) % block_per_forest;
             if (temp <= 10) {
