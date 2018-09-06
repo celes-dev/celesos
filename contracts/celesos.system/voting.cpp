@@ -467,6 +467,9 @@ namespace eosiosystem {
         }
 
         for (auto temp : stat_vector) {
+#if LOG_ENABLE
+            eosio::print("clean_stat:",temp.block_number);
+#endif
             _burnblockstatinfos.erase(temp);
         }
     }
