@@ -421,17 +421,17 @@ namespace eosiosystem {
      * @return sugeest diff
      */
     double system_contract::calc_diff(uint32_t block_number, account_name producer) {
-//
-//        auto last1 = _burnblockstatinfos.find(block_number - block_per_forest);
-//        auto diff1 = ((last1 == _burnblockstatinfos.end()) ? 1 : last1->diff);
-//        auto wood1 = ((last1 == _burnblockstatinfos.end()) ? target_wood_number : last1->stat);
-//        auto last2 = _burnblockstatinfos.find(block_number - 2 * block_per_forest);
-//        auto diff2 = ((last2 == _burnblockstatinfos.end()) ? 1 : last2->diff);
-//        auto wood2 = ((last2 == _burnblockstatinfos.end()) ? target_wood_number : last2->stat);
-//        auto last3 = _burnblockstatinfos.find(block_number - 3 * block_per_forest);
-//        auto diff3 = ((last3 == _burnblockstatinfos.end()) ? 1 : last3->diff);
-//        auto wood3 = ((last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat);
-//
+
+        auto last1 = _burnblockstatinfos.find(block_number - block_per_forest);
+        auto diff1 = ((last1 == _burnblockstatinfos.end()) ? 1 : last1->diff);
+        auto wood1 = ((last1 == _burnblockstatinfos.end()) ? target_wood_number : last1->stat);
+        auto last2 = _burnblockstatinfos.find(block_number - 2 * block_per_forest);
+        auto diff2 = ((last2 == _burnblockstatinfos.end()) ? 1 : last2->diff);
+        auto wood2 = ((last2 == _burnblockstatinfos.end()) ? target_wood_number : last2->stat);
+        auto last3 = _burnblockstatinfos.find(block_number - 3 * block_per_forest);
+        auto diff3 = ((last3 == _burnblockstatinfos.end()) ? 1 : last3->diff);
+        auto wood3 = ((last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat);
+
 //        // Suppose the last 3 cycle,the diff is diff1,diff2,diff2, and the answers count is wood1,wood2,wood3
 //        // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
 //        // so suggest diff is:M/wood1*diff1*1/7+M/wood2*diif2*2/7+M/wood3*diff3*4/7,Simplified to M/7*(diff1/wood1+2*diif2/wood2+4*diff3/wood3)
