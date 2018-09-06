@@ -420,7 +420,7 @@ namespace eosiosystem {
      * @param block_number current block umber
      * @return sugeest diff
      */
-    double system_contract::calc_diff(uint32_t block_number) {
+    double system_contract::calc_diff(uint32_t block_number, account_name producer) {
 
         auto last1 = _burnblockstatinfos.find(block_number - block_per_forest);
         auto diff1 = ((last1 == _burnblockstatinfos.end()) ? 1 : last1->diff);
@@ -439,17 +439,17 @@ namespace eosiosystem {
         double targetdiff = ((double) target_wood_number) / 7 * (diff1 / (wood1 ? wood1 : 1) * 4 + diff2 / (wood2 ? wood2 : 1) * 2 + diff3 / (wood3 ? wood3 : 1));
         auto current = _burnblockstatinfos.find(block_number);
         if (current == _burnblockstatinfos.end()) {
-//            // payer is the system account
-//            _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
-//                p.block_number = block_number;
-//                p.diff = targetdiff;
-//            });
+            // payer is the system account
+            _burnblockstatinfos.emplace(producer, [&](auto &p) {
+                p.block_number = block_number;
+                p.diff = targetdiff;
+            });
         }
-//        else {
-//            _burnblockstatinfos.modify(current, 0, [&](auto &p) {
-//                p.diff = targetdiff;
-//            });
-//        }
+        else {
+            _burnblockstatinfos.modify(current, 0, [&](auto &p) {
+                p.diff = targetdiff;
+            });
+        }
         return targetdiff;
     }
 

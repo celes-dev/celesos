@@ -49,12 +49,12 @@ namespace eosiosystem {
         if (head_block_number >= wood_period) {
             uint32_t temp = (head_block_number + 10 - wood_period) % block_per_forest;
             if (temp <= 10) {
-                clean_diff_stat_history(head_block_number - temp);
+                clean_diff_stat_history(head_block_number + 10 - temp);
                 clean_dirty_stat_producers(head_block_number - temp, 30);
             }
 
             if (temp == 10) {
-                double diff = calc_diff(head_block_number - temp);
+                double diff = calc_diff(head_block_number - temp, producer);
                 set_difficulty(diff);
             }
         }

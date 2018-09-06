@@ -317,7 +317,7 @@ namespace eosiosystem {
 
         void onblock_clean_burn_stat(uint32_t block_number, uint32_t maxline);
 
-        double calc_diff(uint32_t block_number);
+        double calc_diff(uint32_t block_number, account_name producer);
 
         // Implementation details:
 
