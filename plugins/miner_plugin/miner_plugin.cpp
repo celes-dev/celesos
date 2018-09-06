@@ -196,6 +196,8 @@ void celesos::miner_plugin::plugin_startup() {
                         std::string wood_hex{130, char{}, std::string::allocator_type{}};
                         ethash::uint256_to_hex(wood_hex, wood_opt.get());
 
+                        ilog("wood...wood...wood:{wood}",("wood",wood_opt.get()));
+
                         chain::signed_transaction tx{};
                         vector<chain::permission_level> auth{{voter_name, "active"}};
                         const auto &code = chain::config::system_account_name;
