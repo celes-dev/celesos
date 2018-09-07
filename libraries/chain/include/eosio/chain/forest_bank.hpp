@@ -45,7 +45,7 @@ namespace celesos{
 
          forest_struct forest_data;
          std::pair<uint32_t,std::vector<celesos::ethash::node>> *first_cache_pair;
-         std::pair<uint32_t,std::vector<celesos::ethash::node>> *second_scahe_pair;
+         std::pair<uint32_t,std::vector<celesos::ethash::node>> *second_cache_pair;
      };
     }
 }

@@ -72,8 +72,8 @@ namespace celesos{
                 std::vector<celesos::ethash::node> cache_data;
                 if(cache_number == first_cache_pair->first){
                     cache_data = first_cache_pair->second;
-                }else if(cache_number == second_scahe_pair->first){
-                    cache_data = second_scahe_pair->second;
+                }else if(cache_number == second_cache_pair->first){
+                    cache_data = second_cache_pair->second;
                 }else{
                     //not found matched period
                     return false;
@@ -104,10 +104,10 @@ namespace celesos{
             if(celesos::ethash::calc_cache(node_vector,dataset_count,seed.str())){
                 if(!(first_cache_pair->second.empty()))
                 {
-                    if(!(second_scahe_pair->second.empty())){
-                        second_scahe_pair->second.clear();
+                    if(!(second_cache_pair->second.empty())){
+                        second_cache_pair->second.clear();
                     }
-                    second_scahe_pair = first_cache_pair;
+                    second_cache_pair = first_cache_pair;
                 }
 
                 std::pair<uint32_t,std::vector<celesos::ethash::node>> temp_cache = std::make_pair(current_cache_number, node_vector);
