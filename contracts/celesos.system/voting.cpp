@@ -173,7 +173,7 @@ namespace eosiosystem {
             ++itl;
         }
 
-        if (block_number <= 100000) {
+        if (block_number <= 60) {
             return true;
         } else {
             return verify_wood(block_number, wood_owner_name, wood.c_str());
@@ -471,7 +471,7 @@ namespace eosiosystem {
         for (auto temp : wood_vector) {
             auto itr = _burninfos.find(temp.rowid);
             if (itr != _burninfos.end()) {
-                _burninfos.erase(temp);
+                _burninfos.erase(itr);
             }
         }
 
