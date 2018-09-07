@@ -487,9 +487,9 @@ namespace eosiosystem {
         }
 
         for (auto temp : stat_vector) {
-            auto itr = _burninfos.find(temp.block_number);
-            if (itr != _burninfos.end()) {
-                _burninfos.erase(itr);
+            auto itr = _burnblockstatinfos.find(temp.block_number);
+            if (itr != _burnblockstatinfos.end()) {
+                _burnblockstatinfos.erase(itr);
             } else {
 #if LOG_ENABLE
                 eosio::print("clean_stat failed:", temp.block_number);
