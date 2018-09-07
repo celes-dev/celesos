@@ -447,7 +447,7 @@ namespace eosiosystem {
 //            _burnblockstatinfos.emplace(producer, [&](auto &p) {
 //                p.block_number = block_number;
 //                p.diff = targetdiff;
-            });
+//            });
         } else {
             _burnblockstatinfos.modify(current, 0, [&](auto &p) {
                 p.diff = targetdiff;
