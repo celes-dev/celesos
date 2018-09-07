@@ -71,16 +71,14 @@ void celesos::miner::worker::run() {
 
         if (ethash::hash_full(forest, nonce_current, dataset_count, dataset) <= target) {
             wood_opt = nonce_current;
-            break;
+            this->_ctx.io_service_ptr->post(
+                    [signal = this->_ctx.signal_ptr, block_num = this->_ctx.block_num, wood_opt = wood_opt]() {
+                        auto is_success = !!wood_opt;
+                        (*signal)(std::move(is_success), block_num, wood_opt);
+                    });
         }
         ++nonce_current;
     } while (--retry_count > 0);
-
-    this->_ctx.io_service_ptr->post(
-            [signal = this->_ctx.signal_ptr, block_num = this->_ctx.block_num, wood_opt = wood_opt]() {
-                auto is_success = !!wood_opt;
-                (*signal)(std::move(is_success), block_num, wood_opt);
-            });
 
     ilog("end run() on thread: ${t_id}", ("t_id", thread_id));
 }

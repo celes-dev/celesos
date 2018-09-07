@@ -12,15 +12,22 @@ namespace celesos{
     using namespace chain;
     namespace forest {
         static uint32_t question_space_number = 600;//问题间隔块数
+<<<<<<< HEAD
 //        static uint32_t question_period = 21600;//问题有效期
         uint256_t original_target("0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+=======
+        static uint32_t question_period = 21600;//问题有效期
+        uint256_t original_target("0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+>>>>>>> 98d960925cd36a5a55846ff6bea01e74a0ee7a7c
 
         uint32_t dataset_count(){
-            return 16777216;
+//            return 1024*1024*1024/64;
+            return 512*16;
+
         }
         uint32_t cache_count(){
-            //1024*10248*16/64
-            return 262144;
+//            return 1024*1024*16/64;
+            return 512;
         }
 
         static forest_bank *instance = nullptr;
@@ -48,7 +55,7 @@ namespace celesos{
             return result_value;
         }
 
-        bool forest_bank::verify_wood(uint32_t block_number, const account_name& account, const uint64_t wood){
+        bool forest_bank::verify_wood(uint32_t block_number, const account_name& account, const char* wood){
             uint32_t current_block_number = chain.head_block_num();
             if(block_number <= current_block_number - forest_period_number()){
                 //wood is past due
@@ -80,7 +87,7 @@ namespace celesos{
                 block_id_type wood_forest = fc::sha256::hash(block_id.str()+account.to_string());
                 uint32_t data_set_count = dataset_count();
                 //call ethash verify wood
-                auto result_value = celesos::ethash::hash_light(wood_forest,wood,data_set_count,cache_data);
+                auto result_value = celesos::ethash::hash_light_hex(wood_forest,string(wood),data_set_count,cache_data);
 
                 return result_value <= target;
             }

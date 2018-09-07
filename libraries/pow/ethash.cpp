@@ -2,10 +2,10 @@
 // Created by yale on 7/26/18.
 //
 
-#include "celesos/pow/ethash.hpp"
-#include "openssl/sha.h"
-#include "boost/endian/conversion.hpp"
-#include "boost/predef.h"
+#include <celesos/pow/ethash.hpp>
+#include <openssl/sha.h>
+#include <boost/endian/conversion.hpp>
+#include <boost/predef.h>
 
 using std::string;
 using std::vector;
@@ -191,23 +191,63 @@ namespace celesos {
         }
 
         uint256_t hash_light(const string &forest,
-                             const boost::multiprecision::uint256_t &nonce,
+                             const boost::multiprecision::uint256_t &wood,
                              uint32_t dataset_count,
                              const vector<node> &cache) {
             auto dataset_lookup = [&cache](uint32_t x) {
                 return calc_dataset_item(cache, x);
             };
-            return hash_impl(forest, nonce, dataset_count, dataset_lookup);
+            return hash_impl(forest, wood, dataset_count, dataset_lookup);
         }
 
         uint256_t hash_full(const string &forest,
-                            const boost::multiprecision::uint256_t &nonce,
+                            const boost::multiprecision::uint256_t &wood,
                             uint32_t dataset_count,
                             const vector<node> &dataset) {
             auto dataset_lookup = [dataset_count, &dataset](uint32_t x) {
                 return dataset[x];
             };
-            return hash_impl(forest, nonce, dataset_count, dataset_lookup);
+            return hash_impl(forest, wood, dataset_count, dataset_lookup);
+        }
+
+        bool uint256_to_hex(std::string &dst, const uint256_t &src) {
+            std::stringstream buffer{};
+            buffer << std::hex << std::showbase << src;
+            dst.resize(130);    // 2 char for base, 128 for value
+            buffer.str(dst);
+            return true;
+        }
+
+        bool hex_to_uint256(uint256_t &dst, const std::string &src) {
+            if (src.size() != 130) {
+                return false;
+            }
+            dst = uint256_t{src};
+            return true;
+        }
+
+        uint256_t hash_light_hex(const string &forest,
+                                 const std::string &wood_hex,
+                                 uint32_t dataset_count,
+                                 const vector<node> &cache) {
+            auto dataset_lookup = [&cache](uint32_t x) {
+                return calc_dataset_item(cache, x);
+            };
+            boost::multiprecision::uint256_t wood{};
+            hex_to_uint256(wood, wood_hex);
+            return hash_impl(forest, wood, dataset_count, dataset_lookup);
+        }
+
+        uint256_t hash_full_hex(const string &forest,
+                                const std::string &wood_hex,
+                                uint32_t dataset_count,
+                                const vector<node> &dataset) {
+            auto dataset_lookup = [dataset_count, &dataset](uint32_t x) {
+                return dataset[x];
+            };
+            boost::multiprecision::uint256_t wood{};
+            hex_to_uint256(wood, wood_hex);
+            return hash_impl(forest, wood, dataset_count, dataset_lookup);
         }
     }
 }

@@ -176,15 +176,27 @@ void celesos::miner_plugin::plugin_startup() {
                 [this, &the_chain_plugin](auto is_success,
                                           auto block_num,
                                           const auto &wood_opt) {
+                    ilog("Receive mine callback with is_success: ${is_success} block_num: ${block_num}",
+                         ("is_success", is_success)("block_num", block_num));
+
+                    //TODO 考虑系统合约未安装的情况
                     if (!is_success) {
                         //TODO 完善算不出hash的流程
                         return;
                     }
+
+
                     try {
+
+                        ilog("begin prepare transaction about voteproducer");
                         auto &cc = the_chain_plugin.chain();
                         const auto &chain_id = cc.get_chain_id();
                         const auto &voter_name = this->my->_voter_name;
                         const auto &producer_name = this->my->_producer_name;
+                        std::string wood_hex{130, char{}, std::string::allocator_type{}};
+                        ethash::uint256_to_hex(wood_hex, wood_opt.get());
+
+                        ilog("wood...wood...wood:${wood},hex:${hex}",("wood",wood_opt.get())("hex",wood_hex));
 
                         chain::signed_transaction tx{};
                         vector<chain::permission_level> auth{{voter_name, "active"}};
@@ -192,10 +204,9 @@ void celesos::miner_plugin::plugin_startup() {
                         chain::action_name action{"voteproducer"};
                         auto args = fc::mutable_variant_object{}
                                 ("voter_name", voter_name)
-                                ("woodowner_name", voter_name)
-                                ("wood_info", fc::mutable_variant_object{}
-                                        ("block_number", block_num)
-                                        ("wood", wood_opt.get()))
+                                ("wood_owner_name", voter_name)
+                                ("wood", wood_hex)
+                                ("block_number", block_num)
                                 ("producer_name", producer_name);
                         auto a_action = miner_plugin_impl::create_action(the_chain_plugin,
                                                                          std::move(auth), code,
@@ -207,7 +218,19 @@ void celesos::miner_plugin::plugin_startup() {
                             auto &&digest = tx.sig_digest(chain_id, tx.context_free_data);
                             auto &&signature = pair.second(digest);
                             tx.signatures.push_back(signature);
+
+                            ilog("sign..sign ..sign..");
+
                         }
+                        ilog("end prepare transaction about voteproducer");
+
+                        auto metadata_ptr = make_shared<chain::transaction_metadata>(std::move(tx));
+                        auto deadline = fc::time_point::now() + fc::milliseconds(30);
+                        ilog("begin to push transaction about voteproducer with wood: ${wood}",
+                             ("wood", wood_hex));
+                        cc.push_transaction(metadata_ptr, deadline);
+
+                        ilog("end to push transaction about voteproducer");
                     } FC_LOG_AND_RETHROW()
                 });
         ilog("plugin_startup() end");

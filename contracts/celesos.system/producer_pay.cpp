@@ -2,11 +2,13 @@
 
 #include <eosio.token/eosio.token.hpp>
 #include <eosiolib/chain.h>
+#include <eosiolib/forest_bank.h>
 
 namespace eosiosystem {
 
     const int64_t min_pervote_daily_pay = 100'0000;
-    const int64_t min_activated_stake = 150'000'000'0000;
+//    const int64_t min_activated_stake = 150'000'000'0000;
+    const int64_t min_activated_stake = 1;
     const double continuous_rate = 0.04879;          // 5% annual rate
     const double perblock_rate = 0.0025;           // 0.25%
     const double standby_rate = 0.0075;           // 0.75%
@@ -24,55 +26,60 @@ namespace eosiosystem {
 
         require_auth(N(eosio));
 
-        /** until activated stake crosses this threshold no new rewards are paid */
-        if (_gstate.total_activated_stake < min_activated_stake)
-            return;
-
-        if (_gstate.last_pervote_bucket_fill == 0)  /// start the presses
-            _gstate.last_pervote_bucket_fill = current_time();
-
-
         /**
          * At startup the initial producer may not be one that is registered / elected
          * and therefore there may be no producer object for them.
          */
-        auto prod = _producers.find(producer);
-        if (prod != _producers.end()) {
-            _gstate.total_unpaid_blocks++;
-            _producers.modify(prod, 0, [&](auto &p) {
-                p.unpaid_blocks++;
-            });
+        if (_gstate.is_network_active) {
+
+            if (_gstate.last_pervote_bucket_fill == 0)  /// start the presses
+                _gstate.last_pervote_bucket_fill = current_time();
+
+            auto prod = _producers.find(producer);
+            if (prod != _producers.end()) {
+                _gstate.total_unpaid_blocks++;
+                _producers.modify(prod, 0, [&](auto &p) {
+                    p.unpaid_blocks++;
+                });
+            }
         }
 
-        uint32_t temp = (timestamp.slot - wood_period) % block_per_forest;
+        uint32_t head_block_number = get_chain_head_num();
+        if (head_block_number % block_per_forest == 0) {
+            double diff = calc_diff(head_block_number, producer);
+            set_difficulty(diff);
+        }
 
-        if (temp == 0) {
-            set_difficulty(calc_diff(timestamp.slot - temp));
-            clean_diff_stat_history(timestamp.slot - temp);
+        if (head_block_number >= wood_period) {
+            uint32_t temp = (head_block_number + 10 - wood_period) % block_per_forest;
+            if (temp <= 10) {
+                clean_diff_stat_history(head_block_number + 10 - temp);
+                clean_dirty_stat_producers(head_block_number - temp, 30);
+            }
         }
 
         /// only update block producers once every minute, block_timestamp is in half seconds
         if (timestamp.slot - _gstate.last_producer_schedule_update.slot > 120) {
             update_elected_producers(timestamp);
 
-            if ((timestamp.slot - _gstate.last_name_close.slot) > blocks_per_day) {
-                name_bid_table bids(_self, _self);
-                auto idx = bids.get_index<N(highbid)>();
-                auto highest = idx.begin();
-                if (highest != idx.end() &&
-                    highest->high_bid > 0 &&
-                    highest->last_bid_time < (current_time() - useconds_per_day) &&
-                    _gstate.thresh_activated_stake_time > 0 &&
-                    (current_time() - _gstate.thresh_activated_stake_time) > 14 * useconds_per_day) {
-                    _gstate.last_name_close = timestamp;
-                    idx.modify(highest, 0, [&](auto &b) {
-                        b.high_bid = -b.high_bid;
-                    });
+            if (_gstate.is_network_active) {
+                if ((timestamp.slot - _gstate.last_name_close.slot) > blocks_per_day) {
+                    name_bid_table bids(_self, _self);
+                    auto idx = bids.get_index<N(highbid)>();
+                    auto highest = idx.begin();
+                    if (highest != idx.end() &&
+                        highest->high_bid > 0 &&
+                        highest->last_bid_time < (current_time() - useconds_per_day) &&
+                        _gstate.thresh_activated_stake_time > 0 &&
+                        (current_time() - _gstate.thresh_activated_stake_time) > 14 * useconds_per_day) {
+                        _gstate.last_name_close = timestamp;
+                        idx.modify(highest, 0, [&](auto &b) {
+                            b.high_bid = -b.high_bid;
+                        });
+                    }
                 }
             }
         }
-
-        _gstate.last_block_time = timestamp;
     }
 
     using namespace eosio;
@@ -83,8 +90,8 @@ namespace eosiosystem {
         const auto &prod = _producers.get(owner);
         eosio_assert(prod.active(), "producer does not have an active key");
 
-        eosio_assert(_gstate.total_activated_stake >= min_activated_stake,
-                     "cannot claim rewards until the chain is activated (at least 15% of all tokens participate in voting)");
+        eosio_assert(_gstate.is_network_active,
+                     "the network is not actived");
 
         auto ct = current_time();
 

@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(verify_wood_test)
         auto &control = *tester_opt->control;
 
         celesos::forest::forest_bank *forest_bank = celesos::forest::forest_bank::getInstance(control);
-        bool isRight = forest_bank->verify_wood(1,123,123456789);
+        bool isRight = forest_bank->verify_wood(1,123,"abcde");
         BOOST_REQUIRE(&isRight);
 
     }
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(verify_wood_test)
         celesos::forest::forest_struct forest = {};
 
         celesos::forest::forest_bank *forest_bank = celesos::forest::forest_bank::getInstance(control);
-        bool isRight = forest_bank->get_forest(forest,123456789);
+        bool isRight = forest_bank->get_forest(forest,"abcde");
         BOOST_REQUIRE(&forest);
         BOOST_REQUIRE(&isRight);
     }

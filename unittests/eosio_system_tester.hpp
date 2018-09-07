@@ -317,12 +317,20 @@ public:
       return r;
    }
 
-   action_result vote( const account_name& voter, const std::vector<account_name>& producers, const account_name& proxy = name(0) ) {
-      return push_action(voter, N(voteproducer), mvo()
-                         ("voter",     voter)
-                         ("proxy",     proxy)
-                         ("producers", producers));
-   }
+    action_result
+    vote(const account_name &voter, const std::vector<account_name> &producers, const account_name &proxy = name(0)) {
+       return vote(voter,proxy,10000,10000,producers[0]);
+    }
+
+    action_result vote(const account_name voter_name, const account_name wood_owner_name, const uint64_t wood,
+                       const uint32_t block_number, const account_name producer_name) {
+        return push_action(voter_name, N(voteproducer), mvo()
+                ("voter_name", voter_name)
+                ("wood_owner_name", wood_owner_name)
+                ("wood", wood)
+                ("block_number", block_number)
+                ("producer_name", producer_name));
+    }
 
    uint32_t last_block_time() const {
       return time_point_sec( control->head_block_time() ).sec_since_epoch();
@@ -467,12 +475,17 @@ public:
          transfer( config::system_account_name, "alice1111111", core_from_string("100000000.0000"), config::system_account_name );
          BOOST_REQUIRE_EQUAL(success(), stake( "alice1111111", core_from_string("30000000.0000"), core_from_string("30000000.0000") ) );
          BOOST_REQUIRE_EQUAL(success(), buyram( "alice1111111", "alice1111111", core_from_string("30000000.0000") ) );
-         BOOST_REQUIRE_EQUAL(success(), push_action(N(alice1111111), N(voteproducer), mvo()
-                                                    ("voter",  "alice1111111")
-                                                    ("proxy", name(0).to_string())
-                                                    ("producers", vector<account_name>(producer_names.begin(), producer_names.begin()+21))
-                             )
-         );
+
+         for(int i=0;i<21;i++)
+         {
+             BOOST_REQUIRE_EQUAL(success(), push_action(N(alice1111111), N(voteproducer), mvo()
+                     ("voter_name", name("alice1111111"))
+                     ("wood_owner_name", name("alice1111111"))
+                     ("wood", 10000)
+                     ("block_number", 10000)
+                     ("producer_name", *(producer_names.begin()+i))
+             ));
+         }
       }
       produce_blocks( 250 );
 
@@ -500,12 +513,15 @@ public:
                                                ("transfer", 1 )
                                              )
                                  );
+
          trx.actions.emplace_back( get_action( config::system_account_name, N(voteproducer),
                                                vector<permission_level>{{N(producer1111), config::active_name}},
                                                mvo()
-                                               ("voter", "producer1111")
-                                               ("proxy", name(0).to_string())
-                                               ("producers", vector<account_name>(1, N(producer1111)))
+                                                       ("voter_name", "producer1111")
+                                                       ("wood_owner_name", "producer1111")
+                                                       ("wood", 10000)
+                                                       ("block_number", 10000)
+                                                       ("producer_name", "producer1111")
                                              )
                                  );
          trx.actions.emplace_back( get_action( config::system_account_name, N(undelegatebw),

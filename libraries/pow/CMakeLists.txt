@@ -1,5 +1,5 @@
 
-file(GLOB MY_HEADERS "include/eosio/test/*.hpp")
+file(GLOB MY_HEADERS "include/celesos/pow/*.hpp")
 
 set(MY_SOURCES ethash.cpp)
 

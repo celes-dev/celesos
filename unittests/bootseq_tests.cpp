@@ -249,11 +249,15 @@ BOOST_FIXTURE_TEST_CASE( bootseq_test, bootseq_tester ) {
         // Vote for producers
         auto votepro = [&]( account_name voter, vector<account_name> producers ) {
           std::sort( producers.begin(), producers.end() );
-          base_tester::push_action(N(eosio), N(voteproducer), voter, mvo()
-                                ("voter",  name(voter))
-                                ("proxy", name(0) )
-                                ("producers", producers)
-                     );
+
+            for (auto producer : producers) {
+                base_tester::push_action(N(eosio), N(voteproducer), voter, mvo()
+                        ("voter_name", voter)
+                        ("wood_owner_name", voter)
+                                ("wood", 10000)
+                                ("block_number", 10000)
+                                ("producer_name", producer));
+            }
         };
         votepro( N(b1), { N(proda), N(prodb), N(prodc), N(prodd), N(prode), N(prodf), N(prodg),
                            N(prodh), N(prodi), N(prodj), N(prodk), N(prodl), N(prodm), N(prodn),

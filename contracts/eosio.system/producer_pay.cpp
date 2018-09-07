@@ -71,7 +71,7 @@ namespace eosiosystem {
       const auto& prod = _producers.get( owner );
       eosio_assert( prod.active(), "producer does not have an active key" );
 
-      eosio_assert( _gstate.total_activated_stake >= min_activated_stake,
+      eosio_assert( _gstate.is_network_active,
                     "cannot claim rewards until the chain is activated (at least 15% of all tokens participate in voting)" );
 
       auto ct = current_time();
