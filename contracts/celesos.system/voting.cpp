@@ -487,17 +487,15 @@ namespace eosiosystem {
         }
 
         for (auto temp : stat_vector) {
+            auto itr = _burninfos.find(temp.block_number);
+            if (itr != _burninfos.end()) {
+                _burninfos.erase(itr);
+            } else {
 #if LOG_ENABLE
-            eosio::print("try to delete block:",temp.block_number);
+                eosio::print("clean_stat failed:", temp.block_number);
 #endif
+            }
         }
-
-//        for (auto temp : stat_vector) {
-//#if LOG_ENABLE
-//            eosio::print("clean_stat:",temp.block_number);
-//#endif
-//            _burnblockstatinfos.erase(temp);
-//        }
     }
 
     uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
