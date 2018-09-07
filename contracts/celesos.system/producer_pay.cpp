@@ -50,17 +50,17 @@ namespace eosiosystem {
         print("block:", head_block_number);
 #endif
 
+        if (head_block_number % block_per_forest == 0) {
+            double diff = calc_diff(head_block_number, producer);
+            set_difficulty(diff);
+        }
+
         if (head_block_number >= wood_period) {
             uint32_t temp = (head_block_number + 10 - wood_period) % block_per_forest;
             if (temp <= 10) {
                 clean_diff_stat_history(head_block_number + 10 - temp);
                 clean_dirty_stat_producers(head_block_number - temp, 30);
             }
-        }
-
-        if (head_block_number % block_per_forest == 0) {
-            double diff = calc_diff(head_block_number, producer);
-            set_difficulty(diff);
         }
 
         /// only update block producers once every minute, block_timestamp is in half seconds
