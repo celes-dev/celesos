@@ -278,8 +278,8 @@ namespace eosiosystem {
             if (head_block_number > wood_period) {
                 uint32_t max_clean_limit = 30;
                 uint32_t temp = (head_block_number - wood_period) % block_per_forest;
-//                uint32_t remain = clean_dirty_stat_producers(head_block_number - temp, max_clean_limit);
-//                clean_dirty_wood_history(head_block_number - temp, remain);
+                uint32_t remain = clean_dirty_stat_producers(head_block_number - temp, max_clean_limit);
+                clean_dirty_wood_history(head_block_number - temp, remain);
             }
         }
     }
@@ -471,7 +471,7 @@ namespace eosiosystem {
         for (auto temp : wood_vector) {
             auto itr = _burninfos.find(temp.rowid);
             if (itr != _burninfos.end()) {
-                _burninfos.erase(temp);
+                _burninfos.erase(itr);
             }
         }
 
