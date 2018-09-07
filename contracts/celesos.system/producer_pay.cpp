@@ -51,6 +51,10 @@ namespace eosiosystem {
 #endif
 
         if (head_block_number % block_per_forest == 0) {
+
+#if LOG_ENABLE
+            print("calc diff");
+#endif
             double diff = calc_diff(head_block_number, producer);
             set_difficulty(diff);
         }
