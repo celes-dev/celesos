@@ -1659,6 +1659,10 @@ class call_depth_api : public context_aware_api {
             uint32_t get_chain_head_num() {
                 return context.head_block_num();
             }
+
+            int forest_period_number() const{
+               return context.forest_period_number();
+            }
         };
 ///@}
 
@@ -1870,6 +1874,7 @@ REGISTER_INTRINSICS(memory_api,
 REGISTER_INTRINSICS(forest_bank_api,
    (verify_wood,             int(int,int64_t,int))
    (get_chain_head_num,      int())
+   (forest_period_number, int())
 );
 ///@}
 

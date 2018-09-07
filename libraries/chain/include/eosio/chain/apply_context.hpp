@@ -617,6 +617,7 @@ class apply_context {
     public:
       bool verify_wood(uint32_t block_number, const account_name& account, const char* wood)const;
       uint32_t head_block_num() const;
+      int forest_period_number()const;
     ///@}
 };
 
