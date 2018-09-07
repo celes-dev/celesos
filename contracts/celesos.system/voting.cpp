@@ -414,8 +414,8 @@ namespace eosiosystem {
         print("target_wood_number:",target_wood_number,"\r\n");
 #endif
 
-        double targetdiff = ((wood1 ? wood1 : 100) * (diff1 ? diff1:1) * 4 + (wood2 ? wood2 : 100) * (diff2 ? diff2:1) * 2 +
-                             (wood3 ? wood3 : 100) * (diff3 ? diff3:1)) / target_wood_number / 7;
+        double targetdiff = ((wood1 ? wood1 : 100) * (diff1 > 0 ? diff1:1) * 4 + (wood2 ? wood2 : 100) * (diff2 > 0 ? diff2:1) * 2 +
+                             (wood3 ? wood3 : 100) * (diff3 > 0 ? diff3:1)) / target_wood_number / 7;
 #if LOG_ENABLE
         print("targetdiff:",targetdiff,"\r\n");
 #endif
