@@ -454,7 +454,16 @@ namespace eosiosystem {
         // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
         // so suggest diff is:wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,Simplified to  (wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
         // 则建议难度值为wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,简化为(wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
+
         double targetdiff =  ((wood1 ? wood1 :100) * diff1 * 4 + (wood2 ? wood2 :100) * diff2 * 2 + (wood3 ? wood3 :100) * diff1)/target_wood_number/7;
+
+#if LOG_ENABLE
+        eosio::print("(wood1 ? wood1 :100) * diff1 * 4:",(wood1 ? wood1 :100) * diff1 * 4,"\r\n");
+        eosio::print("(wood2 ? wood2 :100) * diff2 * 2:",(wood2 ? wood2 :100) * diff2 * 2,"\r\n");
+        eosio::print("(wood3 ? wood3 :100) * diff1:",(wood3 ? wood3 :100) * diff1,"\r\n");
+        eosio::print("target_wood_number:",target_wood_number,"\r\n");
+        eosio::print("targetdiff:",targetdiff,"\r\n");
+#endif
 
         auto current = _burnblockstatinfos.find(block_number);
         if (current == _burnblockstatinfos.end()) {
