@@ -490,10 +490,11 @@ namespace eosiosystem {
         }
 
         for (auto temp : stat_vector) {
-            auto itr = _burnblockstatinfos.find(temp.block_number);
-            if (itr != _burnblockstatinfos.end()) {
-                _burnblockstatinfos.erase(itr);
+            auto temp2 = _burnblockstatinfos.find(temp.block_number);
+            if (temp2 != _burnblockstatinfos.end()) {
+                _burnblockstatinfos.erase(temp2);
             }
+        }
     }
 
     uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
