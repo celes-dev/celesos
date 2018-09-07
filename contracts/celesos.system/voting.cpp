@@ -486,12 +486,12 @@ namespace eosiosystem {
             }
         }
 
-        for (auto temp : stat_vector) {
-#if LOG_ENABLE
-            eosio::print("clean_stat:",temp.block_number);
-#endif
-            _burnblockstatinfos.erase(temp);
-        }
+//        for (auto temp : stat_vector) {
+//#if LOG_ENABLE
+//            eosio::print("clean_stat:",temp.block_number);
+//#endif
+//            _burnblockstatinfos.erase(temp);
+//        }
     }
 
     uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {

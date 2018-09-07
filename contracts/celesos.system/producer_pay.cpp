@@ -58,7 +58,7 @@ namespace eosiosystem {
             }
 
             if (temp == 10) {
-                double diff = calc_diff(head_block_number - temp, producer);
+                double diff = calc_diff(head_block_number, producer);
 #if LOG_ENABLE
                 eosio::print("suggest diff:",diff,"\r\n");
 #endif
