@@ -444,9 +444,9 @@ namespace eosiosystem {
         auto current = _burnblockstatinfos.find(block_number);
         if (current == _burnblockstatinfos.end()) {
             // payer is the system account
-            _burnblockstatinfos.emplace(producer, [&](auto &p) {
-                p.block_number = block_number;
-                p.diff = targetdiff;
+//            _burnblockstatinfos.emplace(producer, [&](auto &p) {
+//                p.block_number = block_number;
+//                p.diff = targetdiff;
             });
         } else {
             _burnblockstatinfos.modify(current, 0, [&](auto &p) {
