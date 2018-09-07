@@ -171,11 +171,11 @@ namespace eosiosystem {
     };
 
     struct wood_burn_block_stat {
-        uint32_t block_number = 0;
+        uint64_t block_number = 0;
         uint64_t stat = 0;
         double diff = 0;
 
-        uint64_t primary_key() const { return (uint64_t) block_number; }
+        uint64_t primary_key() const { return block_number; }
 
         // explicit serialization macro is not necessary, used here only to improve compilation time
         EOSLIB_SERIALIZE(wood_burn_block_stat, (block_number)(stat)(diff))

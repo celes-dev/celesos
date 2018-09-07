@@ -268,7 +268,7 @@ namespace eosiosystem {
         }
 
         {
-            auto temp = _burnblockstatinfos.find((uint64_t) block_number);
+            auto temp = _burnblockstatinfos.find( block_number);
             if (temp != _burnblockstatinfos.end()) {
 #if LOG_ENABLE
                 eosio::print("modify block stat\r\n");
@@ -443,11 +443,15 @@ namespace eosiosystem {
                              diff3 / (wood3 ? wood3 : 1));
         auto current = _burnblockstatinfos.find(block_number);
         if (current == _burnblockstatinfos.end()) {
+#if LOG_ENABLE
+            eosio::print("try to insert stat info...\r\n");
+#endif
             // payer is the system account
-//            _burnblockstatinfos.emplace(producer, [&](auto &p) {
-//                p.block_number = block_number;
-//                p.diff = targetdiff;
-//            });
+            _burnblockstatinfos.emplace(producer, [&](auto &p) {
+                p.block_number = block_number;
+                p.diff = targetdiff;
+                p.stat = 0;
+            });
         } else {
             _burnblockstatinfos.modify(current, 0, [&](auto &p) {
                 p.diff = targetdiff;
