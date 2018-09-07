@@ -434,6 +434,16 @@ namespace eosiosystem {
         auto diff3 = ((last3 == _burnblockstatinfos.end()) ? 1 : last3->diff);
         auto wood3 = ((last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat);
 
+#if LOG_ENABLE
+        eosio::print("block:",block_number,"\r\n");
+        eosio::print("wood1:",wood1,"\r\n");
+        eosio::print("wood2:",wood2,"\r\n");
+        eosio::print("wood3:",wood3,"\r\n");
+        eosio::print("diff1:",diff1,"\r\n");
+        eosio::print("diff2:",diff2,"\r\n");
+        eosio::print("diff3:",diff3,"\r\n");
+#endif
+
         // Suppose the last 3 cycle,the diff is diff1,diff2,diff2, and the answers count is wood1,wood2,wood3
         // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
         // so suggest diff is:M/wood1*diff1*1/7+M/wood2*diif2*2/7+M/wood3*diff3*4/7,Simplified to M/7*(diff1/wood1+2*diif2/wood2+4*diff3/wood3)
