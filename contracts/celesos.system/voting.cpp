@@ -448,7 +448,7 @@ namespace eosiosystem {
         // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
         // so suggest diff is:wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,Simplified to  (wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
         // 则建议难度值为wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,简化为(wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
-        double targetdiff =  (wood1 * diff1 * 4 + wood2 * diff2 * 2 + wood3 * diff1)/target_wood_number/7;
+        double targetdiff =  ((wood1 ? wood1 :100) * diff1 * 4 + (wood2 ? wood2 :100) * diff2 * 2 + (wood3 ? wood3 :100) * diff1)/target_wood_number/7;
 
         auto current = _burnblockstatinfos.find(block_number);
         if (current == _burnblockstatinfos.end()) {
@@ -488,10 +488,16 @@ namespace eosiosystem {
 
         for (auto temp : stat_vector) {
 #if LOG_ENABLE
-            eosio::print("clean_stat:",temp.block_number);
+            eosio::print("try to delete block:",temp.block_number);
 #endif
-            _burnblockstatinfos.erase(temp);
         }
+
+//        for (auto temp : stat_vector) {
+//#if LOG_ENABLE
+//            eosio::print("clean_stat:",temp.block_number);
+//#endif
+//            _burnblockstatinfos.erase(temp);
+//        }
     }
 
     uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
