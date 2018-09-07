@@ -408,8 +408,8 @@ namespace eosiosystem {
         // so suggest diff is:wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,Simplified to  (wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
         // 则建议难度值为wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,简化为(wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
 
-        double targetdiff = ((wood1 ? wood1 : 100) * diff1 * 4 + (wood2 ? wood2 : 100) * diff2 * 2 +
-                             (wood3 ? wood3 : 100) * diff1) / target_wood_number / 7;
+        double targetdiff = ((wood1 ? wood1 : 100) * (diff1 ? diff1:1) * 4 + (wood2 ? wood2 : 100) * (diff2 ? diff2:1) * 2 +
+                             (wood3 ? wood3 : 100) * (diff3 ? diff3:1)) / target_wood_number / 7;
 
         if (targetdiff <= 1.0f) {
             targetdiff = 1.0f;
