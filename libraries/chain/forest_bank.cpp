@@ -12,13 +12,9 @@ namespace celesos{
     using namespace chain;
     namespace forest {
         static uint32_t question_space_number = 600;//问题间隔块数
-<<<<<<< HEAD
 //        static uint32_t question_period = 21600;//问题有效期
         uint256_t original_target("0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
-=======
-        static uint32_t question_period = 21600;//问题有效期
-        uint256_t original_target("0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
->>>>>>> 98d960925cd36a5a55846ff6bea01e74a0ee7a7c
+
 
         uint32_t dataset_count(){
 //            return 1024*1024*1024/64;
