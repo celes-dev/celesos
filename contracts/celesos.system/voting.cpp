@@ -462,6 +462,9 @@ namespace eosiosystem {
 
     void system_contract::clean_diff_stat_history(uint32_t block_number) {
 
+#if LOG_ENABLE
+    eosio::print("block clean:",block_number,"\r\n");
+#endif
         auto itr = _burnblockstatinfos.begin();
 
         std::vector<wood_burn_block_stat> stat_vector;
