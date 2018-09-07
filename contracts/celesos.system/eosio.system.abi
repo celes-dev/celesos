@@ -706,7 +706,7 @@
                 },
                 {
                     "name": "diff",
-                    "type": "float64"
+                    "type": "double"
                 }
             ]
         },

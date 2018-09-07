@@ -45,16 +45,7 @@ namespace eosiosystem {
         }
 
         uint32_t head_block_number = get_chain_head_num();
-
-#if LOG_ENABLE
-        print("block:", head_block_number);
-#endif
-
         if (head_block_number % block_per_forest == 0) {
-
-#if LOG_ENABLE
-            print("calc diff");
-#endif
             double diff = calc_diff(head_block_number, producer);
             set_difficulty(diff);
         }

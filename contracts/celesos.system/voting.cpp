@@ -407,24 +407,11 @@ namespace eosiosystem {
         // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
         // so suggest diff is:wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,Simplified to  (wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
         // 则建议难度值为wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,简化为(wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
-
-#if LOG_ENABLE
-        print("wood1:",wood1,"wood2:",wood2,"wood3",wood3,"\r\n");
-        print("diff1:",diff1,"diff2:",diff2,"diff3",diff3,"\r\n");
-        print("target_wood_number:",target_wood_number,"\r\n");
-#endif
-
-        double targetdiff = ((wood1 ? wood1 : 100) * (diff1 > 0 ? diff1:1) * 4 + (wood2 ? wood2 : 100) * (diff2 > 0 ? diff2:1) * 2 +
-                             (wood3 ? wood3 : 100) * (diff3 > 0 ? diff3:1)) / target_wood_number / 7;
-#if LOG_ENABLE
-        print("targetdiff:",targetdiff,"\r\n");
-#endif
+        double targetdiff = ((wood1 ? wood1 : target_wood_number) * (diff1 > 0 ? diff1:1) * 4 + (wood2 ? wood2 : target_wood_number) * (diff2 > 0 ? diff2:1) * 2 +
+                             (wood3 ? wood3 : target_wood_number) * (diff3 > 0 ? diff3:1)) / target_wood_number / 7;
         if (targetdiff <= 1.0f) {
             targetdiff = 1.0f;
         }
-#if LOG_ENABLE
-        print("targetdiff:",targetdiff,"\r\n");
-#endif
         auto current = _burnblockstatinfos.find(block_number);
         if (current == _burnblockstatinfos.end()) {
             // payer is the system account
