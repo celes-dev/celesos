@@ -21,7 +21,6 @@
 
 #include <stdio.h>
 #include <time.h>
-#include <sys/timeb.h>
 
 namespace eosiosystem {
     using eosio::indexed_by;
@@ -481,15 +480,13 @@ namespace eosiosystem {
     }
 
 
-    long system_contract::getCurrentTime()
+    long long system_contract::getCurrentTime()
     {
-        long long time_last;
-        time_last = time(NULL);
+        std::chrono::milliseconds ms = std::chrono::duration_cast< std::chrono::milliseconds >(
+                std::chrono::system_clock::now().time_since_epoch()
+        );
 
-        struct timeb t1;
-        ftime(&t1);
-        time_t ttt= t1.millitm+t1.time*1000;
-        return ttt;
+        return ms.count();
     }
 
     void system_contract::clean_diff_stat_history(uint32_t block_number) {

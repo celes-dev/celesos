@@ -319,7 +319,7 @@ namespace eosiosystem {
 
         double calc_diff(uint32_t block_number, account_name producer);
 
-        long getCurrentTime();
+        long long getCurrentTime();
 
         // Implementation details:
 
