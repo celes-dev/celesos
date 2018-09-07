@@ -48,5 +48,4 @@ BOOST_AUTO_TEST_CASE(verify_wood_test)
         BOOST_REQUIRE(&forest);
         BOOST_REQUIRE(&isRight);
     }
-
 BOOST_AUTO_TEST_SUITE_END()

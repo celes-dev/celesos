@@ -640,6 +640,11 @@ bool apply_context::verify_wood(uint32_t block_number, const account_name& accou
    static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
    return  forest->verify_wood(block_number, account, wood);
 }
+
+int apply_context::forest_period_number()const{
+   static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
+   return  forest->forest_period_number();
+}
 ///@}
 
 } } /// eosio::chain

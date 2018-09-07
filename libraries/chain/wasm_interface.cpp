@@ -1655,6 +1655,10 @@ class call_depth_api : public context_aware_api {
             bool verify_wood(uint32_t block_number, const account_name& account, uint64_t wood) const {
                return context.verify_wood(block_number, account, wood);
             }
+
+            int forest_period_number() const{
+               return context.forest_period_number();
+            }
         };
 ///@}
 
@@ -1865,6 +1869,7 @@ REGISTER_INTRINSICS(memory_api,
 /// CELES code: hubery.zhang {@
 REGISTER_INTRINSICS(forest_bank_api,
     (verify_wood, int(int32_t,int64_t,int64_t) ,"verify_wood",  bool(forest_bank_api::*)(uint32_t,const account_name&,uint64_t)const )
+    (forest_period_number, int())
 );
 ///@}
 

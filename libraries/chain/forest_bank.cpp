@@ -12,7 +12,7 @@ namespace celesos{
     using namespace chain;
     namespace forest {
         static uint32_t question_space_number = 600;//问题间隔块数
-        static uint32_t question_period = 21600;//问题有效期
+//        static uint32_t question_period = 21600;//问题有效期
         uint256_t original_target("0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 
         uint32_t dataset_count(){
@@ -40,10 +40,17 @@ namespace celesos{
 
         forest_bank::~forest_bank(){}
 
+        int forest_bank::forest_period_number(){
+            int result_value = 24*60*21*6;
+#ifdef DEBUG
+            result_value = 60*21*6;
+#endif
+            return result_value;
+        }
 
         bool forest_bank::verify_wood(uint32_t block_number, const account_name& account, const uint64_t wood){
             uint32_t current_block_number = chain.head_block_num();
-            if(block_number <= current_block_number - question_period){
+            if(block_number <= current_block_number - forest_period_number()){
                 //wood is past due
                 return false;
             } else if(block_number%question_space_number != 0){
@@ -58,12 +65,12 @@ namespace celesos{
                 uint256_t target_int = static_cast<uint256_t>(double_target*100);
                 uint256_t target = (original_target)/target_int/100;
                 //prepare parameter for ethash
-                uint32_t cache_number = block_number/question_period;
+                uint32_t cache_number = block_number/forest_period_number();
                 std::vector<celesos::ethash::node> cache_data;
-                if(cache_number == first_cache_pair.first){
-                    cache_data = first_cache_pair.second;
-                }else if(cache_number == second_scahe_pair.first){
-                    cache_data = second_scahe_pair.second;
+                if(cache_number == first_cache_pair->first){
+                    cache_data = first_cache_pair->second;
+                }else if(cache_number == second_scahe_pair->first){
+                    cache_data = second_scahe_pair->second;
                 }else{
                     //not found matched period
                     return false;
@@ -82,8 +89,8 @@ namespace celesos{
         void forest_bank::update_cache(const block_state_ptr& block){
             //store current and last period feed cache for verify wood
             uint32_t block_number = chain.head_block_num();
-            uint32_t current_cache_number = block_number/question_period;
-            if(first_cache_pair.first == current_cache_number){
+            uint32_t current_cache_number = block_number/forest_period_number();
+            if(first_cache_pair->first == current_cache_number){
                 //in same period not need update
                 return;
             }
@@ -92,12 +99,16 @@ namespace celesos{
             uint32_t dataset_count = cache_count();
             block_id_type seed = chain.get_block_id_for_num(current_cache_number);
             if(celesos::ethash::calc_cache(node_vector,dataset_count,seed.str())){
-                first_cache_pair = std::make_pair(current_cache_number, node_vector);
-            }
+                if(!(first_cache_pair->second.empty()))
+                {
+                    if(!(second_scahe_pair->second.empty())){
+                        second_scahe_pair->second.clear();
+                    }
+                    second_scahe_pair = first_cache_pair;
+                }
 
-            if(!(first_cache_pair.second.empty()))
-            {
-                second_scahe_pair = first_cache_pair;
+                std::pair<uint32_t,std::vector<celesos::ethash::node>> temp_cache = std::make_pair(current_cache_number, node_vector);
+                first_cache_pair = &temp_cache;
             }
         }
 

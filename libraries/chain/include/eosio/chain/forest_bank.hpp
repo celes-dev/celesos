@@ -31,6 +31,7 @@ namespace celesos{
 
          bool get_forest(forest_struct& forest, const eosio::chain::account_name& account);
          bool verify_wood(uint32_t block_number, const eosio::chain::account_name& account, uint64_t wood);
+         int  forest_period_number();
 
 
         private:
@@ -42,8 +43,8 @@ namespace celesos{
 
 
          forest_struct forest_data;
-         std::pair<uint32_t,std::vector<celesos::ethash::node>> first_cache_pair;
-         std::pair<uint32_t,std::vector<celesos::ethash::node>> second_scahe_pair;
+         std::pair<uint32_t,std::vector<celesos::ethash::node>> *first_cache_pair;
+         std::pair<uint32_t,std::vector<celesos::ethash::node>> *second_scahe_pair;
      };
     }
 }
