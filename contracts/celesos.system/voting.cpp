@@ -340,7 +340,7 @@ namespace eosiosystem {
     uint32_t system_contract::clean_dirty_stat_producers(uint32_t block_number, uint32_t maxline) {
 
         auto idx = _burnproducerstatinfos.get_index<N(block_number)>();
-        auto itl = idx.lower_bound(block_number);
+        auto itl = idx.begin();
         auto itu = idx.upper_bound(block_number);
 
         std::vector<wood_burn_producer_block_stat> producer_stat_vector;
@@ -368,8 +368,14 @@ namespace eosiosystem {
 #if LOG_ENABLE
             eosio::print("clean,stat:", temp.stat, ",block:", temp.block_number, "\r\n");
 #endif
-
-            _burnproducerstatinfos.erase(temp);
+            auto itr = _burnproducerstatinfos.find(temp.rowid);
+            if (itr != _burnproducerstatinfos.end()) {
+                _burnproducerstatinfos.erase(itr);
+            } else {
+#if LOG_ENABLE
+                eosio::print("clean,stat failed:", temp.stat, ",block:", temp.block_number, "\r\n");
+#endif
+            }
         }
 
         return maxline - round;
@@ -471,9 +477,6 @@ namespace eosiosystem {
 
     void system_contract::clean_diff_stat_history(uint32_t block_number) {
 
-#if LOG_ENABLE
-    eosio::print("block clean:",block_number,"\r\n");
-#endif
         auto itr = _burnblockstatinfos.begin();
 
         std::vector<wood_burn_block_stat> stat_vector;
@@ -490,12 +493,7 @@ namespace eosiosystem {
             auto itr = _burnblockstatinfos.find(temp.block_number);
             if (itr != _burnblockstatinfos.end()) {
                 _burnblockstatinfos.erase(itr);
-            } else {
-#if LOG_ENABLE
-                eosio::print("clean_stat failed:", temp.block_number);
-#endif
             }
-        }
     }
 
     uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
@@ -520,7 +518,15 @@ namespace eosiosystem {
 #if LOG_ENABLE
             eosio::print("clean,wood:", temp.wood, ",block:", temp.block_number, ",owner:", temp.voter, "\r\n");
 #endif
-            _burninfos.erase(temp);
+            auto itr = _burninfos.find(temp.rowid);
+            if (itr != _burninfos.end()) {
+                _burninfos.erase(temp);
+            } else {
+#if LOG_ENABLE
+                eosio::print("clean,wood failed:", temp.wood, ",block:", temp.block_number, ",owner:", temp.voter,
+                             "\r\n");
+#endif
+            }
         }
 
         return maxline - round;
