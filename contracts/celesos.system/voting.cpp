@@ -426,13 +426,13 @@ namespace eosiosystem {
     double system_contract::calc_diff(uint32_t block_number, account_name producer) {
         auto last1 = _burnblockstatinfos.find(block_number - block_per_forest);
         auto diff1 = ((last1 == _burnblockstatinfos.end()) ? 1 : last1->diff);
-        auto wood1 = ((last1 == _burnblockstatinfos.end()) ? target_wood_number : last1->stat);
+        auto wood1 = ((last1 == _burnblockstatinfos.end()) ? 1 : last1->stat);
         auto last2 = _burnblockstatinfos.find(block_number - 2 * block_per_forest);
         auto diff2 = ((last2 == _burnblockstatinfos.end()) ? 1 : last2->diff);
-        auto wood2 = ((last2 == _burnblockstatinfos.end()) ? target_wood_number : last2->stat);
+        auto wood2 = ((last2 == _burnblockstatinfos.end()) ? 1 : last2->stat);
         auto last3 = _burnblockstatinfos.find(block_number - 3 * block_per_forest);
         auto diff3 = ((last3 == _burnblockstatinfos.end()) ? 1 : last3->diff);
-        auto wood3 = ((last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat);
+        auto wood3 = ((last3 == _burnblockstatinfos.end()) ? 1 : last3->stat);
 
 #if LOG_ENABLE
         eosio::print("block:",block_number,"\r\n");
@@ -480,18 +480,19 @@ namespace eosiosystem {
         std::vector<wood_burn_block_stat> stat_vector;
         while (itr != _burnblockstatinfos.end()) {
             if (itr->block_number <= block_number - 3 * block_per_forest) {
-//                stat_vector.emplace_back(*itr);
+                stat_vector.emplace_back(*itr);
+                itr++;
             } else {
                 break;
             }
         }
 
-//        for (auto temp : stat_vector) {
-//#if LOG_ENABLE
-//            eosio::print("clean_stat:",temp.block_number);
-//#endif
-//            _burnblockstatinfos.erase(temp);
-//        }
+        for (auto temp : stat_vector) {
+#if LOG_ENABLE
+            eosio::print("clean_stat:",temp.block_number);
+#endif
+            _burnblockstatinfos.erase(temp);
+        }
     }
 
     uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
@@ -504,6 +505,7 @@ namespace eosiosystem {
         while (cust_itr != idx.end() && round < maxline) {
             if (cust_itr->block_number <= block_number) {
                 // delete record
+                wood_vector.emplace_back(*cust_itr);
                 cust_itr++;
                 round++;
             } else {
