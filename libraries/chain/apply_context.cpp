@@ -682,7 +682,7 @@ uint64_t apply_context::next_auth_sequence( account_name actor ) {
 }
 
 /// CELES code：hubery.zhang {@
-uint32_t apply_context::verify_wood(uint32_t block_number, const account_name& account, const char* wood)const{
+bool apply_context::verify_wood(uint32_t block_number, const account_name& account, const char* wood)const{
    static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
    return  forest->verify_wood(block_number, account, wood);
 }
