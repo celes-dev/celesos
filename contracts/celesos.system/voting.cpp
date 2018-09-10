@@ -90,11 +90,19 @@ namespace eosiosystem {
                     std::pair<eosio::producer_key, uint16_t>({{it->owner, it->producer_key}, it->location}));
         }
 
-        if (top_producers.size() >= BP_MIN_COUNT && !_gstate.is_network_active) {
-            _gstate.is_network_active = true; // active the network
+        if (!_gstate.is_network_active) {
+            if (top_producers.size() >= BP_COUNT) {
+                _gstate.active_touch_count++;
+            } else {
+                _gstate.active_touch_count = 0;
+            }
+
+            if (_gstate.active_touch_count >= ACTIVE_NETWORK_CYCLE) {
+                _gstate.is_network_active = true;
+            }
         }
 
-        if (top_producers.size() >= BP_MIN_COUNT) {
+        if (_gstate.is_network_active && top_producers.size() >= BP_COUNT) {
 
             /// sort by producer name
             std::sort(top_producers.begin(), top_producers.end());
@@ -189,7 +197,7 @@ namespace eosiosystem {
         eosio_assert(producer_name > 0, "cannot vote with no producer");
         eosio_assert(wood.length() > 0, "invalid wood 2");
 
-#if LOG_ENABLE
+#if DEBUG
         eosio::print("voter:", voter_name, ",owner:", wood_owner_name, "wood:", wood, ",block:", block_number,
                      ",producer:", producer_name, "\r\n");
 #endif
@@ -275,7 +283,7 @@ namespace eosiosystem {
         {
             uint32_t head_block_number = get_chain_head_num();
 
-            if (head_block_number > wood_period) {
+            if (head_block_number > WOOD_PERIOD) {
                 uint32_t max_clean_limit = 30;
                 uint32_t temp = (head_block_number - wood_period) % block_per_forest;
                 uint32_t remain = clean_dirty_stat_producers(head_block_number - temp, max_clean_limit);
@@ -392,7 +400,7 @@ namespace eosiosystem {
      * @param block_number current block umber
      * @return sugeest diff
      */
-    double system_contract::calc_diff(uint32_t block_number, account_name producer) {
+    double system_contract::calc_diff(uint32_t block_number) {
         auto last1 = _burnblockstatinfos.find(block_number - block_per_forest);
         auto diff1 = ((last1 == _burnblockstatinfos.end()) ? 1 : last1->diff);
         auto wood1 = ((last1 == _burnblockstatinfos.end()) ? target_wood_number : last1->stat);
@@ -407,10 +415,11 @@ namespace eosiosystem {
         // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
         // so suggest diff is:wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,Simplified to  (wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
         // 则建议难度值为wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,简化为(wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
-        double targetdiff = ((wood1 ? wood1 : target_wood_number) * (diff1 > 0 ? diff1:1) * 4 + (wood2 ? wood2 : target_wood_number) * (diff2 > 0 ? diff2:1) * 2 +
-                             (wood3 ? wood3 : target_wood_number) * (diff3 > 0 ? diff3:1)) / target_wood_number / 7;
-        if (targetdiff <= 1.0f) {
-            targetdiff = 1.0f;
+        double targetdiff = ((wood1 ? wood1 : target_wood_number) * (diff1 > 0 ? diff1 : 1) * 4 +
+                             (wood2 ? wood2 : target_wood_number) * (diff2 > 0 ? diff2 : 1) * 2 +
+                             (wood3 ? wood3 : target_wood_number) * (diff3 > 0 ? diff3 : 1)) / target_wood_number / 7;
+        if (targetdiff <= 1.0) {
+            targetdiff = 1.0;
         }
         auto current = _burnblockstatinfos.find(block_number);
         if (current == _burnblockstatinfos.end()) {
@@ -430,52 +439,59 @@ namespace eosiosystem {
 
     void system_contract::clean_diff_stat_history(uint32_t block_number) {
 
-        auto itr = _burnblockstatinfos.begin();
+        if (block_number > WOOD_PERIOD) {
+            auto itr = _burnblockstatinfos.begin();
 
-        std::vector<wood_burn_block_stat> stat_vector;
-        while (itr != _burnblockstatinfos.end()) {
-            if (itr->block_number <= block_number - 3 * block_per_forest) {
-                stat_vector.emplace_back(*itr);
-                itr++;
-            } else {
-                break;
+            std::vector<wood_burn_block_stat> stat_vector;
+            while (itr != _burnblockstatinfos.end()) {
+                if (itr->block_number < block_number - WOOD_PERIOD) {
+                    stat_vector.emplace_back(*itr);
+                    itr++;
+                } else {
+                    break;
+                }
             }
-        }
 
-        for (auto temp : stat_vector) {
-            auto temp2 = _burnblockstatinfos.find(temp.block_number);
-            if (temp2 != _burnblockstatinfos.end()) {
-                _burnblockstatinfos.erase(temp2);
+            for (auto temp : stat_vector) {
+                auto temp2 = _burnblockstatinfos.find(temp.block_number);
+                if (temp2 != _burnblockstatinfos.end()) {
+                    _burnblockstatinfos.erase(temp2);
+                }
             }
         }
     }
 
     uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
 
-        auto idx = _burninfos.get_index<N(block_number)>();
-        auto cust_itr = idx.begin();
-        uint32_t round = 0;
+        if (block_number > WOOD_PERIOD) {
 
-        std::vector<wood_burn_info> wood_vector;
-        while (cust_itr != idx.end() && round < maxline) {
-            if (cust_itr->block_number <= block_number) {
-                // delete record
-                wood_vector.emplace_back(*cust_itr);
-                cust_itr++;
-                round++;
-            } else {
-                break;
+            auto idx = _burninfos.get_index<N(block_number)>();
+            auto cust_itr = idx.begin();
+            uint32_t round = 0;
+
+            std::vector<wood_burn_info> wood_vector;
+            while (cust_itr != idx.end() && round < maxline) {
+                if (cust_itr->block_number < block_number) {
+                    // delete record
+                    wood_vector.emplace_back(*cust_itr);
+                    cust_itr++;
+                    round++;
+                } else {
+                    break;
+                }
             }
-        }
 
-        for (auto temp : wood_vector) {
-            auto itr = _burninfos.find(temp.rowid);
-            if (itr != _burninfos.end()) {
-                _burninfos.erase(itr);
+            for (auto temp : wood_vector) {
+                auto itr = _burninfos.find(temp.rowid);
+                if (itr != _burninfos.end()) {
+                    _burninfos.erase(itr);
+                }
             }
-        }
 
-        return maxline - round;
+            return maxline - round;
+        } else {
+            return 0;
+        }
     }
 
 } /// namespace eosiosystem

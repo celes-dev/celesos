@@ -12,19 +12,47 @@
 #include <celesos.system/exchange_state.hpp>
 
 #include <musl/upstream/include/bits/stdint.h>
-
 #include <string>
 
-#define LOG_ENABLE 1
-#define BP_COUNT 3 // target bp count
-#define BP_MIN_COUNT 2 // mini bp count(reach this number,then active the network)
+#define REWARD_HALF_TIME (21*pow(10,8)/2)
 
-//#define LOG_ENABLE 0
-//#define BP_COUNT 21
-//#define BP_MIN_COUNT 21
+#if DEBUG
+
+// number of bp,BP个数
+#define BP_COUNT 2
+// when the bp count is ok cycle for this number,the active the network(主网启动条件，BP个数达标轮数）
+#define ACTIVE_NETWORK_CYCLE 2
+// origin reward number (初始出块奖励，折半衰减）
+#define ORIGIN_REWARD_NUMBER 20000
+// reward get min（if smaller than this number，you can't get the reward）最小奖励领取数，低于此数字将领取失败
+#define REWARD_GET_MIN 1
+// get reward time sep(奖励领取间隔时间，单位：秒）
+#define REWARD_TIME_SEP 5*60
+// singing ticker sep（唱票间隔期，每隔固定时间进行唱票）
+#define SINGING_TICKER_SEP BP_COUNT*6*10
+// wood period(wood有效期）
+#define WOOD_PERIOD BP_COUNT*6*60
+
+#else
+
+// number of bp,BP个数
+#define BP_COUNT 21
+// when the bp count is ok cycle for this number,the active the network(主网启动条件，BP个数达标轮数）
+#define ACTIVE_NETWORK_CYCLE 24
+// origin reward number (初始出块奖励，折半衰减）
+#define ORIGIN_REWARD_NUMBER 20000
+// reward get min（if smaller than this number，you can't get the reward）最小奖励领取数，低于此数字将领取失败
+#define REWARD_GET_MIN 100
+// get reward time sep(奖励领取间隔时间，单位：秒）
+#define REWARD_TIME_SEP 24*60*60
+// singing ticker sep（唱票间隔期，每隔固定时间进行唱票）
+#define SINGING_TICKER_SEP BP_COUNT*6*60
+// wood period(wood有效期）
+#define WOOD_PERIOD BP_COUNT*6*60*24
+
+#endif
 
 namespace eosiosystem {
-
     const uint32_t block_per_forest = 60; // one forest per 600 block
     const uint32_t wood_period = 600; // wood's Validity period
     const uint32_t target_wood_number = 500; // target wood count per cycle
@@ -58,24 +86,22 @@ namespace eosiosystem {
         int64_t total_ram_stake = 0;
 
         block_timestamp last_producer_schedule_update;
-        uint64_t last_pervote_bucket_fill = 0;
-        int64_t pervote_bucket = 0;
-        int64_t perblock_bucket = 0;
-        uint32_t total_unpaid_blocks = 0; /// all blocks which have been produced but not paid
+        double total_unpaid_fee = 0; /// all blocks which have been produced but not paid
         int64_t total_activated_stake = 0;
         uint64_t thresh_activated_stake_time = 0;
         uint16_t last_producer_schedule_size = 0;
         double total_producer_vote_weight = 0; /// the sum of all producer votes
         block_timestamp last_name_close;
         bool is_network_active;
+        uint16_t active_touch_count = 0;
 
         // explicit serialization macro is not necessary, used here only to improve compilation time
         EOSLIB_SERIALIZE_DERIVED(eosio_global_state, eosio::blockchain_parameters,
                                  (max_ram_size)(total_ram_bytes_reserved)(total_ram_stake)
-                                         (last_producer_schedule_update)(last_pervote_bucket_fill)
-                                         (pervote_bucket)(perblock_bucket)(total_unpaid_blocks)(total_activated_stake)(
+                                         (last_producer_schedule_update)
+                                         (total_unpaid_fee)(total_activated_stake)(
                                          thresh_activated_stake_time)
-                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(is_network_active))
+                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(is_network_active)(active_touch_count))
     };
 
     struct producer_info {
@@ -84,7 +110,7 @@ namespace eosiosystem {
         eosio::public_key producer_key; /// a packed public key object
         bool is_active = true;
         std::string url;
-        uint32_t unpaid_blocks = 0;
+        double unpaid_fee = 0;
         uint64_t last_claim_time = 0;
         uint16_t location = 0;
 
@@ -101,7 +127,7 @@ namespace eosiosystem {
 
         // explicit serialization macro is not necessary, used here only to improve compilation time
         EOSLIB_SERIALIZE(producer_info, (owner)(total_votes)(producer_key)(is_active)(url)
-                (unpaid_blocks)(last_claim_time)(location))
+                (unpaid_fee)(last_claim_time)(location))
     };
 
     struct voter_info {
@@ -317,9 +343,7 @@ namespace eosiosystem {
 
         void onblock_clean_burn_stat(uint32_t block_number, uint32_t maxline);
 
-        double calc_diff(uint32_t block_number, account_name producer);
-
-        // Implementation details:
+        double calc_diff(uint32_t block_number);
 
         //defind in delegate_bandwidth.cpp
         void changebw(account_name from, account_name receiver,
