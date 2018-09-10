@@ -691,6 +691,12 @@ int apply_context::forest_period_number()const{
    static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
    return  forest->forest_period_number();
 }
+
+int apply_context::forest_space_number()const{
+   static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
+   return  forest->forest_space_number();
+}
+
 uint32_t apply_context::head_block_num() const {
    return control.head_block_num();
 }

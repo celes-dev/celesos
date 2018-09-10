@@ -11,7 +11,7 @@ namespace celesos{
     using namespace eosio;
     using namespace chain;
     namespace forest {
-        static uint32_t question_space_number = 600;//问题间隔块数
+//        static uint32_t question_space_number = 600;//问题间隔块数
 //        static uint32_t question_period = 21600;//问题有效期
         uint256_t original_target("0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 
@@ -51,12 +51,20 @@ namespace celesos{
             return result_value;
         }
 
+        int forest_bank::forest_space_number(){
+            int result_value = 21*6*10;
+#ifdef DEBUG
+            result_value = 21*6;
+#endif
+            return result_value;
+        }
+
         bool forest_bank::verify_wood(uint32_t block_number, const account_name& account, const char* wood){
             uint32_t current_block_number = chain.head_block_num();
             if(block_number <= current_block_number - forest_period_number()){
                 //wood is past due
                 return false;
-            } else if(block_number%question_space_number != 0){
+            } else if(block_number%forest_space_number() != 0){
                 //not forest
                 return false;
             }else{
@@ -118,7 +126,7 @@ namespace celesos{
         bool forest_bank::get_forest(forest_struct& forest, const account_name& account){
             uint32_t current_block_number = chain.head_block_num();
 
-            uint32_t current_forest_number = current_block_number/question_space_number * question_space_number+1;
+            uint32_t current_forest_number = current_block_number/forest_space_number() * forest_space_number()+1;
 
             if((forest.target == 0) || (current_forest_number != forest.block_number)){
                 block_id_type result_value = chain.get_block_id_for_num(current_forest_number);

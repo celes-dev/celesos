@@ -33,6 +33,7 @@ namespace celesos{
 
          bool verify_wood(uint32_t block_number, const eosio::chain::account_name& account, const char* wood);
          int  forest_period_number();
+         int forest_space_number();
 
 
         private:

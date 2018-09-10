@@ -1663,6 +1663,9 @@ class call_depth_api : public context_aware_api {
             int forest_period_number() const{
                return context.forest_period_number();
             }
+            int forest_space_number() const{
+                return context.forest_space_number();
+            }
         };
 ///@}
 
@@ -1875,6 +1878,7 @@ REGISTER_INTRINSICS(forest_bank_api,
    (verify_wood,             int(int,int64_t,int))
    (get_chain_head_num,      int())
    (forest_period_number, int())
+   (forest_space_number, int())
 );
 ///@}
 
