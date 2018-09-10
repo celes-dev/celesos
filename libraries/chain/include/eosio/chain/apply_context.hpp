@@ -619,6 +619,9 @@ class apply_context {
       uint32_t head_block_num() const;
       int forest_period_number()const;
     ///@}
+    /// CELES code：cuichao{@
+    bool is_supervision(apply_context& context);
+    ///@}
 };
 
 using apply_handler = std::function<void(apply_context&)>;
