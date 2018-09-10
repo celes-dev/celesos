@@ -134,6 +134,7 @@ namespace celesos{
                 forest_data.seed = fc::sha256::hash(result_value.str());
                 forest_data.forest = fc::sha256::hash(result_value.str()+ account.to_string());
                 forest_data.block_number = current_forest_number;
+                forest_data.next_block_num = current_forest_number+forest_space_number();
 
                 //计算难度
                 signed_block_ptr block_ptr = chain.fetch_block_by_number(current_forest_number);
