@@ -617,8 +617,8 @@ class apply_context {
     public:
       bool verify_wood(uint32_t block_number, const account_name& account, const char* wood)const;
       uint32_t head_block_num() const;
-      int forest_period_number()const;
-      int forest_space_number()const;
+      uint32_t forest_period_number()const;
+      uint32_t forest_space_number()const;
     ///@}
     /// CELES code：cuichao{@
     bool is_supervision(apply_context& context);

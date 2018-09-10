@@ -285,7 +285,7 @@ namespace eosiosystem {
 
             if (head_block_number > WOOD_PERIOD) {
                 uint32_t max_clean_limit = 30;
-                uint32_t temp = (head_block_number - wood_period) % block_per_forest;
+                uint32_t temp = (head_block_number - WOOD_PERIOD) % (uint32_t) forest_space_number();
                 uint32_t remain = clean_dirty_stat_producers(head_block_number - temp, max_clean_limit);
                 clean_dirty_wood_history(head_block_number - temp, remain);
             }
@@ -324,7 +324,7 @@ namespace eosiosystem {
 
         auto idx = _burnproducerstatinfos.get_index<N(block_number)>();
         auto itl = idx.begin();
-        auto itu = idx.upper_bound(block_number);
+        auto itu = idx.lower_bound(block_number - WOOD_PERIOD);
 
         std::vector<wood_burn_producer_block_stat> producer_stat_vector;
 
@@ -401,23 +401,23 @@ namespace eosiosystem {
      * @return sugeest diff
      */
     double system_contract::calc_diff(uint32_t block_number) {
-        auto last1 = _burnblockstatinfos.find(block_number - block_per_forest);
+        auto last1 = _burnblockstatinfos.find(block_number - (uint32_t) forest_space_number());
         auto diff1 = ((last1 == _burnblockstatinfos.end()) ? 1 : last1->diff);
-        auto wood1 = ((last1 == _burnblockstatinfos.end()) ? target_wood_number : last1->stat);
-        auto last2 = _burnblockstatinfos.find(block_number - 2 * block_per_forest);
+        auto wood1 = ((last1 == _burnblockstatinfos.end()) ? TARGET_WOOD_NUMBER : last1->stat);
+        auto last2 = _burnblockstatinfos.find(block_number - 2 * (uint32_t) forest_space_number());
         auto diff2 = ((last2 == _burnblockstatinfos.end()) ? 1 : last2->diff);
-        auto wood2 = ((last2 == _burnblockstatinfos.end()) ? target_wood_number : last2->stat);
-        auto last3 = _burnblockstatinfos.find(block_number - 3 * block_per_forest);
+        auto wood2 = ((last2 == _burnblockstatinfos.end()) ? TARGET_WOOD_NUMBER : last2->stat);
+        auto last3 = _burnblockstatinfos.find(block_number - 3 * (uint32_t) forest_space_number());
         auto diff3 = ((last3 == _burnblockstatinfos.end()) ? 1 : last3->diff);
-        auto wood3 = ((last3 == _burnblockstatinfos.end()) ? target_wood_number : last3->stat);
+        auto wood3 = ((last3 == _burnblockstatinfos.end()) ? TARGET_WOOD_NUMBER : last3->stat);
 
         // Suppose the last 3 cycle,the diff is diff1,diff2,diff2, and the answers count is wood1,wood2,wood3
         // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
         // so suggest diff is:wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,Simplified to  (wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
         // 则建议难度值为wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,简化为(wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
-        double targetdiff = ((wood1 ? wood1 : target_wood_number) * (diff1 > 0 ? diff1 : 1) * 4 +
-                             (wood2 ? wood2 : target_wood_number) * (diff2 > 0 ? diff2 : 1) * 2 +
-                             (wood3 ? wood3 : target_wood_number) * (diff3 > 0 ? diff3 : 1)) / target_wood_number / 7;
+        double targetdiff = ((wood1 ? wood1 : TARGET_WOOD_NUMBER) * (diff1 > 0 ? diff1 : 1) * 4 +
+                             (wood2 ? wood2 : TARGET_WOOD_NUMBER) * (diff2 > 0 ? diff2 : 1) * 2 +
+                             (wood3 ? wood3 : TARGET_WOOD_NUMBER) * (diff3 > 0 ? diff3 : 1)) / TARGET_WOOD_NUMBER / 7;
         if (targetdiff <= 1.0) {
             targetdiff = 1.0;
         }
@@ -444,7 +444,7 @@ namespace eosiosystem {
 
             std::vector<wood_burn_block_stat> stat_vector;
             while (itr != _burnblockstatinfos.end()) {
-                if (itr->block_number < block_number - WOOD_PERIOD) {
+                if (itr->block_number < block_number - WOOD_PERIOD - 3 * (uint32_t) forest_space_number()) {
                     stat_vector.emplace_back(*itr);
                     itr++;
                 } else {
