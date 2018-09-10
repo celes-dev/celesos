@@ -607,10 +607,6 @@
                 {
                     "name": "last_name_close",
                     "type": "block_timestamp_type"
-                },
-                {
-                    "name": "last_block_time",
-                    "type": "block_timestamp_type"
                 }
             ]
         },
@@ -653,20 +649,6 @@
             ]
         },
         {
-            "name": "wood_info",
-            "base": "",
-            "fields": [
-                {
-                    "name": "wood",
-                    "type": "uint64"
-                },
-                {
-                    "name": "block_number",
-                    "type": "uint32"
-                }
-            ]
-        },
-        {
             "name": "wood_burn_info",
             "base": "",
             "fields": [
@@ -684,7 +666,7 @@
                 },
                 {
                     "name": "wood",
-                    "type": "uint64"
+                    "type": "string"
                 }
             ]
         },
@@ -798,7 +780,7 @@
                 },
                 {
                     "name": "wood",
-                    "type": "uint64"
+                    "type": "string"
                 },
                 {
                     "name": "block_number",

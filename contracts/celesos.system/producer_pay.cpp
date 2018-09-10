@@ -2,6 +2,7 @@
 
 #include <eosio.token/eosio.token.hpp>
 #include <eosiolib/chain.h>
+#include <eosiolib/forest_bank.h>
 
 namespace eosiosystem {
 
@@ -43,12 +44,18 @@ namespace eosiosystem {
             }
         }
 
-        uint32_t temp = (timestamp.slot - wood_period) % block_per_forest;
+        uint32_t head_block_number = get_chain_head_num();
+        if (head_block_number % block_per_forest == 0) {
+            double diff = calc_diff(head_block_number, producer);
+            set_difficulty(diff);
+        }
 
-        if (temp == 0) {
-            set_difficulty(calc_diff(timestamp.slot - temp));
-            clean_diff_stat_history(timestamp.slot - temp);
-            clean_dirty_stat_producers(timestamp.slot - temp, 30);
+        if (head_block_number >= wood_period) {
+            uint32_t temp = (head_block_number + 10 - wood_period) % block_per_forest;
+            if (temp <= 10) {
+                clean_diff_stat_history(head_block_number + 10 - temp);
+                clean_dirty_stat_producers(head_block_number - temp, 30);
+            }
         }
 
         /// only update block producers once every minute, block_timestamp is in half seconds
@@ -73,8 +80,6 @@ namespace eosiosystem {
                 }
             }
         }
-
-        _gstate.last_block_time = timestamp;
     }
 
     using namespace eosio;
@@ -85,8 +90,8 @@ namespace eosiosystem {
         const auto &prod = _producers.get(owner);
         eosio_assert(prod.active(), "producer does not have an active key");
 
-        eosio_assert( _gstate.is_network_active,
-                      "the network is not actived" );
+        eosio_assert(_gstate.is_network_active,
+                     "the network is not actived");
 
         auto ct = current_time();
 
