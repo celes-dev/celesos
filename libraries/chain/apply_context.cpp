@@ -682,17 +682,17 @@ uint64_t apply_context::next_auth_sequence( account_name actor ) {
 }
 
 /// CELES code：hubery.zhang {@
-bool apply_context::verify_wood(uint32_t block_number, const account_name& account, const char* wood)const{
+uint32_t apply_context::verify_wood(uint32_t block_number, const account_name& account, const char* wood)const{
    static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
    return  forest->verify_wood(block_number, account, wood);
 }
 
-int apply_context::forest_period_number()const{
+uint32_t apply_context::forest_period_number()const{
    static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
    return  forest->forest_period_number();
 }
 
-int apply_context::forest_space_number()const{
+uint32_t apply_context::forest_space_number()const{
    static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
    return  forest->forest_space_number();
 }

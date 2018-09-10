@@ -9,6 +9,6 @@ extern "C" {
 
     uint32_t get_chain_head_num();
 
-    int forest_period_number();
-    int forest_space_number();
+    uint32_t forest_period_number();
+    uint32_t forest_space_number();
 }
