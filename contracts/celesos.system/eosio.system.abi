@@ -573,20 +573,8 @@
                     "type": "block_timestamp_type"
                 },
                 {
-                    "name": "last_pervote_bucket_fill",
-                    "type": "uint64"
-                },
-                {
-                    "name": "pervote_bucket",
-                    "type": "int64"
-                },
-                {
-                    "name": "perblock_bucket",
-                    "type": "int64"
-                },
-                {
-                    "name": "total_unpaid_blocks",
-                    "type": "uint32"
+                    "name": "total_unpaid_fee",
+                    "type": "float64"
                 },
                 {
                     "name": "total_activated_stake",
@@ -607,6 +595,14 @@
                 {
                     "name": "last_name_close",
                     "type": "block_timestamp_type"
+                },
+                {
+                    "name": "is_network_active",
+                    "type": "bool"
+                },
+                {
+                    "name": "active_touch_count",
+                    "type": "uint16"
                 }
             ]
         },
@@ -635,8 +631,8 @@
                     "type": "string"
                 },
                 {
-                    "name": "unpaid_blocks",
-                    "type": "uint32"
+                    "name": "unpaid_fee",
+                    "type": "float64"
                 },
                 {
                     "name": "last_claim_time",
