@@ -617,6 +617,9 @@ class apply_context {
     public:
       bool verify_wood(uint32_t block_number, const account_name& account, uint64_t wood)const;
     ///@}
+    /// CELES code：cuichao{@
+    bool is_supervision(apply_context& context);
+    ///@}
 };
 
 using apply_handler = std::function<void(apply_context&)>;
