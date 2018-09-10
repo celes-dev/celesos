@@ -27,7 +27,7 @@ namespace eosiosystem {
         if (_gstate.is_network_active) {
             auto prod = _producers.find(producer);
             if (prod != _producers.end()) {
-                double fee = ORIGIN_REWARD_NUMBER /(pow(2, (head_block_number / REWARD_HALF_TIME)));
+                double fee = ORIGIN_REWARD_NUMBER / (pow(2, (head_block_number / REWARD_HALF_TIME)));
                 _gstate.total_unpaid_fee = _gstate.total_unpaid_fee + fee;
                 _producers.modify(prod, 0, [&](auto &p) {
                     p.unpaid_fee = p.unpaid_fee + fee;
@@ -35,7 +35,7 @@ namespace eosiosystem {
             }
         }
 
-        if (head_block_number % block_per_forest == 0) {
+        if (head_block_number % (uint32_t) forest_space_number() == 0) {
             set_difficulty(calc_diff(head_block_number));
         }
 

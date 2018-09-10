@@ -15,6 +15,7 @@
 #include <string>
 
 #define REWARD_HALF_TIME (21*pow(10,8)/2)
+#define TARGET_WOOD_NUMBER 500
 
 #if DEBUG
 
@@ -53,9 +54,6 @@
 #endif
 
 namespace eosiosystem {
-    const uint32_t block_per_forest = 60; // one forest per 600 block
-    const uint32_t wood_period = 600; // wood's Validity period
-    const uint32_t target_wood_number = 500; // target wood count per cycle
 
     using eosio::asset;
     using eosio::indexed_by;
