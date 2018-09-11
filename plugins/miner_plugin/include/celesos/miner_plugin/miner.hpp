@@ -36,6 +36,7 @@ namespace celesos {
             boost::optional<uint32_t> _target_cache_count_opt;
             boost::optional<uint32_t> _target_dataset_count_opt;
             boost::optional<fc::microseconds> _last_failure_time_us;
+            unsigned int _worker_count;
             fc::microseconds _failure_retry_interval_us;
 
             void on_forest_updated(const eosio::chain::account_name &relative_account, eosio::chain::controller &cc);
@@ -50,7 +51,7 @@ namespace celesos {
 
             static void gen_random_uint256(boost::multiprecision::uint256_t &dst);
 
-            miner();
+            miner(unsigned int worker_count = 1);
 
             ~miner();
 
