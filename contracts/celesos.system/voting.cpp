@@ -77,6 +77,9 @@ namespace eosiosystem {
 
     void system_contract::update_elected_producers(block_timestamp block_time) {
 
+#if DEBUG
+        eosio::print("begin to singing the voting...");
+#endif
         _gstate.last_producer_schedule_update = block_time;
 
         auto idx = _producers.get_index<N(prototalvote)>();
@@ -98,6 +101,9 @@ namespace eosiosystem {
             }
 
             if (_gstate.active_touch_count >= ACTIVE_NETWORK_CYCLE) {
+#if DEBUG
+                eosio::print("active the network......");
+#endif
                 _gstate.is_network_active = true;
             }
         }
@@ -181,12 +187,7 @@ namespace eosiosystem {
             ++itl;
         }
 
-        if (block_number <= 60) {
-            return true;
-        } else {
-            return verify_wood(block_number, wood_owner_name, wood.c_str());
-        }
-
+        return verify_wood(block_number, wood_owner_name, wood.c_str());
     }
 
     void system_contract::update_vote(const account_name voter_name, const account_name wood_owner_name,
@@ -220,8 +221,11 @@ namespace eosiosystem {
 
         // 更新producer总投票计数
         auto &pitr = _producers.get(producer_name, "producer not found"); //data corruption
-        eosio_assert(pitr.is_active, "");
+        eosio_assert(pitr.is_active, "producer is not active");
         _producers.modify(pitr, 0, [&](auto &p) {
+#if DEBUG
+            eosio::print("add total_votes:",p.total_votes," \r\n");
+#endif
             p.total_votes++;
             _gstate.total_producer_vote_weight++;
         });
@@ -294,7 +298,7 @@ namespace eosiosystem {
 
     /**
      *  An account marked as a proxy can vote with the weight of other accounts which
-     *  have selected it as a proxy. Other accounts must refresh their voteproducer to
+     *  have selected it as a proxy. Other accounts must refresh their voteproducer tosub total_voteru
      *  update the proxy's weight.
      *
      *  @param isproxy - true if proxy wishes to vote on behalf of others, false otherwise
@@ -322,6 +326,8 @@ namespace eosiosystem {
 
     uint32_t system_contract::clean_dirty_stat_producers(uint32_t block_number, uint32_t maxline) {
 
+        if (block_number <= WOOD_PERIOD) return 0;
+
         auto idx = _burnproducerstatinfos.get_index<N(block_number)>();
         auto itl = idx.begin();
         auto itu = idx.lower_bound(block_number - WOOD_PERIOD);
@@ -335,6 +341,9 @@ namespace eosiosystem {
 
                 if (producer != _producers.end()) {
                     _producers.modify(producer, 0, [&](auto &p) {
+#if DEBUG
+        eosio::print("sub total_voter,block_number:",block_number,"this:",it->block_number,"\r\n");
+#endif
                         p.total_votes = p.total_votes - it->stat;
                     });
                 }
@@ -354,45 +363,48 @@ namespace eosiosystem {
         return maxline - round;
     }
 
-    void system_contract::onblock_clean_burn_stat(uint32_t block_number, uint32_t maxline) {
-
-        auto idx = _producers.get_index<N(prototalvote)>();
-
-        uint32_t round = 0;
-        std::vector<wood_burn_producer_block_stat> producer_stat_vector;
-
-        for (auto it = idx.cbegin();
-             it != idx.cend() && round < maxline && 0 < it->total_votes; ++it, ++round) {
-
-            auto bidx = _burnproducerstatinfos.get_index<N(producer)>();
-            auto itl = bidx.lower_bound(it->owner);
-            auto itu = bidx.upper_bound(it->owner);
-
-            if (itl != itu) {
-                for (auto temp = itl; temp != itu; ++it, ++round) {
-                    if (temp->block_number == block_number) {
-                        auto producer = _producers.find(it->owner);
-
-                        if (producer != _producers.end()) {
-                            _producers.modify(producer, 0, [&](auto &p) {
-                                p.total_votes = p.total_votes - temp->stat;
-                            });
-                        }
-                    }
-
-                    // delete record
-                    producer_stat_vector.emplace_back(*temp);
-                }
-            }
-        }
-
-        for (auto temp : producer_stat_vector) {
-            auto itr = _burnproducerstatinfos.find(temp.rowid);
-            if (itr != _burnproducerstatinfos.end()) {
-                _burnproducerstatinfos.erase(itr);
-            }
-        }
-    }
+//    void system_contract::onblock_clean_burn_stat(uint32_t block_number, uint32_t maxline) {
+//
+//        auto idx = _producers.get_index<N(prototalvote)>();
+//
+//        uint32_t round = 0;
+//        std::vector<wood_burn_producer_block_stat> producer_stat_vector;
+//
+//        for (auto it = idx.cbegin();
+//             it != idx.cend() && round < maxline && 0 < it->total_votes; ++it, ++round) {
+//
+//            auto bidx = _burnproducerstatinfos.get_index<N(producer)>();
+//            auto itl = bidx.lower_bound(it->owner);
+//            auto itu = bidx.upper_bound(it->owner);
+//
+//            if (itl != itu) {
+//                for (auto temp = itl; temp != itu; ++it, ++round) {
+//                    if (temp->block_number == block_number) {
+//                        auto producer = _producers.find(it->owner);
+//
+//                        if (producer != _producers.end()) {
+//                            _producers.modify(producer, 0, [&](auto &p) {
+//#if DEBUG
+//                                eosio::print("sub total_voter,block_number:",block_number,"\r\n");
+//#endif
+//                                p.total_votes = p.total_votes - temp->stat;
+//                            });
+//                        }
+//                    }
+//
+//                    // delete record
+//                    producer_stat_vector.emplace_back(*temp);
+//                }
+//            }
+//        }
+//
+//        for (auto temp : producer_stat_vector) {
+//            auto itr = _burnproducerstatinfos.find(temp.rowid);
+//            if (itr != _burnproducerstatinfos.end()) {
+//                _burnproducerstatinfos.erase(itr);
+//            }
+//        }
+//    }
 
     /**
      * calc suggest diff
@@ -463,6 +475,9 @@ namespace eosiosystem {
 
     uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
 
+#if DEBUG
+        eosio::print("clean_dirty_wood:",block_number,"\r\n");
+#endif
         if (block_number > WOOD_PERIOD) {
 
             auto idx = _burninfos.get_index<N(block_number)>();
@@ -484,6 +499,9 @@ namespace eosiosystem {
             for (auto temp : wood_vector) {
                 auto itr = _burninfos.find(temp.rowid);
                 if (itr != _burninfos.end()) {
+#if DEBUG
+                    eosio::print("clean_dirty_wood wood:",temp.wood,"\r\n");
+#endif
                     _burninfos.erase(itr);
                 }
             }

@@ -13,7 +13,7 @@ namespace celesos{
     namespace forest {
 //        static uint32_t question_space_number = 600;//问题间隔块数
 //        static uint32_t question_period = 21600;//问题有效期
-        uint256_t original_target("0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+        uint256_t original_target("0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 
 
         uint32_t dataset_count(){
@@ -37,6 +37,10 @@ namespace celesos{
 
         forest_bank::forest_bank(controller &control) : chain(control) {
 
+            std::vector<celesos::ethash::node> vector;
+            std::pair<uint32_t,std::vector<celesos::ethash::node>> temp_cache = std::make_pair((uint32_t)0, vector);
+            first_cache_pair = std::make_shared<cache_pair_type>(temp_cache) ;
+            second_cache_pair = std::make_shared<cache_pair_type>(std::move(temp_cache));
             //set accepted_block signal function
             chain.accepted_block.connect(boost::bind(&forest_bank::update_cache,this,_1));
         }
@@ -99,9 +103,15 @@ namespace celesos{
 
         void forest_bank::update_cache(const block_state_ptr& block){
             //store current and last period feed cache for verify wood
-            uint32_t block_number = chain.head_block_num();
-            uint32_t current_cache_number = block_number/forest_period_number();
-            if(first_cache_pair->first == current_cache_number){
+            if(chain.head_block_num() == 0){
+                return;
+            }
+
+
+            uint32_t block_number = chain.head_block_num()-1;
+            uint32_t current_cache_number = block_number/forest_period_number()+1;
+
+            if(!(first_cache_pair->second.empty()) && first_cache_pair->first == current_cache_number){
                 //in same period not need update
                 return;
             }
@@ -110,16 +120,18 @@ namespace celesos{
             uint32_t dataset_count = cache_count();
             block_id_type seed = chain.get_block_id_for_num(current_cache_number);
             if(celesos::ethash::calc_cache(node_vector,dataset_count,seed.str())){
-                if(!(first_cache_pair->second.empty()))
+                if(!(first_cache_pair->second.empty())  && first_cache_pair->second.size() > 0)
                 {
-                    if(!(second_cache_pair->second.empty())){
+                    if(!(second_cache_pair->second.empty()) && second_cache_pair->second.size() > 0){
                         second_cache_pair->second.clear();
                     }
                     second_cache_pair = first_cache_pair;
                 }
 
                 std::pair<uint32_t,std::vector<celesos::ethash::node>> temp_cache = std::make_pair(current_cache_number, node_vector);
-                first_cache_pair = &temp_cache;
+//                first_cache_pair = &temp_cache;
+
+                first_cache_pair = std::make_shared<cache_pair_type>(temp_cache) ;
             }
         }
 
