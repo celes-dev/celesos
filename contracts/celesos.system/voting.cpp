@@ -187,12 +187,7 @@ namespace eosiosystem {
             ++itl;
         }
 
-        if (block_number <= 60) {
-            return true;
-        } else {
-            return verify_wood(block_number, wood_owner_name, wood.c_str());
-        }
-
+        return verify_wood(block_number, wood_owner_name, wood.c_str());
     }
 
     void system_contract::update_vote(const account_name voter_name, const account_name wood_owner_name,
@@ -480,6 +475,9 @@ namespace eosiosystem {
 
     uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
 
+#if DEBUG
+        eosio::print("clean_dirty_wood:",block_number,"\r\n");
+#endif
         if (block_number > WOOD_PERIOD) {
 
             auto idx = _burninfos.get_index<N(block_number)>();
@@ -501,6 +499,9 @@ namespace eosiosystem {
             for (auto temp : wood_vector) {
                 auto itr = _burninfos.find(temp.rowid);
                 if (itr != _burninfos.end()) {
+#if DEBUG
+                    eosio::print("clean_dirty_wood wood:",temp.wood,"\r\n");
+#endif
                     _burninfos.erase(itr);
                 }
             }
