@@ -18,12 +18,14 @@ using celesos::miner::worker_ctx;
 using boost::multiprecision::uint256_t;
 using boost::signals2::connection;
 
-celesos::miner::miner::miner() : _alive_worker_ptrs{std::thread::hardware_concurrency(),
-                                                    vector<shared_ptr<worker>>::allocator_type()},
-                                 _signal_ptr{make_shared<celesos::miner::mine_signal_type>()},
-                                 _io_thread{&celesos::miner::miner::run, this},
-                                 _state{state::initialized},
-                                 _failure_retry_interval_us{fc::milliseconds(5000)} {
+celesos::miner::miner::miner(unsigned int worker_count) : _alive_worker_ptrs{0,
+                                                                                    vector<shared_ptr<worker>>::allocator_type()},
+                                                                 _signal_ptr{
+                                                                         make_shared<celesos::miner::mine_signal_type>()},
+                                                                 _io_thread{&celesos::miner::miner::run, this},
+                                                                 _state{state::initialized},
+                                                                 _worker_count{worker_count},
+                                                                 _failure_retry_interval_us{fc::milliseconds(5000)} {
 }
 
 celesos::miner::miner::~miner() {
@@ -197,21 +199,21 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
         ilog("restart workers to logging");
         this->stop_workers(true);
 
-        const auto core_count = std::max(std::thread::hardware_concurrency() - 1, 1u);
         auto retry_count_ptr = make_shared<uint256_t>(-1);
-        *retry_count_ptr /= core_count;
+        *retry_count_ptr /= _worker_count;
 
         uint256_t nonce_init{0};
         gen_random_uint256(nonce_init);
 
-        this->_alive_worker_ptrs.resize(core_count);
-        for (int i = 0; i < core_count; ++i) {
+        this->_alive_worker_ptrs.resize(_worker_count);
+        for (int i = 0; i < _worker_count; ++i) {
             auto nonce_start_ptr = make_shared<uint256_t>(nonce_init + (*retry_count_ptr) * i);
             worker_ctx ctx{
                     .forest_ptr = forest_ptr,
                     .target_ptr = target_ptr,
                     .dataset_ptr = dataset_ptr,
                     .retry_count_ptr = retry_count_ptr,
+                    .block_num = forest_info.block_number,
                     .nonce_start_ptr = std::move(nonce_start_ptr),
                     .signal_ptr = this->_signal_ptr,
                     .io_service_ptr = this->_io_service_ptr,

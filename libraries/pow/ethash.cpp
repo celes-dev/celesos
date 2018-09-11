@@ -211,10 +211,7 @@ namespace celesos {
         }
 
         bool uint256_to_hex(std::string &dst, const uint256_t &src) {
-            std::stringstream buffer{};
-            buffer << std::hex << std::showbase << src;
-            dst.resize(130);    // 2 char for base, 128 for value
-            buffer.str(dst);
+            dst = std::string{"0x"} + src.str(0, std::ios_base::hex);
             return true;
         }
 
