@@ -90,7 +90,7 @@ namespace eosiosystem {
         uint16_t last_producer_schedule_size = 0;
         double total_producer_vote_weight = 0; /// the sum of all producer votes
         block_timestamp last_name_close;
-        bool is_network_active;
+        bool is_network_active = false;
         uint16_t active_touch_count = 0;
 
         // explicit serialization macro is not necessary, used here only to improve compilation time
@@ -339,7 +339,7 @@ namespace eosiosystem {
 
         uint32_t clean_dirty_wood_history(uint32_t block_number, uint32_t maxline);
 
-        void onblock_clean_burn_stat(uint32_t block_number, uint32_t maxline);
+//        void onblock_clean_burn_stat(uint32_t block_number, uint32_t maxline);
 
         double calc_diff(uint32_t block_number);
 

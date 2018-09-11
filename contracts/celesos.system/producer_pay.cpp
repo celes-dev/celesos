@@ -48,7 +48,7 @@ namespace eosiosystem {
         }
 
         /// only update block producers once every minute, block_timestamp is in half seconds
-        if (timestamp.slot - _gstate.last_producer_schedule_update.slot > SINGING_TICKER_SEP) {
+        if (timestamp.slot - _gstate.last_producer_schedule_update.slot >= SINGING_TICKER_SEP) {
             update_elected_producers(timestamp);
 
             if (_gstate.is_network_active) {
