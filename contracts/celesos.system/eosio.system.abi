@@ -574,7 +574,7 @@
                 },
                 {
                     "name": "total_unpaid_fee",
-                    "type": "float64"
+                    "type": "uint32"
                 },
                 {
                     "name": "total_activated_stake",
@@ -632,7 +632,7 @@
                 },
                 {
                     "name": "unpaid_fee",
-                    "type": "float64"
+                    "type": "uint32"
                 },
                 {
                     "name": "last_claim_time",
@@ -684,7 +684,7 @@
                 },
                 {
                     "name": "stat",
-                    "type": "uint64"
+                    "type": "uint32"
                 }
             ]
         },
@@ -698,7 +698,7 @@
                 },
                 {
                     "name": "stat",
-                    "type": "uint64"
+                    "type": "uint32"
                 },
                 {
                     "name": "diff",

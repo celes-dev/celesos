@@ -84,7 +84,7 @@ namespace eosiosystem {
         int64_t total_ram_stake = 0;
 
         block_timestamp last_producer_schedule_update;
-        double total_unpaid_fee = 0; /// all blocks which have been produced but not paid
+        uint32_t total_unpaid_fee = 0; /// all blocks which have been produced but not paid
         int64_t total_activated_stake = 0;
         uint64_t thresh_activated_stake_time = 0;
         uint16_t last_producer_schedule_size = 0;
@@ -108,7 +108,7 @@ namespace eosiosystem {
         eosio::public_key producer_key; /// a packed public key object
         bool is_active = true;
         std::string url;
-        double unpaid_fee = 0;
+        uint32_t unpaid_fee = 0;
         uint64_t last_claim_time = 0;
         uint16_t location = 0;
 
@@ -182,7 +182,7 @@ namespace eosiosystem {
         uint64_t rowid = 0;
         account_name producer = 0; /// the producer
         uint32_t block_number = 0;
-        uint64_t stat = 0;
+        uint32_t stat = 0;
 
         uint64_t primary_key() const { return rowid; }
 
@@ -195,11 +195,11 @@ namespace eosiosystem {
     };
 
     struct wood_burn_block_stat {
-        uint64_t block_number = 0;
-        uint64_t stat = 0;
+        uint32_t block_number = 0;
+        uint32_t stat = 0;
         double diff = 0;
 
-        uint64_t primary_key() const { return block_number; }
+        uint32_t primary_key() const { return block_number; }
 
         // explicit serialization macro is not necessary, used here only to improve compilation time
         EOSLIB_SERIALIZE(wood_burn_block_stat, (block_number)(stat)(diff))
