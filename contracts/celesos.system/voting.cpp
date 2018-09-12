@@ -429,8 +429,8 @@ namespace eosiosystem {
         double targetdiff = ((wood1 ? wood1 : TARGET_WOOD_NUMBER) * (diff1 > 0 ? diff1 : 1) * 4 +
                              (wood2 ? wood2 : TARGET_WOOD_NUMBER) * (diff2 > 0 ? diff2 : 1) * 2 +
                              (wood3 ? wood3 : TARGET_WOOD_NUMBER) * (diff3 > 0 ? diff3 : 1)) / TARGET_WOOD_NUMBER / 7;
-        if (targetdiff <= 1.0) {
-            targetdiff = 1.0;
+        if (targetdiff <= .0001) {
+            targetdiff = 0.0001;
         }
         auto current = _burnblockstatinfos.find(block_number);
         if (current == _burnblockstatinfos.end()) {
