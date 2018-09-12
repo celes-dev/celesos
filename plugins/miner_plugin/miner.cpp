@@ -45,7 +45,7 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
     ilog("start() begin");
     this->_state = state::started;
 
-    auto slot = [this, &relative_account, &cc](const chain::block_state_ptr &block_ptr) {
+    auto slot = [this, &relative_account, &cc](const chain::block_state_ptr block_ptr) {
         if (this->_last_failure_time_us) {
             auto &&passed_time_us = fc::time_point::now().time_since_epoch() - this->_last_failure_time_us.get();
             if (passed_time_us < this->_failure_retry_interval_us) {
@@ -78,7 +78,7 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
     };
     auto a_connection = cc.accepted_block_header.connect(
             [this, slot = std::move(slot)](const chain::block_state_ptr &block_ptr) {
-                this->_io_service_ptr->post(std::bind(slot, std::cref(block_ptr)));
+                this->_io_service_ptr->post(std::bind(slot, block_ptr));
             });
     this->_connections.push_back(std::move(a_connection));
     ilog("start() end");
