@@ -65,10 +65,10 @@ namespace celesos{
 
         bool forest_bank::verify_wood(uint32_t block_number, const account_name& account, const char* wood){
             uint32_t current_block_number = chain.head_block_num();
-            if(block_number <= current_block_number - forest_period_number()){
+            if(block_number + forest_period_number()<= current_block_number){
                 //wood is past due
                 return false;
-            } else if(block_number%forest_space_number() != 0){
+            } else if(block_number > 1 && (block_number - 1)%forest_space_number() != 0){
                 //not forest
                 return false;
             }else{
@@ -76,11 +76,14 @@ namespace celesos{
                 signed_block_ptr block_ptr = chain.fetch_block_by_number(block_number);
                 //get forest target
                 optional<double> diff = block_ptr->difficulty;
-                double double_target = *diff;
+                double double_target = 1.0;
+                if(diff){
+                    double_target = *diff;
+                }
                 uint256_t target_int = static_cast<uint256_t>(double_target*100);
                 uint256_t target = (original_target)/target_int/100;
                 //prepare parameter for ethash
-                uint32_t cache_number = block_number/forest_period_number();
+                uint32_t cache_number = block_number/forest_period_number()+1;
                 std::vector<celesos::ethash::node> cache_data;
                 if(cache_number == first_cache_pair->first){
                     cache_data = first_cache_pair->second;
