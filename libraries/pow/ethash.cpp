@@ -127,7 +127,7 @@ namespace celesos {
             dataset.resize(dataset_count);
 
             for (uint32_t i = 0; i < dataset_count; ++i) {
-                dataset.push_back(calc_dataset_item(cache, i));
+                dataset[i] = calc_dataset_item(cache, i);
             }
             return true;
         }

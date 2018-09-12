@@ -21,6 +21,7 @@ namespace celesos {
             using hash_ptr_type = std::shared_ptr<boost::multiprecision::uint256_t>;
 
             const dataset_ptr_type dataset_ptr;
+            const std::shared_ptr<std::string> seed_ptr;
             const std::shared_ptr<std::string> forest_ptr;
             const hash_ptr_type nonce_start_ptr;
             const hash_ptr_type retry_count_ptr;
