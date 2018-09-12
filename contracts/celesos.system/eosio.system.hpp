@@ -114,7 +114,7 @@ namespace eosiosystem {
 
         uint64_t primary_key() const { return owner; }
 
-        double by_votes() const { return is_active ? -total_votes : total_votes; }
+        double by_votes() const { return is_active ? -1.0 * total_votes : total_votes; }
 
         bool active() const { return is_active; }
 
