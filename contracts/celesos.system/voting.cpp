@@ -442,6 +442,10 @@ namespace eosiosystem {
                 p.diff = targetdiff;
             });
         }
+
+#if DEBUG
+        eosio::print("set diff:",targetdiff,"\r\n");
+#endif
         return targetdiff;
     }
 
