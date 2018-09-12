@@ -71,6 +71,13 @@ void celesos::miner::worker::run() {
 
         if (ethash::hash_full(forest, nonce_current, dataset_count, dataset) <= target) {
             wood_opt = nonce_current;
+            ilog(
+                    "success to compute valid wood: ${wood} with forest: ${forest} target:${target} dataset_count:${dataset_count}",
+                    ("wood", wood_opt->str(0, std::ios_base::hex).c_str())
+                            ("forest", forest.c_str())
+                            ("target", target.str(0, std::ios_base::hex).c_str())
+                            ("dataset_count", dataset_count)
+                    );
             this->_ctx.io_service_ptr->post(
                     [signal = this->_ctx.signal_ptr, block_num = this->_ctx.block_num, wood_opt = wood_opt]() {
                         auto is_success = !!wood_opt;
