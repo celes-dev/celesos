@@ -17,6 +17,7 @@
 #include <celesos/miner_plugin/worker.hpp>
 #include <celesos/miner_plugin/miner.hpp>
 #include <celesos/miner_plugin/miner_plugin.hpp>
+#include <eosio/chain/forest_bank.hpp>
 
 using namespace celesos;
 using namespace eosio;
@@ -93,16 +94,20 @@ BOOST_AUTO_TEST_SUITE(miner_suite)
         std::mutex mutex{};
         std::unique_lock<std::mutex> lock{mutex};
         std::condition_variable stop_signal{};
+        auto bank = forest::forest_bank::getInstance(controller_ref);
         miner::miner miner{};
-        miner.connect([&stop_signal](auto is_success, auto block_num, const auto &wood_opt) {
-            BOOST_TEST_MESSAGE("receive wood from callback");
+        miner.connect([&stop_signal, bank](bool is_success, chain::block_num_type block_num,
+                                           const boost::optional<uint256_t> &wood_opt) {
+            BOOST_CHECK_EQUAL(is_success, true);
+            std::string wood_hex{};
+            ethash::uint256_to_hex(wood_hex, *wood_opt);
+            BOOST_CHECK_EQUAL(bank->verify_wood(block_num, "yale", wood_hex.c_str()), true);
             stop_signal.notify_all();
         });
 
         BOOST_TEST_MESSAGE("begin solve wood by miner");
         chain::account_name relative_account{"yale"};
         miner.start(std::move(relative_account), controller_ref);
-
         produce_blocks(1024);
         stop_signal.wait(lock);
         BOOST_TEST_MESSAGE("after wait");

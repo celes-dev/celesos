@@ -239,6 +239,9 @@ void celesos::miner_plugin::plugin_startup() {
 //                        std::string wood_hex{130, '0', std::string::allocator_type{}};
                         std::string wood_hex{};
                         ethash::uint256_to_hex(wood_hex, wood_opt.get());
+                        auto bank = forest::forest_bank::getInstance(the_chain_plugin.chain());
+                        ilog("wood should pass varify check: ${is_pass}",
+                             ("is_pass", bank->verify_wood(block_num, voter_name, wood_hex.c_str())));
 
                         chain::signed_transaction tx{};
                         vector<chain::permission_level> auth{{voter_name, "active"}};
