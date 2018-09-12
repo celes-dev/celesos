@@ -88,7 +88,7 @@ namespace eosiosystem {
         int64_t total_activated_stake = 0;
         uint64_t thresh_activated_stake_time = 0;
         uint16_t last_producer_schedule_size = 0;
-        double total_producer_vote_weight = 0; /// the sum of all producer votes
+        uint32_t total_producer_vote_weight = 0; /// the sum of all producer votes
         block_timestamp last_name_close;
         bool is_network_active = false;
         uint16_t active_touch_count = 0;
@@ -104,7 +104,7 @@ namespace eosiosystem {
 
     struct producer_info {
         account_name owner;
-        double total_votes = 0;
+        uint32_t total_votes = 0;
         eosio::public_key producer_key; /// a packed public key object
         bool is_active = true;
         std::string url;
