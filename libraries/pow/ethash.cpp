@@ -127,7 +127,7 @@ namespace celesos {
             dataset.resize(dataset_count);
 
             for (uint32_t i = 0; i < dataset_count; ++i) {
-                dataset.push_back(calc_dataset_item(cache, i));
+                dataset[i] = calc_dataset_item(cache, i);
             }
             return true;
         }
@@ -216,9 +216,6 @@ namespace celesos {
         }
 
         bool hex_to_uint256(uint256_t &dst, const std::string &src) {
-            if (src.size() != 130) {
-                return false;
-            }
             dst = uint256_t{src};
             return true;
         }

@@ -19,13 +19,13 @@ using boost::multiprecision::uint256_t;
 using boost::signals2::connection;
 
 celesos::miner::miner::miner(unsigned int worker_count) : _alive_worker_ptrs{0,
-                                                                                    vector<shared_ptr<worker>>::allocator_type()},
-                                                                 _signal_ptr{
-                                                                         make_shared<celesos::miner::mine_signal_type>()},
-                                                                 _io_thread{&celesos::miner::miner::run, this},
-                                                                 _state{state::initialized},
-                                                                 _worker_count{worker_count},
-                                                                 _failure_retry_interval_us{fc::milliseconds(5000)} {
+                                                                             vector<shared_ptr<worker>>::allocator_type()},
+                                                          _signal_ptr{
+                                                                  make_shared<celesos::miner::mine_signal_type>()},
+                                                          _io_thread{&celesos::miner::miner::run, this},
+                                                          _state{state::initialized},
+                                                          _worker_count{worker_count},
+                                                          _failure_retry_interval_us{fc::milliseconds(5000)} {
 }
 
 celesos::miner::miner::~miner() {
@@ -133,6 +133,7 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
 //            "0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
     const auto target_ptr = make_shared<uint256_t>(forest_info.target);
 
+    const auto seed_ptr = make_shared<string>(forest_info.seed.str());
     const auto forest_ptr = make_shared<string>(forest_info.forest.str());
 
     // prepare cache and dataset_ptr
@@ -153,7 +154,7 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
     if (is_cache_changed) {
         ilog("begin prepare cache with count: ${count}", ("count", new_cache_count));
         cache_ptr = make_shared<vector<ethash::node>>(new_cache_count, vector<ethash::node>::allocator_type());
-        ethash::calc_cache(*cache_ptr, new_cache_count, forest_info.seed);
+        ethash::calc_cache(*cache_ptr, new_cache_count, *seed_ptr);
         ilog("end prepare cache with count: ${count}", ("count", new_cache_count));
     } else {
         ilog("use cache generated");
@@ -209,6 +210,7 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
         for (int i = 0; i < _worker_count; ++i) {
             auto nonce_start_ptr = make_shared<uint256_t>(nonce_init + (*retry_count_ptr) * i);
             worker_ctx ctx{
+                    .seed_ptr = seed_ptr,
                     .forest_ptr = forest_ptr,
                     .target_ptr = target_ptr,
                     .dataset_ptr = dataset_ptr,
@@ -263,7 +265,7 @@ void celesos::miner::miner::gen_random_uint256(uint256_t &dst) {
     uniform_int_distribution<uint64_t> dis{};
     dst = 0;
     for (int i = 0; i < 4; ++i) {
-        dst <<= i;
+        dst <<= 64;
         dst |= dis(gen);
     }
 }

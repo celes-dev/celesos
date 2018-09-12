@@ -97,6 +97,19 @@ namespace celesos{
                 block_id_type block_id = chain.get_block_id_for_num(block_number);
                 block_id_type wood_forest = fc::sha256::hash(block_id.str()+account.to_string());
                 uint32_t data_set_count = dataset_count();
+
+
+                block_id_type seed = fc::sha256::hash(chain.get_block_id_for_num(first_cache_pair->first).str());
+                ilog(
+                        "verify seed: ${seed} \n\t\twood: ${wood}  \n\t\tforest: ${forest} \n\t\ttarget:${target} \n\t\tdata_set_count:${data_set_count}",
+                        ("seed", seed.str())
+                        ("wood", wood)
+                        ("forest", wood_forest.str())
+                        ("target", target.str(0, std::ios_base::hex).c_str())
+                        ("data_set_count", data_set_count)
+                );
+
+
                 //call ethash verify wood
                 auto result_value = celesos::ethash::hash_light_hex(wood_forest,string(wood),data_set_count,cache_data);
 
@@ -106,7 +119,7 @@ namespace celesos{
 
         void forest_bank::update_cache(const block_state_ptr& block){
             //store current and last period feed cache for verify wood
-            if(chain.head_block_num() == 0){
+            if(chain.head_block_num() <= 1){
                 return;
             }
 
@@ -121,7 +134,10 @@ namespace celesos{
 
             std::vector<celesos::ethash::node> node_vector;
             uint32_t dataset_count = cache_count();
-            block_id_type seed = chain.get_block_id_for_num(current_cache_number);
+            block_id_type seed = fc::sha256::hash(chain.get_block_id_for_num(current_cache_number).str());
+            ilog("=======update_cache:${seed} current_cache_number:${current_cache_number}",
+                 ("seed", seed.str())
+                 ("current_cache_number",current_cache_number));
             if(celesos::ethash::calc_cache(node_vector,dataset_count,seed.str())){
                 if(!(first_cache_pair->second.empty())  && first_cache_pair->second.size() > 0)
                 {
@@ -140,13 +156,17 @@ namespace celesos{
 
         bool forest_bank::get_forest(forest_struct& forest, const account_name& account){
             uint32_t current_block_number = chain.head_block_num();
+            if(current_block_number <= 1){
+                return false;
+            }
 
             uint32_t current_forest_number = current_block_number/forest_space_number() * forest_space_number()+1;
 
             if((forest.target == 0) || (current_forest_number != forest.block_number)){
                 block_id_type result_value = chain.get_block_id_for_num(current_forest_number);
+                block_id_type seed_value = chain.get_block_id_for_num(first_cache_pair->first);
 
-                forest_data.seed = fc::sha256::hash(result_value.str());
+                forest_data.seed = fc::sha256::hash(seed_value.str());
                 forest_data.forest = fc::sha256::hash(result_value.str()+ account.to_string());
                 forest_data.block_number = current_forest_number;
                 forest_data.next_block_num = current_forest_number+forest_space_number();
