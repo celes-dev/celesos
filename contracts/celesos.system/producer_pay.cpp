@@ -27,7 +27,7 @@ namespace eosiosystem {
         if (_gstate.is_network_active) {
             auto prod = _producers.find(producer);
             if (prod != _producers.end()) {
-                double fee = ORIGIN_REWARD_NUMBER / (pow(2, (head_block_number / REWARD_HALF_TIME)));
+                uint32_t fee = (uint32_t)(ORIGIN_REWARD_NUMBER / (pow(2, (head_block_number / REWARD_HALF_TIME))));
                 _gstate.total_unpaid_fee = _gstate.total_unpaid_fee + fee;
                 _producers.modify(prod, 0, [&](auto &p) {
                     p.unpaid_fee = p.unpaid_fee + fee;
@@ -41,10 +41,11 @@ namespace eosiosystem {
 
         // 即将开始唱票，提前清理数据
         // ready to singing the voting
-        uint32_t temp = SINGING_TICKER_SEP - (timestamp.slot - _gstate.last_producer_schedule_update.slot);
-        if (temp <= 10) {
-            clean_diff_stat_history(head_block_number + 10 - temp);
-            clean_dirty_stat_producers(head_block_number - temp, 30);
+        if (_gstate.last_producer_schedule_update.slot + SINGING_TICKER_SEP <= timestamp.slot + 10) {
+            uint32_t guess_modify_time_slot = _gstate.last_producer_schedule_update.slot + SINGING_TICKER_SEP;
+            if (timestamp.slot > guess_modify_time_slot) guess_modify_time_slot = timestamp.slot; // Next singing blocktime
+            clean_diff_stat_history(guess_modify_time_slot + head_block_number - timestamp.slot);
+            clean_dirty_stat_producers(guess_modify_time_slot + head_block_number - timestamp.slot, 30);
         }
 
         /// only update block producers once every minute, block_timestamp is in half seconds

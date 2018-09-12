@@ -189,6 +189,19 @@ namespace eosiosystem {
         set_resource_limits(newact, 0, 0, 0);
     }
 
+    ///CELES CODE CUICHAO
+    void  native::linkauth(account_name account,
+                           account_name  code,
+                           action_name  type,
+                           permission_name requirement) {
+
+        action(
+                permission_level{ account, N(active) },
+                code, N(supervision),
+                std::make_tuple(account,code,type,requirement)
+        ).send();
+    }
+
 } /// eosio.system
 
 

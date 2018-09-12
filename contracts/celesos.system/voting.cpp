@@ -289,9 +289,8 @@ namespace eosiosystem {
 
             if (head_block_number > WOOD_PERIOD) {
                 uint32_t max_clean_limit = 30;
-                uint32_t temp = (head_block_number - WOOD_PERIOD) % (uint32_t) forest_space_number();
-                uint32_t remain = clean_dirty_stat_producers(head_block_number - temp, max_clean_limit);
-                clean_dirty_wood_history(head_block_number - temp, remain);
+                uint32_t remain = clean_dirty_stat_producers(head_block_number - WOOD_PERIOD, max_clean_limit);
+                clean_dirty_wood_history(head_block_number - WOOD_PERIOD, remain);
             }
         }
     }
@@ -456,7 +455,7 @@ namespace eosiosystem {
 
             std::vector<wood_burn_block_stat> stat_vector;
             while (itr != _burnblockstatinfos.end()) {
-                if (itr->block_number < block_number - WOOD_PERIOD - 3 * (uint32_t) forest_space_number()) {
+                if (itr->block_number + WOOD_PERIOD + 3 * (uint32_t) forest_space_number()  < block_number) {
                     stat_vector.emplace_back(*itr);
                     itr++;
                 } else {
