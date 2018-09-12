@@ -216,9 +216,6 @@ namespace celesos {
         }
 
         bool hex_to_uint256(uint256_t &dst, const std::string &src) {
-            if (src.size() != 130) {
-                return false;
-            }
             dst = uint256_t{src};
             return true;
         }

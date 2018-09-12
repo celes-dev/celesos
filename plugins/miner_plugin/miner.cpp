@@ -19,13 +19,13 @@ using boost::multiprecision::uint256_t;
 using boost::signals2::connection;
 
 celesos::miner::miner::miner(unsigned int worker_count) : _alive_worker_ptrs{0,
-                                                                                    vector<shared_ptr<worker>>::allocator_type()},
-                                                                 _signal_ptr{
-                                                                         make_shared<celesos::miner::mine_signal_type>()},
-                                                                 _io_thread{&celesos::miner::miner::run, this},
-                                                                 _state{state::initialized},
-                                                                 _worker_count{worker_count},
-                                                                 _failure_retry_interval_us{fc::milliseconds(5000)} {
+                                                                             vector<shared_ptr<worker>>::allocator_type()},
+                                                          _signal_ptr{
+                                                                  make_shared<celesos::miner::mine_signal_type>()},
+                                                          _io_thread{&celesos::miner::miner::run, this},
+                                                          _state{state::initialized},
+                                                          _worker_count{worker_count},
+                                                          _failure_retry_interval_us{fc::milliseconds(5000)} {
 }
 
 celesos::miner::miner::~miner() {
@@ -265,7 +265,7 @@ void celesos::miner::miner::gen_random_uint256(uint256_t &dst) {
     uniform_int_distribution<uint64_t> dis{};
     dst = 0;
     for (int i = 0; i < 4; ++i) {
-        dst <<= i;
+        dst <<= 64;
         dst |= dis(gen);
     }
 }
