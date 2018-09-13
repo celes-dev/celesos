@@ -48,9 +48,6 @@ namespace celesos {
             dst = 0;
             uint256_t tmp;
 #ifdef BOOST_LITTLE_ENDIAN
-//    for (uint i = 0; i < src_size; ++i) {
-//        dst |= uint256_t{src[i]} << (8 * i);
-//    }
             for (uint i = 0; i < src_size; ++i) {
                 tmp = src[i];
                 tmp <<= 8 * i;
@@ -58,14 +55,11 @@ namespace celesos {
             }
 #endif
 #ifdef BOOST_BIG_ENDIAN
-            //    for (int i = 0; i < src_size; ++i) {
-    //        dst |= uint256_t{src[src_size - 1 - i]} << (8 * i);
-    //    }
-        for (uint i = 0; i < src_size; ++i) {
-            tmp = src[src_size - 1 - i];
-            tmp <<= 8 * i;
-            dst |= tmp;
-        }
+            for (uint i = 0; i < src_size; ++i) {
+                tmp = src[src_size - 1 - i];
+                tmp <<= 8 * i;
+                dst |= tmp;
+            }
 #endif
             return true;
         }
@@ -133,16 +127,21 @@ namespace celesos {
         }
 
         uint256_t hash_impl(const string &forest_template,
-                            const boost::multiprecision::uint256_t &nonce_template,
+                            const boost::multiprecision::uint256_t &nonce,
                             uint32_t dataset_count,
                             const std::function<node(uint32_t)> &dataset_lookup) {
-            char buffer[64];
-            memcpy(buffer, &forest_template[0], 32);
-            auto nonce = native_to_little(nonce_template);
-            memcpy(buffer + 32, &nonce, 32);
+            const auto buffer_size = forest_template.size() + 32;
+            char buffer[buffer_size];
+            memcpy(buffer, &forest_template[0], forest_template.size());
+            for (int i = 0; i < 4; ++i) {
+                auto offset = forest_template.size() + i * 8;
+                auto nonce_part = static_cast<uint64_t>((nonce >> i * 8) & std::numeric_limits<uint64_t>::max());
+                native_to_little(nonce_part);
+                memcpy(buffer + offset, &nonce_part, 8);
+            }
 
             node forest{};
-            sha512(forest.bytes, buffer, 64);
+            sha512(forest.bytes, buffer, buffer_size);
             fix_endian_arr32(forest.words, NODE_WORDS);
 
             union {
