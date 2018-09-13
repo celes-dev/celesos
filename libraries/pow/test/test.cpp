@@ -11,7 +11,7 @@
 #include "boost/optional.hpp"
 #include "fc/crypto/hex.hpp"
 
-using namespace celesos::ethash;
+using namespace celesos;
 
 using boost::multiprecision::uint256_t;
 
@@ -28,15 +28,15 @@ namespace celesos {
 BOOST_AUTO_TEST_CASE(fnv_hash_check) {
     uint32_t x = 1235U;
     uint32_t y = 9999999U;
-    uint32_t expected = (FNV_PRIME * x) ^y;
-    uint32_t actual = fnv(x, y);
+    uint32_t expected = (ethash::FNV_PRIME * x) ^y;
+    uint32_t actual = ethash::fnv(x, y);
     BOOST_REQUIRE_EQUAL(actual, expected);
 }
 
 BOOST_AUTO_TEST_CASE(sha256_test) {
     std::string input{"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"};
     unsigned char buffer[32];
-    sha256(buffer, input.c_str(), input.size());
+    ethash::sha256(buffer, input.c_str(), input.size());
 
     std::string actual{std::cbegin(buffer), std::cend(buffer)};
     actual = fc::to_hex(actual.c_str(), static_cast<uint32_t>(actual.size()));
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(sha256_test) {
 BOOST_AUTO_TEST_CASE(sha512_test) {
     std::string input{"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"};
     unsigned char buffer[64];
-    sha512(buffer, input.c_str(), input.size());
+    ethash::sha512(buffer, input.c_str(), input.size());
 
     std::string actual{std::cbegin(buffer), std::cend(buffer)};
     actual = fc::to_hex(actual.c_str(), static_cast<uint32_t>(actual.size()));
@@ -59,43 +59,67 @@ BOOST_AUTO_TEST_CASE(sha512_test) {
 }
 
 BOOST_AUTO_TEST_CASE(light_and_full_client_checks) {
-    const static uint32_t HASH_BYTES = 64;
-    const static uint64_t CACHE_BYTES = 1024;
-    const static uint64_t DATASET_BYTES = 1024 * 32;
 
-    const static auto CACHE_COUNT = static_cast<uint32_t>(CACHE_BYTES / HASH_BYTES);
-    const static auto DATASET_COUNT = static_cast<uint32_t>(DATASET_BYTES / HASH_BYTES);
+    const static auto CACHE_COUNT = 512;
+    const static auto DATASET_COUNT = 512 * 16;
 
-    uint256_t target{197};
-    target |= uint256_t{90} << 1;
-    for (int i = 2; i < 32; ++i) {
-        target |= uint256_t{255} << i * 8;
-    }
+    uint256_t target{"0x68DB8BAC710CB295E9E1B089A027525460AA64C2F837B4A2339C0EBEDFA"};
+//    uint256_t target{"0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"};
+    std::string seed{"15fb89b6d22d57d008d74c4dfa8ae5e2ea2f2cda5f050d690d3d67e31cd15b8b"};
+    std::string forest{"ee4da936687ccd26b510b23b600a8cf461b30b1d61f51bcaa9f6a27d2e55a9bc"};
 
-    std::string seed{"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"};
-    auto &forest = seed;
-
-    auto cache = std::vector<node>{CACHE_COUNT, std::vector<node>::allocator_type()};
+    auto cache = std::vector<ethash::node>{CACHE_COUNT, std::vector<ethash::node>::allocator_type()};
     calc_cache(cache, CACHE_COUNT, seed);
 
-    auto dataset = std::vector<node>{DATASET_COUNT, std::vector<node>::allocator_type()};
+    auto dataset = std::vector<ethash::node>{DATASET_COUNT, std::vector<ethash::node>::allocator_type()};
     calc_dataset(dataset, DATASET_COUNT, cache);
 
-    uint256_t nonce_init = 0;
+    uint256_t wood_init = 0;
     uint256_t tmp = 0;
     std::random_device rd;
     for (int i = 0; i < 16; ++i) {
         tmp = rd();
         tmp <<= i * 16;
-        nonce_init |= tmp;
+        wood_init |= tmp;
     }
-    uint256_t nonce = nonce_init;
+    uint256_t wood = wood_init;
+    bool is_find = false;
     do {
-        if (hash_full(forest, nonce, DATASET_COUNT, dataset) <= target) {
+        if (ethash::hash_full(forest, wood, DATASET_COUNT, dataset) <= target) {
+            is_find = true;
             break;
         }
-        nonce++;
-    } while (nonce > nonce_init);
+        wood++;
+    } while (wood > wood_init);
+    BOOST_REQUIRE(is_find == true);
+    auto wood_hex = std::string{"0x"} + wood.str(0, std::ios_base::hex);
+    BOOST_REQUIRE(ethash::hash_full(forest, wood, DATASET_COUNT, dataset) ==
+                  ethash::hash_light(forest, wood, DATASET_COUNT, cache));
+    BOOST_REQUIRE(ethash::hash_light(forest, wood, DATASET_COUNT, cache) <= target);
+}
 
-    BOOST_REQUIRE(hash_light(forest, nonce, DATASET_COUNT, cache));
+BOOST_AUTO_TEST_CASE(light_and_full_client_checks_hex) {
+    const static auto CACHE_COUNT = 512;
+    const static auto DATASET_COUNT = 512 * 16;
+
+    uint256_t target{"0x68DB8BAC710CB295E9E1B089A027525460AA64C2F837B4A2339C0EBEDFA"};
+    std::string seed{"15fb89b6d22d57d008d74c4dfa8ae5e2ea2f2cda5f050d690d3d67e31cd15b8b"};
+    std::string forest{"ee4da936687ccd26b510b23b600a8cf461b30b1d61f51bcaa9f6a27d2e55a9bc"};
+
+    auto cache = std::vector<ethash::node>{CACHE_COUNT, std::vector<ethash::node>::allocator_type()};
+    calc_cache(cache, CACHE_COUNT, seed);
+
+    auto dataset = std::vector<ethash::node>{DATASET_COUNT, std::vector<ethash::node>::allocator_type()};
+    calc_dataset(dataset, DATASET_COUNT, cache);
+
+    uint256_t wood{0x190FAB};
+    std::string wood_hex{"0x190FAB"};
+    auto light_ret = ethash::hash_light(forest, wood, DATASET_COUNT, cache).str(0, std::ios_base::hex);
+    auto full_ret = ethash::hash_full(forest, wood, DATASET_COUNT, dataset).str(0, std::ios_base::hex);
+    auto light_hex_ret = ethash::hash_light_hex(forest, wood_hex, DATASET_COUNT, cache).str(0, std::ios_base::hex);
+    auto full_hex_ret = ethash::hash_full_hex(forest, wood_hex, DATASET_COUNT, dataset).str(0, std::ios_base::hex);
+    BOOST_REQUIRE(light_ret == light_hex_ret);
+    BOOST_REQUIRE(full_ret == full_hex_ret);
+    BOOST_REQUIRE(light_ret == full_ret);
+    BOOST_REQUIRE(light_hex_ret == full_hex_ret);
 }
