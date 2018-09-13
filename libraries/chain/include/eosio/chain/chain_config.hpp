@@ -37,7 +37,7 @@ struct chain_config {
    uint32_t   max_inline_action_size;              ///< maximum allowed size (in bytes) of an inline action
    uint16_t   max_inline_action_depth;             ///< recursion depth limit on sending inline actions
    uint16_t   max_authority_depth;                 ///< recursion depth limit for checking if an authority is satisfied
-   fc::uint256_t  origin_difficulty;                   ///origin difficulty
+   uint64_t   origin_difficulty;              ///origin difficulty
 
    void validate()const;
 
@@ -61,7 +61,8 @@ struct chain_config {
                  << "Max Inline Action Size: " << c.max_inline_action_size << ", "
                  << "Max Inline Action Depth: " << c.max_inline_action_depth << ", "
                  << "Max Authority Depth: " << c.max_authority_depth << ","
-                 << "Max Authority Depth: " << c.origin_difficulty <<"\n";
+                 << "Max Authority Depth: " << c.max_authority_depth << ","
+                 << "Origin Difficulty: " << c.origin_difficulty << "\n";
    }
 };
 

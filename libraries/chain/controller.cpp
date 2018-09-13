@@ -1376,7 +1376,10 @@ account_name  controller::fork_db_head_block_producer()const {
 }
 
 uint256_t  controller::origin_difficulty()const {
-   return get_global_properties().configuration.origin_difficulty;
+    static uint256_t origin_difficulty(get_global_properties().configuration.origin_difficulty);
+    static uint256_t supplement("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+    static uint256_t result = origin_difficulty << 192 | supplement ;
+    return result;
 }
 
 block_state_ptr controller::pending_block_state()const {

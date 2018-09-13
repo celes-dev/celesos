@@ -85,7 +85,7 @@ namespace celesos{
                     double_target = *diff;
                 }
                 uint256_t target_int = static_cast<uint256_t>(double_target*100);
-                uint256_t target = (chain.origin_difficulty())/target_int/100;
+                uint256_t target = chain.origin_difficulty()/target_int/100;
                 //prepare parameter for ethash
                 uint32_t cache_number = block_number/forest_period_number()+1;
                 std::vector<celesos::ethash::node> cache_data;
@@ -173,7 +173,7 @@ namespace celesos{
                 }
                 
                 uint256_t target_int = static_cast<uint256_t>(double_target*100);
-                uint256_t value = (chain.origin_difficulty())/target_int/100;
+                uint256_t value = chain.origin_difficulty()/target_int/100;
 
                 forest_data.target = value;
             }
