@@ -1375,6 +1375,10 @@ account_name  controller::fork_db_head_block_producer()const {
    return my->fork_db.head()->header.producer;
 }
 
+uint256_t  controller::origin_difficulty()const {
+   return get_global_properties().configuration.origin_difficulty;
+}
+
 block_state_ptr controller::pending_block_state()const {
    if( my->pending ) return my->pending->_pending_block_state;
    return block_state_ptr();

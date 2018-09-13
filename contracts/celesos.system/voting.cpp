@@ -76,10 +76,7 @@ namespace eosiosystem {
     }
 
     void system_contract::update_elected_producers(block_timestamp block_time) {
-
-#if DEBUG
-        eosio::print("begin to singing the voting...");
-#endif
+        
         _gstate.last_producer_schedule_update = block_time;
 
         auto idx = _producers.get_index<N(prototalvote)>();
@@ -101,9 +98,6 @@ namespace eosiosystem {
             }
 
             if (_gstate.active_touch_count >= ACTIVE_NETWORK_CYCLE) {
-#if DEBUG
-                eosio::print("active the network......");
-#endif
                 _gstate.is_network_active = true;
             }
         }
@@ -448,6 +442,10 @@ namespace eosiosystem {
                 p.diff = targetdiff;
             });
         }
+
+#if DEBUG
+        eosio::print("set diff:",targetdiff,"\r\n");
+#endif
         return targetdiff;
     }
 
