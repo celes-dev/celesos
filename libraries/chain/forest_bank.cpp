@@ -77,6 +77,10 @@ namespace celesos{
                 //get forest target
                 optional<double> diff = block_ptr->difficulty;
                 double double_target = 1.0;
+                if(diff.valid() == false){
+                    ilog("*******verify_wood not find target from block!!!! block_number:${block_number}",
+                         ("block_number",block_number));
+                }
                 if(diff){
                     double_target = *diff;
                 }
@@ -100,15 +104,6 @@ namespace celesos{
 
 
                 block_id_type seed = fc::sha256::hash(chain.get_block_id_for_num(first_cache_pair->first).str());
-                ilog(
-                        "verify seed: ${seed} \n\t\twood: ${wood}  \n\t\tforest: ${forest} \n\t\ttarget:${target} \n\t\tdata_set_count:${data_set_count}",
-                        ("seed", seed.str())
-                        ("wood", wood)
-                        ("forest", wood_forest.str())
-                        ("target", target.str(0, std::ios_base::hex).c_str())
-                        ("data_set_count", data_set_count)
-                );
-
 
                 //call ethash verify wood
                 auto result_value = celesos::ethash::hash_light_hex(wood_forest,string(wood),data_set_count,cache_data);
@@ -135,9 +130,7 @@ namespace celesos{
             std::vector<celesos::ethash::node> node_vector;
             uint32_t dataset_count = cache_count();
             block_id_type seed = fc::sha256::hash(chain.get_block_id_for_num(current_cache_number).str());
-            ilog("=======update_cache:${seed} current_cache_number:${current_cache_number}",
-                 ("seed", seed.str())
-                 ("current_cache_number",current_cache_number));
+
             if(celesos::ethash::calc_cache(node_vector,dataset_count,seed.str())){
                 if(!(first_cache_pair->second.empty())  && first_cache_pair->second.size() > 0)
                 {
