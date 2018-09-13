@@ -58,13 +58,25 @@ BOOST_AUTO_TEST_CASE(sha512_test) {
     BOOST_REQUIRE_EQUAL(actual, expect);
 }
 
+BOOST_AUTO_TEST_CASE(uint256_hex_conversion) {
+    uint256_t val{0x190FAB};
+    std::string val_hex{"0x190FAB"};
+
+    std::string ret_hex{};
+    ethash::uint256_to_hex(ret_hex, val);
+    BOOST_REQUIRE(ret_hex == val_hex);
+
+    uint256_t ret{};
+    ethash::hex_to_uint256(ret, ret_hex);
+    BOOST_REQUIRE(ret == val);
+}
+
 BOOST_AUTO_TEST_CASE(light_and_full_client_checks) {
 
     const static auto CACHE_COUNT = 512;
     const static auto DATASET_COUNT = 512 * 16;
 
-    uint256_t target{"0x68DB8BAC710CB295E9E1B089A027525460AA64C2F837B4A2339C0EBEDFA"};
-//    uint256_t target{"0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"};
+    uint256_t target{"0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"};
     std::string seed{"15fb89b6d22d57d008d74c4dfa8ae5e2ea2f2cda5f050d690d3d67e31cd15b8b"};
     std::string forest{"ee4da936687ccd26b510b23b600a8cf461b30b1d61f51bcaa9f6a27d2e55a9bc"};
 
