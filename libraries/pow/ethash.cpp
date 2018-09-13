@@ -130,14 +130,18 @@ namespace celesos {
                             const boost::multiprecision::uint256_t &nonce,
                             uint32_t dataset_count,
                             const std::function<node(uint32_t)> &dataset_lookup) {
-            char buffer[64];
-            memcpy(buffer, &forest_template[0], 32);
-            auto nonce_slice = static_cast<uint32_t>(nonce & std::numeric_limits<uint32_t>::max());
-            native_to_little(nonce_slice);
-            memcpy(buffer + 32, &nonce_slice, 32);
+            const auto buffer_size = forest_template.size() + 32;
+            char buffer[buffer_size];
+            memcpy(buffer, &forest_template[0], forest_template.size());
+            for (int i = 0; i < 4; ++i) {
+                auto offset = forest_template.size() + i * 8;
+                auto nonce_part = static_cast<uint64_t>((nonce >> i * 8) & std::numeric_limits<uint64_t>::max());
+                native_to_little(nonce_part);
+                memcpy(buffer + offset, &nonce_part, 8);
+            }
 
             node forest{};
-            sha512(forest.bytes, buffer, 64);
+            sha512(forest.bytes, buffer, buffer_size);
             fix_endian_arr32(forest.words, NODE_WORDS);
 
             union {
