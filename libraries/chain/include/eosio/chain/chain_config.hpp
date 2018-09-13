@@ -6,7 +6,6 @@
 
 #include <eosio/chain/types.hpp>
 #include <eosio/chain/config.hpp>
-#include <boost/multiprecision/cpp_int.hpp>
 
 namespace eosio { namespace chain {
 
@@ -37,7 +36,6 @@ struct chain_config {
    uint32_t   max_inline_action_size;              ///< maximum allowed size (in bytes) of an inline action
    uint16_t   max_inline_action_depth;             ///< recursion depth limit on sending inline actions
    uint16_t   max_authority_depth;                 ///< recursion depth limit for checking if an authority is satisfied
-   fc::uint256_t  origin_difficulty;                   ///origin difficulty
 
    void validate()const;
 
@@ -60,8 +58,7 @@ struct chain_config {
                  << "Max Transaction Delay: " << c.max_transaction_delay << ", "
                  << "Max Inline Action Size: " << c.max_inline_action_size << ", "
                  << "Max Inline Action Depth: " << c.max_inline_action_depth << ", "
-                 << "Max Authority Depth: " << c.max_authority_depth << ","
-                 << "Max Authority Depth: " << c.origin_difficulty <<"\n";
+                 << "Max Authority Depth: " << c.max_authority_depth << "\n";
    }
 };
 
@@ -79,6 +76,6 @@ FC_REFLECT(eosio::chain::chain_config,
            (max_transaction_cpu_usage)(min_transaction_cpu_usage)
 
            (max_transaction_lifetime)(deferred_trx_expiration_window)(max_transaction_delay)
-           (max_inline_action_size)(max_inline_action_depth)(max_authority_depth)(origin_difficulty)
+           (max_inline_action_size)(max_inline_action_depth)(max_authority_depth)
 
 )

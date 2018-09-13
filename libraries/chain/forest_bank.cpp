@@ -13,6 +13,7 @@ namespace celesos{
     namespace forest {
 //        static uint32_t question_space_number = 600;//问题间隔块数
 //        static uint32_t question_period = 21600;//问题有效期
+        uint256_t original_target("0x00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 
 
         uint32_t dataset_count(){
@@ -64,7 +65,6 @@ namespace celesos{
 
         bool forest_bank::verify_wood(uint32_t block_number, const account_name& account, const char* wood){
             uint32_t current_block_number = chain.head_block_num();
-
             if(block_number + forest_period_number()<= current_block_number){
                 //wood is past due
                 return false;
@@ -85,7 +85,7 @@ namespace celesos{
                     double_target = *diff;
                 }
                 uint256_t target_int = static_cast<uint256_t>(double_target*100);
-                uint256_t target = (chain.origin_difficulty())/target_int/100;
+                uint256_t target = (original_target)/target_int/100;
                 //prepare parameter for ethash
                 uint32_t cache_number = block_number/forest_period_number()+1;
                 std::vector<celesos::ethash::node> cache_data;
@@ -173,7 +173,7 @@ namespace celesos{
                 }
                 
                 uint256_t target_int = static_cast<uint256_t>(double_target*100);
-                uint256_t value = (chain.origin_difficulty())/target_int/100;
+                uint256_t value = (original_target)/target_int/100;
 
                 forest_data.target = value;
             }
