@@ -39,7 +39,7 @@ namespace eosio { namespace chain {
       /**
        * The difficulity value for pow
        */
-      optional<double>                  difficulty;
+      double                  difficulty;
       /// @}
 
       digest_type       digest()const;
