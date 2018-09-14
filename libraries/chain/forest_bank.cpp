@@ -55,7 +55,7 @@ namespace celesos{
         }
 
         uint32_t forest_bank::forest_space_number(){
-            uint32_t result_value = 21*6*10;
+            uint32_t result_value = 21*6;
 #ifdef DEBUG
             result_value = 21*6;
 #endif

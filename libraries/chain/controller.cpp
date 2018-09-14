@@ -71,6 +71,8 @@ struct controller_impl {
     */
    map<digest_type, transaction_metadata_ptr>     unapplied_transactions;
 
+   double diff = 1;
+
    void pop_block() {
       auto prev = fork_db.get_block( head->header.previous );
       EOS_ASSERT( prev, block_validate_exception, "attempt to pop beyond last irreversible block" );
@@ -793,6 +795,9 @@ struct controller_impl {
 
       pending->_block_status = s;
 
+      //test
+      pending->_pending_block_state->header.difficulty = my->diff;
+
       pending->_pending_block_state = std::make_shared<block_state>( *head, when ); // promotes pending schedule (if any) to active
       pending->_pending_block_state->in_current_chain = true;
 
@@ -1504,7 +1509,8 @@ int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
 
 /// CELES code: fengdong.ning {@
 bool controller::set_difficulty(double difficulty) {
-   my->pending->_pending_block_state->header.difficulty = difficulty;
+  //  my->pending->_pending_block_state->header.difficulty = difficulty;
+  my->diff = difficulty;
    return true;
 }
 /// @}
