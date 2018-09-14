@@ -71,7 +71,7 @@ struct controller_impl {
     */
    map<digest_type, transaction_metadata_ptr>     unapplied_transactions;
 
-   double diff;
+   double diff = 1.0f;
 
    void pop_block() {
       auto prev = fork_db.get_block( head->header.previous );
@@ -795,9 +795,6 @@ struct controller_impl {
 
       pending->_block_status = s;
 
-      //test
-      pending->_pending_block_state->header.difficulty = diff;
-
       pending->_pending_block_state = std::make_shared<block_state>( *head, when ); // promotes pending schedule (if any) to active
       pending->_pending_block_state->in_current_chain = true;
 
@@ -850,6 +847,9 @@ struct controller_impl {
       }
 
       guard_pending.cancel();
+
+      pending->_pending_block_state->header.difficulty = diff;
+
    } // start_block
 
 
