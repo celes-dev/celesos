@@ -36,6 +36,9 @@ namespace eosiosystem {
         }
 
         if (head_block_number % (uint32_t) forest_space_number() == 1) {
+#if DEBUG
+        eosio::print("set diff:block_num:",head_block_number);
+#endif
             set_difficulty(calc_diff(head_block_number));
         }
 
