@@ -848,8 +848,6 @@ struct controller_impl {
 
       guard_pending.cancel();
 
-      pending->_pending_block_state->header.difficulty = diff;
-
    } // start_block
 
 
@@ -1092,6 +1090,7 @@ struct controller_impl {
       set_trx_merkle();
 
       auto p = pending->_pending_block_state;
+      p->header.difficulty = diff;
       p->id = p->header.id();
 
       create_block_summary(p->id);
