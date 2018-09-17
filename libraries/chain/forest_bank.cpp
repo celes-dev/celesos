@@ -72,18 +72,8 @@ namespace celesos{
                 //not forest
                 return false;
             }else{
-                //in here verify wood is validity
-                signed_block_ptr block_ptr = chain.fetch_block_by_number(block_number);
                 //get forest target
-                optional<double> diff = block_ptr->difficulty;
-                double double_target = 1.0;
-                if(diff.valid() == false){
-                    ilog("*******verify_wood not find target from block!!!! block_number:${block_number}",
-                         ("block_number",block_number));
-                }
-                if(diff){
-                    double_target = *diff;
-                }
+                double double_target = chain.get_forest_diff();
                 uint256_t target_int = static_cast<uint256_t>(double_target*100);
                 uint256_t target = chain.origin_difficulty()/target_int/100;
                 //prepare parameter for ethash
@@ -165,13 +155,7 @@ namespace celesos{
                 forest_data.next_block_num = current_forest_number+forest_space_number();
 
                 //计算难度
-                signed_block_ptr block_ptr = chain.fetch_block_by_number(current_forest_number);
-                optional<double> diff = block_ptr->difficulty;
-                double double_target = 1.0;
-                if(diff.valid()){
-                    double_target = *diff;
-                }
-                
+                double double_target = chain.get_forest_diff();
                 uint256_t target_int = static_cast<uint256_t>(double_target*100);
                 uint256_t value = chain.origin_difficulty()/target_int/100;
 

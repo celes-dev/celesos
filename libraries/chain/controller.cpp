@@ -71,8 +71,6 @@ struct controller_impl {
     */
    map<digest_type, transaction_metadata_ptr>     unapplied_transactions;
 
-   double diff = 1.0f;
-
    void pop_block() {
       auto prev = fork_db.get_block( head->header.previous );
       EOS_ASSERT( prev, block_validate_exception, "attempt to pop beyond last irreversible block" );
@@ -1090,7 +1088,6 @@ struct controller_impl {
       set_trx_merkle();
 
       auto p = pending->_pending_block_state;
-      p->header.difficulty = diff;
       p->id = p->header.id();
 
       create_block_summary(p->id);
@@ -1410,6 +1407,11 @@ block_id_type controller::last_irreversible_block_id() const {
 
 }
 
+double controller::get_forest_diff() const {
+   const auto &gpo = get_global_properties();
+   return gpo.diff;
+}
+
 const dynamic_global_property_object& controller::get_dynamic_global_properties()const {
   return my->db.get<dynamic_global_property_object>();
 }
@@ -1508,8 +1510,10 @@ int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
 
 /// CELES code: fengdong.ning {@
 bool controller::set_difficulty(double difficulty) {
-  //  my->pending->_pending_block_state->header.difficulty = difficulty;
-  my->diff = difficulty;
+   const auto &gpo = get_global_properties();
+   my->db.modify(gpo, [&](auto &gp) {
+      gp.diff = difficulty;
+   });
    return true;
 }
 /// @}

@@ -206,6 +206,8 @@ namespace eosio { namespace chain {
          bool set_difficulty(double difficulty);
          /// @}
 
+         double get_forest_diff() const;
+
          bool skip_auth_check()const;
 
          bool contracts_console()const;
