@@ -329,7 +329,7 @@ namespace eosiosystem {
         void bidname(account_name bidder, account_name newname, asset bid);
 
     private:
-        void update_elected_producers(block_timestamp timestamp);
+        void update_elected_producers(uint32_t head_block_number);
 
         bool verify(const std::string wood, const uint32_t block_number, const account_name wood_owner_name);
 

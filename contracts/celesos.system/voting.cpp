@@ -75,9 +75,9 @@ namespace eosiosystem {
         });
     }
 
-    void system_contract::update_elected_producers(block_timestamp block_time) {
+    void system_contract::update_elected_producers(uint32_t head_block_number) {
         
-        _gstate.last_producer_schedule_block = block_time;
+        _gstate.last_producer_schedule_block = head_block_number;
 
         auto idx = _producers.get_index<N(prototalvote)>();
 
