@@ -35,13 +35,13 @@ namespace eosiosystem {
             }
         }
 
-        if (head_block_number % (uint32_t) forest_space_number() == 0) {
+        if (head_block_number % (uint32_t) forest_space_number() == 1) {
             set_difficulty(calc_diff(head_block_number));
         }
 
         // 即将开始唱票，提前清理数据
         // ready to singing the voting
-        if (_gstate.last_producer_schedule_block + SINGING_TICKER_SEP <= head_block_number + 10) {
+        if (_gstate.last_producer_schedule_block + SINGING_TICKER_SEP <= head_block_number + 10 - 1) {
             uint32_t guess_modify_block = _gstate.last_producer_schedule_block + SINGING_TICKER_SEP;
             if (head_block_number > guess_modify_block) guess_modify_block = head_block_number; // Next singing blocktime
             clean_diff_stat_history(guess_modify_block);

@@ -444,7 +444,7 @@ namespace eosiosystem {
         }
 
 #if DEBUG
-        eosio::print("set diff:",targetdiff,"\r\n");
+        eosio::print("set diff:",targetdiff,",block:",block_number,"\r\n");
 #endif
         return targetdiff;
     }
