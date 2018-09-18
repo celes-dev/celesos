@@ -43,7 +43,7 @@ namespace eosiosystem {
         // ready to singing the voting
         if (_gstate.last_producer_schedule_block + SINGING_TICKER_SEP <= head_block_number + 10) {
             uint32_t guess_modify_block = _gstate.last_producer_schedule_block + SINGING_TICKER_SEP;
-            if (head_block_number > guess_modify_time_block) guess_modify_block = head_block_number; // Next singing blocktime
+            if (head_block_number > guess_modify_block) guess_modify_block = head_block_number; // Next singing blocktime
             clean_diff_stat_history(guess_modify_block);
             clean_dirty_stat_producers(guess_modify_block, 30);
         }
