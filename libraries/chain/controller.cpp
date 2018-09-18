@@ -1409,6 +1409,7 @@ block_id_type controller::last_irreversible_block_id() const {
 
 double controller::get_forest_diff() const {
    const auto &gpo = get_global_properties();
+   iLog("forest_diff:${diff}",("diff",gpo.diff));
    return gpo.diff;
 }
 
