@@ -456,7 +456,7 @@ namespace eosiosystem {
 
             std::vector<wood_burn_block_stat> stat_vector;
             while (itr != _burnblockstatinfos.end()) {
-                if (itr->block_number + WOOD_PERIOD + 3 * (uint32_t) forest_space_number()  < block_number) {
+                if (itr->block_number + 3 * (uint32_t) forest_space_number()  < block_number) {
                     stat_vector.emplace_back(*itr);
                     itr++;
                 } else {
