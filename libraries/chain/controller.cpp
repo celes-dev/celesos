@@ -1511,6 +1511,7 @@ int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
 
 /// CELES code: fengdong.ning {@
 bool controller::set_difficulty(double difficulty) {
+  ilog("set forest difff:${diff}",("diff",diff));
    const auto &gpo = get_global_properties();
    my->db.modify(gpo, [&](auto &gp) {
       gp.diff = difficulty;
