@@ -1409,7 +1409,6 @@ block_id_type controller::last_irreversible_block_id() const {
 
 double controller::get_forest_diff() const {
    const auto &gpo = get_global_properties();
-   ilog("forest_diff:${diff}",("diff",gpo.diff));
    return gpo.diff;
 }
 
@@ -1511,7 +1510,6 @@ int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
 
 /// CELES code: fengdong.ning {@
 bool controller::set_difficulty(double difficulty) {
-  ilog("set forest difff:${diff}",("diff",difficulty));
    const auto &gpo = get_global_properties();
    my->db.modify(gpo, [&](auto &gp) {
       gp.diff = difficulty;
