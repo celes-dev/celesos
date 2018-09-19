@@ -143,7 +143,7 @@ namespace celesos{
                 return false;
             }
 
-            uint32_t current_forest_number = current_block_number/forest_space_number() * forest_space_number()+1;
+            uint32_t current_forest_number = (current_block_number-1)/forest_space_number() * forest_space_number()+1;
 
             if((forest.target == 0) || (current_forest_number != forest.block_number)){
                 block_id_type result_value = chain.get_block_id_for_num(current_forest_number);
