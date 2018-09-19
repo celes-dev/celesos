@@ -180,10 +180,7 @@ namespace eosiosystem {
             }
             ++itl;
         }
-
-#if DEBUG
-        if (block_number > 1000000) return true;
-#endif
+        
         return verify_wood(block_number, wood_owner_name, wood.c_str());
     }
 
