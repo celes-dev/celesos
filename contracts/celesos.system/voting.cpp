@@ -180,7 +180,7 @@ namespace eosiosystem {
             }
             ++itl;
         }
-        
+
         return verify_wood(block_number, wood_owner_name, wood.c_str());
     }
 
@@ -209,9 +209,6 @@ namespace eosiosystem {
         auto &owner = wood_owner_name ? wood_owner_name : voter_name;
 
         eosio_assert(system_contract::verify(wood, block_number, owner), "invalid wood 3");
-
-        // 记录总计投票数
-        _gstate.total_activated_stake++;
 
         // 更新producer总投票计数
         auto &pitr = _producers.get(producer_name, "producer not found"); //data corruption
@@ -246,7 +243,6 @@ namespace eosiosystem {
             }
         }
 
-
         if (isSuccess) {
             _burnproducerstatinfos.modify(*itl, 0, [&](auto &p) {
                 p.stat++;
@@ -274,6 +270,9 @@ namespace eosiosystem {
                 });
             }
         }
+
+        // 记录总计投票数
+        _gstate.total_activated_stake++;
 
         {
             uint32_t head_block_number = get_chain_head_num();
