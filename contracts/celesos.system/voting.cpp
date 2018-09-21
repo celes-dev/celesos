@@ -283,8 +283,8 @@ namespace eosiosystem {
 
             if (head_block_number > WOOD_PERIOD) {
                 uint32_t max_clean_limit = 30;
-                uint32_t remain = clean_dirty_stat_producers(head_block_number - WOOD_PERIOD, max_clean_limit);
-                clean_dirty_wood_history(head_block_number - WOOD_PERIOD, remain);
+                uint32_t remain = clean_dirty_stat_producers(head_block_number, max_clean_limit);
+                clean_dirty_wood_history(head_block_number, remain);
             }
         }
     }
@@ -353,49 +353,6 @@ namespace eosiosystem {
         return maxline - round;
     }
 
-//    void system_contract::onblock_clean_burn_stat(uint32_t block_number, uint32_t maxline) {
-//
-//        auto idx = _producers.get_index<N(prototalvote)>();
-//
-//        uint32_t round = 0;
-//        std::vector<wood_burn_producer_block_stat> producer_stat_vector;
-//
-//        for (auto it = idx.cbegin();
-//             it != idx.cend() && round < maxline && 0 < it->total_votes; ++it, ++round) {
-//
-//            auto bidx = _burnproducerstatinfos.get_index<N(producer)>();
-//            auto itl = bidx.lower_bound(it->owner);
-//            auto itu = bidx.upper_bound(it->owner);
-//
-//            if (itl != itu) {
-//                for (auto temp = itl; temp != itu; ++it, ++round) {
-//                    if (temp->block_number == block_number) {
-//                        auto producer = _producers.find(it->owner);
-//
-//                        if (producer != _producers.end()) {
-//                            _producers.modify(producer, 0, [&](auto &p) {
-//#if DEBUG
-//                                eosio::print("sub total_voter,block_number:",block_number,"\r\n");
-//#endif
-//                                p.total_votes = p.total_votes - temp->stat;
-//                            });
-//                        }
-//                    }
-//
-//                    // delete record
-//                    producer_stat_vector.emplace_back(*temp);
-//                }
-//            }
-//        }
-//
-//        for (auto temp : producer_stat_vector) {
-//            auto itr = _burnproducerstatinfos.find(temp.rowid);
-//            if (itr != _burnproducerstatinfos.end()) {
-//                _burnproducerstatinfos.erase(itr);
-//            }
-//        }
-//    }
-
     /**
      * calc suggest diff
      *
@@ -463,13 +420,16 @@ namespace eosiosystem {
 
     uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
 
+#if DEBUG
+        eosio::print("clean wood...block:",block_number,"maxLine:",maxLine);
+#endif
         auto idx = _burninfos.get_index<N(block_number)>();
         auto cust_itr = idx.begin();
         uint32_t round = 0;
 
         std::vector<wood_burn_info> wood_vector;
         while (cust_itr != idx.end() && round < maxline) {
-            if (cust_itr->block_number < block_number) {
+            if (cust_itr->block_number < block_number - WOOD_PERIOD) {
                 // delete record
                 wood_vector.emplace_back(*cust_itr);
                 cust_itr++;
@@ -480,6 +440,9 @@ namespace eosiosystem {
         }
 
         for (auto temp : wood_vector) {
+#if DEBUG
+            eosio::print("clean wood...wood:",temp.wood,"\r\n");
+#endif
             auto itr = _burninfos.find(temp.rowid);
             if (itr != _burninfos.end()) {
                 _burninfos.erase(itr);
