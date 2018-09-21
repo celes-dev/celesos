@@ -7,6 +7,7 @@ add_library(miner_plugin
 
 target_link_libraries(miner_plugin
         PUBLIC pow
+        PUBLIC eosio_chain
         PUBLIC appbase
         PUBLIC chain_plugin
         PUBLIC http_client_plugin)

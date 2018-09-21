@@ -18,14 +18,14 @@ using celesos::miner::worker_ctx;
 using boost::multiprecision::uint256_t;
 using boost::signals2::connection;
 
-celesos::miner::miner::miner(unsigned int worker_count) : _alive_worker_ptrs{0,
-                                                                             vector<shared_ptr<worker>>::allocator_type()},
-                                                          _signal_ptr{
-                                                                  make_shared<celesos::miner::mine_signal_type>()},
-                                                          _io_thread{&celesos::miner::miner::run, this},
-                                                          _state{state::initialized},
-                                                          _worker_count{worker_count},
-                                                          _failure_retry_interval_us{fc::milliseconds(5000)} {
+celesos::miner::miner::miner(boost::asio::io_service &main_io_service, unsigned int worker_count) :
+        _alive_worker_ptrs{0, vector<shared_ptr<worker>>::allocator_type()},
+        _signal_ptr{make_shared<celesos::miner::mine_signal_type>()},
+        _main_io_service_ptr{&main_io_service},
+        _io_thread{&celesos::miner::miner::run, this},
+        _state{state::initialized},
+        _worker_count{worker_count},
+        _failure_retry_interval_us{fc::milliseconds(5000)} {
 }
 
 celesos::miner::miner::~miner() {
@@ -62,7 +62,21 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
 
         bool exception_occured = true;
         try {
-            this->on_forest_updated(relative_account, cc);
+            auto &bank = *forest::forest_bank::getInstance(cc);
+            auto forest_info_ptr = std::make_shared<forest::forest_struct>();
+            if (!bank.get_forest(*forest_info_ptr, relative_account)) {
+                //TODO 考虑是否需要定制一个exception
+                FC_THROW_EXCEPTION(fc::unhandled_exception,
+                                   "Fail to get forest with account: ${account}",
+                                   ("account", relative_account));
+            }
+
+            ilog("update field \"next_block_number\" with value: ${block_num}",
+                 ("block_num", forest_info_ptr->next_block_num));
+
+            this->_sub_io_service_ptr->post([this, forest_info_ptr, relative_account]() {
+                this->on_forest_updated(forest_info_ptr, relative_account);
+            });
             exception_occured = false;
         }
         FC_LOG_AND_DROP()
@@ -76,10 +90,7 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
         // clear last_failure_time_us for performance
         this->_last_failure_time_us.reset();
     };
-    auto a_connection = cc.accepted_block_header.connect(
-            [this, slot = std::move(slot)](const chain::block_state_ptr &block_ptr) {
-                this->_io_service_ptr->post(std::bind(slot, block_ptr));
-            });
+    auto a_connection = cc.accepted_block_header.connect(slot);
     this->_connections.push_back(std::move(a_connection));
     ilog("start() end");
 }
@@ -115,20 +126,11 @@ connection celesos::miner::miner::connect(const celesos::miner::mine_slot_type &
     return _signal_ptr->connect(slot);
 }
 
-void celesos::miner::miner::on_forest_updated(const chain::account_name &relative_account, chain::controller &cc) {
+void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::forest_struct> forest_info_ptr,
+                                              const chain::account_name &relative_account) {
     ilog("on forest updated");
 
-    auto &bank = *forest::forest_bank::getInstance(cc);
-    forest::forest_struct forest_info{};
-    if (!bank.get_forest(forest_info, relative_account)) {
-        //TODO 考虑是否需要定制一个exception
-        FC_THROW_EXCEPTION(fc::unhandled_exception,
-                           "Fail to get forest with account: ${account}",
-                           ("account", relative_account));
-    }
-
-    ilog("update field \"next_block_number\" with value: ${block_num}", ("block_num", forest_info.next_block_num));
-
+    auto forest_info = *forest_info_ptr;
 //    const auto target_ptr = make_shared<uint256_t>(
 //            "0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
     const auto target_ptr = make_shared<uint256_t>(forest_info.target);
@@ -218,7 +220,7 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
                     .block_num = forest_info.block_number,
                     .nonce_start_ptr = std::move(nonce_start_ptr),
                     .signal_ptr = this->_signal_ptr,
-                    .io_service_ptr = this->_io_service_ptr,
+                    .io_service_ptr = this->_main_io_service_ptr,
             };
             this->_alive_worker_ptrs[i] = make_shared<worker>(std::move(ctx));
         }
@@ -237,9 +239,9 @@ void celesos::miner::miner::on_forest_updated(const chain::account_name &relativ
 }
 
 void celesos::miner::miner::run() {
-    this->_io_service_ptr = make_shared<boost::asio::io_service>();
-    this->_io_work_ptr = make_shared<boost::asio::io_service::work>(std::ref(*this->_io_service_ptr));
-    this->_io_service_ptr->run();
+    this->_sub_io_service_ptr = make_shared<boost::asio::io_service>();
+    this->_io_work_ptr = make_shared<boost::asio::io_service::work>(std::ref(*this->_sub_io_service_ptr));
+    this->_sub_io_service_ptr->run();
 }
 
 void celesos::miner::miner::string_to_uint256_little(uint256_t &dst, const std::string &str) {

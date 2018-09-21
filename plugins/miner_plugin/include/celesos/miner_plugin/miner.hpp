@@ -27,7 +27,8 @@ namespace celesos {
             std::vector<boost::signals2::connection> _connections;
             celesos::miner::mine_signal_ptr_type _signal_ptr;
             std::shared_ptr<boost::asio::io_service::work> _io_work_ptr;
-            std::shared_ptr<boost::asio::io_service> _io_service_ptr;
+            std::shared_ptr<boost::asio::io_service> _main_io_service_ptr;
+            std::shared_ptr<boost::asio::io_service> _sub_io_service_ptr;
             std::thread _io_thread;
             state _state;
             boost::optional<std::shared_ptr<std::vector<celesos::ethash::node>>> _target_cache_ptr_opt;
@@ -39,7 +40,8 @@ namespace celesos {
             unsigned int _worker_count;
             fc::microseconds _failure_retry_interval_us;
 
-            void on_forest_updated(const eosio::chain::account_name &relative_account, eosio::chain::controller &cc);
+            void on_forest_updated(const std::shared_ptr<celesos::forest::forest_struct> forest_info_ptr,
+                                   const eosio::chain::account_name &relative_account);
 
             void run();
 
@@ -51,7 +53,9 @@ namespace celesos {
 
             static void gen_random_uint256(boost::multiprecision::uint256_t &dst);
 
-            miner(unsigned int worker_count = 1);
+            miner(boost::asio::io_service &main_io_service, unsigned int worker_count = 1);
+
+            miner() = delete;
 
             ~miner();
 

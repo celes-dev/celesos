@@ -95,7 +95,8 @@ BOOST_AUTO_TEST_SUITE(miner_suite)
         std::unique_lock<std::mutex> lock{mutex};
         std::condition_variable stop_signal{};
         auto bank = forest::forest_bank::getInstance(controller_ref);
-        miner::miner miner{};
+
+        miner::miner miner{app().get_io_service(), 1};
         miner.connect([&stop_signal, bank](bool is_success, chain::block_num_type block_num,
                                            const boost::optional<uint256_t> &wood_opt) {
             BOOST_CHECK_EQUAL(is_success, true);

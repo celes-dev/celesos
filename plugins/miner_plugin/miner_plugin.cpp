@@ -207,7 +207,7 @@ void celesos::miner_plugin::plugin_initialize(const variables_map &options) {
 void celesos::miner_plugin::plugin_startup() {
     try {
         ilog("plugin_startup() begin");
-        this->my->_miner_opt.emplace(this->my->_worker_count);
+        this->my->_miner_opt.emplace(app().get_io_service(),this->my->_worker_count);
         auto &the_chain_plugin = app().get_plugin<chain_plugin>();
         this->my->_miner_opt->start(this->my->_voter_name, the_chain_plugin.chain());
 
