@@ -196,11 +196,6 @@ namespace eosiosystem {
         eosio_assert(producer_name > 0, "cannot vote with no producer");
         eosio_assert(wood.length() > 0, "invalid wood 2");
 
-#if DEBUG
-        eosio::print("voter:", voter_name, ",owner:", wood_owner_name, "wood:", wood, ",block:", block_number,
-                     ",producer:", producer_name, "\r\n");
-#endif
-
         if (wood_owner_name && voter_name != wood_owner_name) {
             auto wood_owner = _voters.find(wood_owner_name);
             eosio_assert(wood_owner->proxy == voter_name, "cannot proxy for woodowner");

@@ -36,6 +36,12 @@ add_subdirectory(tic_tac_toe)
 add_subdirectory(payloadless)
 
 
+IF (CMAKE_BUILD_TYPE STREQUAL Debug)
+    ADD_DEFINITIONS(-DDEBUG)
+ENDIF()
+
+
+
 file(GLOB SKELETONS RELATIVE ${CMAKE_SOURCE_DIR}/contracts "skeleton/*")
 
 # Documented multiple output support is broken, so properly setting up the multiple
