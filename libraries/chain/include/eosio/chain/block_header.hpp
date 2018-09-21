@@ -34,14 +34,6 @@ namespace eosio { namespace chain {
       optional<producer_schedule_type>  new_producers;
       extensions_type                   header_extensions;
 
-
-      /// CELES code: fengdong.ning{@
-      /**
-       * The difficulity value for pow
-       */
-      optional<double>                  difficulty;
-      /// @}
-
       digest_type       digest()const;
       block_id_type     id() const;
       uint32_t          block_num() const { return num_from_id(previous) + 1; }
@@ -65,7 +57,7 @@ namespace eosio { namespace chain {
 FC_REFLECT(eosio::chain::block_header, 
            (timestamp)(producer)(confirmed)(previous)
            (transaction_mroot)(action_mroot)
-           (schedule_version)(new_producers)(header_extensions)(difficulty))
+           (schedule_version)(new_producers)(header_extensions))
 
 FC_REFLECT_DERIVED(eosio::chain::signed_block_header, (eosio::chain::block_header), (producer_signature))
 FC_REFLECT(eosio::chain::header_confirmation,  (block_id)(producer)(producer_signature) )

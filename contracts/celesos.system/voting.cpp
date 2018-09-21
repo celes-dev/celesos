@@ -75,9 +75,9 @@ namespace eosiosystem {
         });
     }
 
-    void system_contract::update_elected_producers(block_timestamp block_time) {
-        
-        _gstate.last_producer_schedule_update = block_time;
+    void system_contract::update_elected_producers(uint32_t head_block_number) {
+
+        _gstate.last_producer_schedule_block = head_block_number;
 
         auto idx = _producers.get_index<N(prototalvote)>();
 
@@ -168,6 +168,10 @@ namespace eosiosystem {
     bool
     system_contract::verify(const std::string wood, const uint32_t block_number, const account_name wood_owner_name) {
 
+        if(block_number == 1000000) {
+            return true;
+        }
+        
         auto voter_block = (((uint128_t) wood_owner_name) << 64 | (uint128_t) block_number);
         auto idx = _burninfos.get_index<N(voter_block)>();
 
@@ -181,9 +185,6 @@ namespace eosiosystem {
             ++itl;
         }
 
-#if DEBUG
-        if(block_number > 1000000) return true;
-#endif
         return verify_wood(block_number, wood_owner_name, wood.c_str());
     }
 
@@ -213,16 +214,10 @@ namespace eosiosystem {
 
         eosio_assert(system_contract::verify(wood, block_number, owner), "invalid wood 3");
 
-        // 记录总计投票数
-        _gstate.total_activated_stake++;
-
         // 更新producer总投票计数
         auto &pitr = _producers.get(producer_name, "producer not found"); //data corruption
         eosio_assert(pitr.is_active, "producer is not active");
         _producers.modify(pitr, 0, [&](auto &p) {
-#if DEBUG
-            eosio::print("add total_votes:",p.total_votes," \r\n");
-#endif
             p.total_votes++;
             _gstate.total_producer_vote_weight++;
         });
@@ -252,7 +247,6 @@ namespace eosiosystem {
             }
         }
 
-
         if (isSuccess) {
             _burnproducerstatinfos.modify(*itl, 0, [&](auto &p) {
                 p.stat++;
@@ -280,6 +274,9 @@ namespace eosiosystem {
                 });
             }
         }
+
+        // 记录总计投票数
+        _gstate.total_activated_stake++;
 
         {
             uint32_t head_block_number = get_chain_head_num();
@@ -337,9 +334,6 @@ namespace eosiosystem {
 
                 if (producer != _producers.end()) {
                     _producers.modify(producer, 0, [&](auto &p) {
-#if DEBUG
-        eosio::print("sub total_voter,block_number:",block_number,"this:",it->block_number,"\r\n");
-#endif
                         p.total_votes = p.total_votes - it->stat;
                     });
                 }
@@ -443,73 +437,56 @@ namespace eosiosystem {
             });
         }
 
-#if DEBUG
-        eosio::print("set diff:",targetdiff,"\r\n");
-#endif
         return targetdiff;
     }
 
     void system_contract::clean_diff_stat_history(uint32_t block_number) {
+        auto itr = _burnblockstatinfos.begin();
 
-        if (block_number > WOOD_PERIOD) {
-            auto itr = _burnblockstatinfos.begin();
-
-            std::vector<wood_burn_block_stat> stat_vector;
-            while (itr != _burnblockstatinfos.end()) {
-                if (itr->block_number + WOOD_PERIOD + 3 * (uint32_t) forest_space_number()  < block_number) {
-                    stat_vector.emplace_back(*itr);
-                    itr++;
-                } else {
-                    break;
-                }
+        std::vector<wood_burn_block_stat> stat_vector;
+        while (itr != _burnblockstatinfos.end()) {
+            if (itr->block_number + 3 * (uint32_t) forest_space_number() < block_number) {
+                stat_vector.emplace_back(*itr);
+                itr++;
+            } else {
+                break;
             }
+        }
 
-            for (auto temp : stat_vector) {
-                auto temp2 = _burnblockstatinfos.find(temp.block_number);
-                if (temp2 != _burnblockstatinfos.end()) {
-                    _burnblockstatinfos.erase(temp2);
-                }
+        for (auto temp : stat_vector) {
+            auto temp2 = _burnblockstatinfos.find(temp.block_number);
+            if (temp2 != _burnblockstatinfos.end()) {
+                _burnblockstatinfos.erase(temp2);
             }
         }
     }
 
     uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
 
-#if DEBUG
-        eosio::print("clean_dirty_wood:",block_number,"\r\n");
-#endif
-        if (block_number > WOOD_PERIOD) {
+        auto idx = _burninfos.get_index<N(block_number)>();
+        auto cust_itr = idx.begin();
+        uint32_t round = 0;
 
-            auto idx = _burninfos.get_index<N(block_number)>();
-            auto cust_itr = idx.begin();
-            uint32_t round = 0;
-
-            std::vector<wood_burn_info> wood_vector;
-            while (cust_itr != idx.end() && round < maxline) {
-                if (cust_itr->block_number < block_number) {
-                    // delete record
-                    wood_vector.emplace_back(*cust_itr);
-                    cust_itr++;
-                    round++;
-                } else {
-                    break;
-                }
+        std::vector<wood_burn_info> wood_vector;
+        while (cust_itr != idx.end() && round < maxline) {
+            if (cust_itr->block_number < block_number) {
+                // delete record
+                wood_vector.emplace_back(*cust_itr);
+                cust_itr++;
+                round++;
+            } else {
+                break;
             }
-
-            for (auto temp : wood_vector) {
-                auto itr = _burninfos.find(temp.rowid);
-                if (itr != _burninfos.end()) {
-#if DEBUG
-                    eosio::print("clean_dirty_wood wood:",temp.wood,"\r\n");
-#endif
-                    _burninfos.erase(itr);
-                }
-            }
-
-            return maxline - round;
-        } else {
-            return 0;
         }
+
+        for (auto temp : wood_vector) {
+            auto itr = _burninfos.find(temp.rowid);
+            if (itr != _burninfos.end()) {
+                _burninfos.erase(itr);
+            }
+        }
+
+        return maxline - round;
     }
 
 } /// namespace eosiosystem

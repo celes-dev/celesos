@@ -83,7 +83,7 @@ namespace eosiosystem {
         uint64_t total_ram_bytes_reserved = 0;
         int64_t total_ram_stake = 0;
 
-        block_timestamp last_producer_schedule_update;
+        uint32_t last_producer_schedule_block;
         uint32_t total_unpaid_fee = 0; /// all blocks which have been produced but not paid
         int64_t total_activated_stake = 0;
         uint64_t thresh_activated_stake_time = 0;
@@ -96,7 +96,7 @@ namespace eosiosystem {
         // explicit serialization macro is not necessary, used here only to improve compilation time
         EOSLIB_SERIALIZE_DERIVED(eosio_global_state, eosio::blockchain_parameters,
                                  (max_ram_size)(total_ram_bytes_reserved)(total_ram_stake)
-                                         (last_producer_schedule_update)
+                                         (last_producer_schedule_block)
                                          (total_unpaid_fee)(total_activated_stake)(
                                          thresh_activated_stake_time)
                                          (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(is_network_active)(active_touch_count))
@@ -329,7 +329,7 @@ namespace eosiosystem {
         void bidname(account_name bidder, account_name newname, asset bid);
 
     private:
-        void update_elected_producers(block_timestamp timestamp);
+        void update_elected_producers(uint32_t head_block_number);
 
         bool verify(const std::string wood, const uint32_t block_number, const account_name wood_owner_name);
 

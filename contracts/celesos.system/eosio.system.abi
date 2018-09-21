@@ -569,8 +569,8 @@
                     "type": "int64"
                 },
                 {
-                    "name": "last_producer_schedule_update",
-                    "type": "block_timestamp_type"
+                    "name": "last_producer_schedule_block",
+                    "type": "uint32"
                 },
                 {
                     "name": "total_unpaid_fee",

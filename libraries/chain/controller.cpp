@@ -845,6 +845,7 @@ struct controller_impl {
       }
 
       guard_pending.cancel();
+
    } // start_block
 
 
@@ -1406,6 +1407,11 @@ block_id_type controller::last_irreversible_block_id() const {
 
 }
 
+double controller::get_forest_diff() const {
+   const auto &gpo = get_global_properties();
+   return gpo.diff;
+}
+
 const dynamic_global_property_object& controller::get_dynamic_global_properties()const {
   return my->db.get<dynamic_global_property_object>();
 }
@@ -1504,7 +1510,10 @@ int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
 
 /// CELES code: fengdong.ning {@
 bool controller::set_difficulty(double difficulty) {
-   my->pending->_pending_block_state->header.difficulty = difficulty;
+   const auto &gpo = get_global_properties();
+   my->db.modify(gpo, [&](auto &gp) {
+      gp.diff = difficulty;
+   });
    return true;
 }
 /// @}
