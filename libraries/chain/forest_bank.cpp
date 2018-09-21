@@ -73,9 +73,16 @@ namespace celesos{
                 return false;
             }else{
                 //get forest target
+
+
                 double double_target = chain.get_forest_diff();
-                uint256_t target_int = static_cast<uint256_t>(double_target*100);
-                uint256_t target = chain.origin_difficulty()/target_int/100;
+                double temp_double_target = static_cast<double>(chain.origin_difficulty());
+                temp_double_target = temp_double_target/double_target;
+                uint256_t target = static_cast<uint256_t>(temp_double_target);
+
+                ilog("*******verify_wood target_value:${target}",
+                     ("target",target));
+
                 //prepare parameter for ethash
                 uint32_t cache_number = block_number/forest_period_number()+1;
                 std::vector<celesos::ethash::node> cache_data;
@@ -156,8 +163,13 @@ namespace celesos{
 
                 //计算难度
                 double double_target = chain.get_forest_diff();
-                uint256_t target_int = static_cast<uint256_t>(double_target*100);
-                uint256_t value = chain.origin_difficulty()/target_int/100;
+                double temp_double_target = static_cast<double>(chain.origin_difficulty());
+                temp_double_target = temp_double_target/double_target;
+                uint256_t value = static_cast<uint256_t>(temp_double_target);
+
+                ilog("*******get_forest value:${value}",
+                     ("value",value));
+
 
                 forest_data.target = value;
             }
