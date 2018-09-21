@@ -19,7 +19,7 @@
 
 #if DEBUG
 
-#define TARGET_WOOD_NUMBER 50
+#define TARGET_WOOD_NUMBER 30
 // number of bp,BP个数
 #define BP_COUNT 2
 // when the bp count is ok cycle for this number,the active the network(主网启动条件，BP个数达标轮数）
