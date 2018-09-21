@@ -419,10 +419,7 @@ namespace eosiosystem {
     }
 
     uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number, uint32_t maxline) {
-
-#if DEBUG
-        eosio::print("clean wood...block:",block_number,"maxLine:",maxline);
-#endif
+        
         auto idx = _burninfos.get_index<N(block_number)>();
         auto cust_itr = idx.begin();
         uint32_t round = 0;
@@ -440,9 +437,6 @@ namespace eosiosystem {
         }
 
         for (auto temp : wood_vector) {
-#if DEBUG
-            eosio::print("clean wood...wood:",temp.wood,"\r\n");
-#endif
             auto itr = _burninfos.find(temp.rowid);
             if (itr != _burninfos.end()) {
                 _burninfos.erase(itr);
