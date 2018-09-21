@@ -7,6 +7,7 @@
 #include "eosio/chain/block.hpp"
 #include "eosio/chain/block_header.hpp"
 
+
 namespace celesos{
     using namespace eosio;
     using namespace chain;

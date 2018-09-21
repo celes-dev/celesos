@@ -60,6 +60,12 @@ target_include_directories( eosio_chain
                             )
 add_subdirectory(test)
 
+
+IF (CMAKE_BUILD_TYPE STREQUAL Debug)
+ADD_DEFINITIONS(-DDEBUG)
+ENDIF()
+
+
 install( TARGETS eosio_chain
    RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
    LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
