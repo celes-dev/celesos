@@ -15,10 +15,11 @@
 #include <string>
 
 #define REWARD_HALF_TIME (21*pow(10,8)/2)
-#define TARGET_WOOD_NUMBER 500
+
 
 #if DEBUG
 
+#define TARGET_WOOD_NUMBER 20
 // number of bp,BP个数
 #define BP_COUNT 2
 // when the bp count is ok cycle for this number,the active the network(主网启动条件，BP个数达标轮数）
@@ -35,6 +36,8 @@
 #define WOOD_PERIOD 21*6*60
 
 #else
+
+#define TARGET_WOOD_NUMBER 500
 
 // number of bp,BP个数
 #define BP_COUNT 21
