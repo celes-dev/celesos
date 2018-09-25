@@ -32,8 +32,6 @@
 #define REWARD_TIME_SEP 5*60
 // singing ticker sep（唱票间隔期，每隔固定时间进行唱票）
 #define SINGING_TICKER_SEP BP_COUNT*6*10
-// wood period(wood有效期）
-#define WOOD_PERIOD BP_COUNT*6*60
 
 #else
 
@@ -51,8 +49,6 @@
 #define REWARD_TIME_SEP 24*60*60
 // singing ticker sep（唱票间隔期，每隔固定时间进行唱票）
 #define SINGING_TICKER_SEP BP_COUNT*6*60
-// wood period(wood有效期）
-#define WOOD_PERIOD BP_COUNT*6*60*24
 
 #endif
 

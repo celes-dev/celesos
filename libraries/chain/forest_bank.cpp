@@ -50,7 +50,7 @@ namespace celesos{
         uint32_t forest_bank::forest_period_number(){
             uint32_t result_value = 24*60*21*6;
 #ifdef DEBUG
-            result_value = 60*21*6;
+            result_value = 10*21*6;
 #endif
             return result_value;
         }

@@ -276,7 +276,7 @@ namespace eosiosystem {
         {
             uint32_t head_block_number = get_chain_head_num();
 
-            if (head_block_number > WOOD_PERIOD) {
+            if (head_block_number > forest_period_number()) {
                 uint32_t max_clean_limit = 30;
                 uint32_t remain = clean_dirty_stat_producers(head_block_number, max_clean_limit);
                 clean_dirty_wood_history(head_block_number, remain);
@@ -314,11 +314,11 @@ namespace eosiosystem {
 
     uint32_t system_contract::clean_dirty_stat_producers(uint32_t block_number, uint32_t maxline) {
 
-        if (block_number <= WOOD_PERIOD) return 0;
+        if (block_number <= forest_period_number()) return 0;
 
         auto idx = _burnproducerstatinfos.get_index<N(block_number)>();
         auto itl = idx.begin();
-        auto itu = idx.lower_bound(block_number - WOOD_PERIOD);
+        auto itu = idx.lower_bound(block_number - forest_period_number());
 
         std::vector<wood_burn_producer_block_stat> producer_stat_vector;
 
@@ -421,7 +421,7 @@ namespace eosiosystem {
 
         std::vector<wood_burn_info> wood_vector;
         while (cust_itr != idx.end() && round < maxline) {
-            if (cust_itr->block_number < block_number - WOOD_PERIOD) {
+            if (cust_itr->block_number < block_number - forest_period_number()) {
                 // delete record
                 wood_vector.emplace_back(*cust_itr);
                 cust_itr++;
