@@ -1,6 +1,10 @@
 file(GLOB ABI_FILES "*.abi")
 configure_file("${ABI_FILES}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
 
+IF (CMAKE_BUILD_TYPE STREQUAL Debug)
+    ADD_DEFINITIONS(-DDEBUG)
+ENDIF()
+
 add_wast_executable(TARGET eosio.system
   INCLUDE_FOLDERS ${STANDARD_INCLUDE_FOLDERS}
   LIBRARIES libc++ libc eosiolib eosio.token
