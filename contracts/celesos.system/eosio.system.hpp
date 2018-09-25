@@ -17,7 +17,7 @@
 #define REWARD_HALF_TIME (21*pow(10,8)/2)
 
 
-#if DEBUG
+#ifdef DEBUG
 
 #define TARGET_WOOD_NUMBER 30
 // number of bp,BP个数

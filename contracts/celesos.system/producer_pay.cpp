@@ -18,10 +18,6 @@ namespace eosiosystem {
 
         require_auth(N(eosio));
 
-#if DEBUG
-        eosio::print("onblock...debug....");
-#endif
-
         uint32_t head_block_number = get_chain_head_num();
 
         /**
