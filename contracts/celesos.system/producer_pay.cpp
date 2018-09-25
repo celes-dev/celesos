@@ -20,6 +20,11 @@ namespace eosiosystem {
 
         uint32_t head_block_number = get_chain_head_num();
 
+#ifdef DEBUG
+        eosio::print("onblock...debug...");
+#else
+        eosio::print("onblock...release...");
+#endif
         /**
          * At startup the initial producer may not be one that is registered / elected
          * and therefore there may be no producer object for them.
