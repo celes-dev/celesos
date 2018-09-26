@@ -21,6 +21,7 @@ add_subdirectory(mongo_db_plugin)
 add_subdirectory(login_plugin)
 
 add_subdirectory(miner_plugin)
+add_subdirectory(hashrate_metric_plugin)
 
 # Forward variables to top level so packaging picks them up
 set(CPACK_DEBIAN_PACKAGE_DEPENDS ${CPACK_DEBIAN_PACKAGE_DEPENDS} PARENT_SCOPE)

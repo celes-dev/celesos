@@ -207,7 +207,7 @@ void celesos::miner_plugin::plugin_initialize(const variables_map &options) {
 void celesos::miner_plugin::plugin_startup() {
     try {
         ilog("plugin_startup() begin");
-        this->my->_miner_opt.emplace(app().get_io_service(),this->my->_worker_count);
+        this->my->_miner_opt.emplace(app().get_io_service(), this->my->_worker_count);
         auto &the_chain_plugin = app().get_plugin<chain_plugin>();
         this->my->_miner_opt->start(this->my->_voter_name, the_chain_plugin.chain());
 
@@ -261,14 +261,13 @@ void celesos::miner_plugin::plugin_startup() {
                         tx.set_reference_block(cc.last_irreversible_block_id());
                         tx.max_cpu_usage_ms = 0;
                         tx.max_net_usage_words = 0UL;
-                        tx.delay_sec = 0UL;
+                        tx.delay_sec = 1UL;
                         for (auto &&pair : this->my->_signature_providers) {
                             auto &&digest = tx.sig_digest(chain_id, tx.context_free_data);
                             auto &&signature = pair.second(digest);
                             tx.signatures.push_back(signature);
                         }
                         auto packed_tx_ptr = std::make_shared<chain::packed_transaction>(chain::packed_transaction{tx});
-
                         ilog("end prepare transaction about voteproducer");
                         using method_type = chain::plugin_interface::incoming::methods::transaction_async;
                         using handler_param_type = fc::static_variant<fc::exception_ptr, chain::transaction_trace_ptr>;
@@ -284,21 +283,6 @@ void celesos::miner_plugin::plugin_startup() {
                             }
                         };
                         app().get_method<method_type>()(packed_tx_ptr, true, handler);
-
-//                        ilog("end prepare transaction about voteproducer");
-//
-//                        auto metadata_ptr = make_shared<chain::transaction_metadata>(std::move(tx));
-//                        auto deadline = fc::time_point::now() + fc::milliseconds(30);
-//                        ilog("begin to push transaction about voteproducer with wood: ${wood}",
-//                             ("wood", wood_hex.c_str()));
-//                        auto trace_ptr = cc.push_transaction(metadata_ptr, deadline);
-//                        if (trace_ptr->except) {
-//                            auto pretty_trace_str = fc::json::to_pretty_string(*trace_ptr);
-//                            ilog("fail to push transaction about voteproducer with result: \n${result}",
-//                                 ("result", pretty_trace_str.c_str()));
-//                        } else {
-//                            ilog("suceess to push transaction about voteproducer");
-//                        }
                     }
                     FC_LOG_AND_RETHROW()
                 });
