@@ -79,7 +79,7 @@ void celesos::miner::worker::run() {
 //                            ("forest", forest.c_str())
 //                            ("target", target.str(0, std::ios_base::hex).c_str())
 //                            ("dataset_count", dataset_count)
-                    );
+//                    );
             this->_ctx.io_service_ptr->post(
                     [signal = this->_ctx.signal_ptr, block_num = this->_ctx.block_num, wood_opt = wood_opt]() {
                         auto is_success = !!wood_opt;
