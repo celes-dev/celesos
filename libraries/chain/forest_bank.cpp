@@ -81,8 +81,8 @@ namespace celesos{
                 temp_double_target = temp_double_target/double_target;
                 uint256_t target = static_cast<uint256_t>(temp_double_target);
 
-                ilog("*******verify_wood target_value:${target}",
-                     ("target",target));
+//                ilog("*******verify_wood target_value:${target}",
+//                     ("target",target));
 
                 //prepare parameter for ethash
                 uint32_t cache_number = block_number/forest_period_number()+1;
