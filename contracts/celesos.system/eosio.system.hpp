@@ -9,6 +9,7 @@
 #include <eosiolib/time.hpp>
 #include <eosiolib/privileged.hpp>
 #include <eosiolib/singleton.hpp>
+#include <eosiolib/fixed_key.hpp>
 #include <celesos.system/exchange_state.hpp>
 
 #include <musl/upstream/include/bits/stdint.h>
@@ -168,7 +169,13 @@ namespace eosiosystem {
 
         uint64_t primary_key() const { return rowid; }
 
-        uint128_t get_voter_block() const { return ((uint128_t) voter) << 64 | (uint128_t) block_number; }
+        static eosio::key256 key(uint64_t voter, uint64_t block_number, std::string wood) {
+            return eosio::fixed_key<32>::make_from_word_sequence<uint64_t>(voter, block_number, eosio::string_to_name(wood.c_str()));
+        }
+
+        eosio::key256 get_voter_wood() const {
+            return key(voter,(uint64_t)block_number,wood);
+        }
 
         uint64_t get_block_number() const { return (uint64_t) block_number; }
 
@@ -207,7 +214,7 @@ namespace eosiosystem {
     typedef eosio::multi_index<N(voters), voter_info> voters_table;
 
     typedef eosio::multi_index<N(woodburns), wood_burn_info, indexed_by<N(
-            voter_block), const_mem_fun<wood_burn_info, uint128_t, &wood_burn_info::get_voter_block>>, indexed_by<N(
+            voter_wood), const_mem_fun<wood_burn_info, eosio::key256, &wood_burn_info::get_voter_wood>>, indexed_by<N(
             block_number), const_mem_fun<wood_burn_info, uint64_t, &wood_burn_info::get_block_number>>> wood_burn_table;
 
     typedef eosio::multi_index<N(woodbpblocks), wood_burn_producer_block_stat, indexed_by<N(

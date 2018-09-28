@@ -168,18 +168,14 @@ namespace eosiosystem {
     bool
     system_contract::verify(const std::string wood, const uint32_t block_number, const account_name wood_owner_name) {
 
-        if(block_number == 1000000) {
-            return true;
-        }
-        
-        auto voter_block = (((uint128_t) wood_owner_name) << 64 | (uint128_t) block_number);
-        auto idx = _burninfos.get_index<N(voter_block)>();
+        auto voter_wood = wood_burn_info::key(wood_owner_name,block_number,wood);
+        auto idx = _burninfos.get_index<N(voter_wood)>();
 
-        auto itl = idx.lower_bound(voter_block);
-        auto itu = idx.upper_bound(voter_block);
+        auto itl = idx.lower_bound(voter_wood);
+        auto itu = idx.upper_bound(voter_wood);
 
         while (itl != itu) {
-            if (itl->wood == wood) {
+            if (itl->wood == wood && itl->block_number == block_number && itl->voter == wood_owner_name) {
                 return false;
             }
             ++itl;
