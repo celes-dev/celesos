@@ -646,6 +646,10 @@ struct controller_impl {
          resource_limits.add_transaction_usage( trx_context.bill_to_accounts, cpu_time_to_bill_us, 0,
                                                 block_timestamp_type(self.pending_block_time()).slot ); // Should never fail
 
+         dlog("failed---------------------------------------------------");
+         dlog("failed---------======-trxid:${trx_id}", ("trx_id", "trx_id"));
+         dlog("failed---------======-packed_trx:${packed_trx}", ("trx_id", gtrx.packed_trx));
+
          trace->receipt = push_receipt(gtrx.trx_id, transaction_receipt::hard_fail, cpu_time_to_bill_us, 0);
          emit( self.applied_transaction, trace );
          undo_session.squash();
