@@ -650,6 +650,13 @@ struct controller_impl {
          dlog("failed---------======-trxid:${trx_id}", ("trx_id", gtrx.trx_id));
          dlog("failed---------======-packed_trx:${packed_trx}", ("packed_trx", gtrx.packed_trx));
 
+         auto actions = dtrx.actions;
+
+         for(auto ac : actions)
+         {
+            dlog("failed---------======-ac:${action}", ("action", ac));
+         }
+
          trace->receipt = push_receipt(gtrx.trx_id, transaction_receipt::hard_fail, cpu_time_to_bill_us, 0);
          emit( self.applied_transaction, trace );
          undo_session.squash();
