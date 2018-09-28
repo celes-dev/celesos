@@ -647,8 +647,8 @@ struct controller_impl {
                                                 block_timestamp_type(self.pending_block_time()).slot ); // Should never fail
 
          dlog("failed---------------------------------------------------");
-         dlog("failed---------======-trxid:${trx_id}", ("trx_id", "trx_id"));
-         dlog("failed---------======-packed_trx:${packed_trx}", ("trx_id", gtrx.packed_trx));
+         dlog("failed---------======-trxid:${trx_id}", ("trx_id", gtrx.trx_id));
+         dlog("failed---------======-packed_trx:${packed_trx}", ("packed_trx", gtrx.packed_trx));
 
          trace->receipt = push_receipt(gtrx.trx_id, transaction_receipt::hard_fail, cpu_time_to_bill_us, 0);
          emit( self.applied_transaction, trace );
