@@ -192,7 +192,7 @@ namespace eosiosystem {
                                       const std::string wood, const uint32_t block_number,
                                       const account_name producer_name) {
 
-        eosio::print("update...vote ....1");
+        eosio::print(current_time(),"update...vote ....1\r\n");
 
         //validate input
         eosio_assert(producer_name > 0, "cannot vote with no producer");
@@ -207,7 +207,7 @@ namespace eosiosystem {
             eosio_assert(voter != _voters.end() && voter->is_proxy, "voter is not a proxy");
         }
 
-        eosio::print("update...vote ....2");
+        eosio::print(current_time(),"update...vote ....2\r\n");
 
         auto &owner = wood_owner_name ? wood_owner_name : voter_name;
 
@@ -221,7 +221,7 @@ namespace eosiosystem {
             _gstate.total_producer_vote_weight++;
         });
 
-        eosio::print("update...vote ....3");
+        eosio::print(current_time(),"update...vote ....3\r\n");
 
         // 增加投票明细记录
         _burninfos.emplace(N(eosio), [&](auto &burn) {
@@ -231,7 +231,7 @@ namespace eosiosystem {
             burn.block_number = block_number;
         });
 
-        eosio::print("update...vote ....4");
+        eosio::print(current_time(),"update...vote ....4\r\n");
 
         // producer 统计
         auto indexofproducer = _burnproducerstatinfos.get_index<N(producer)>();
@@ -250,7 +250,7 @@ namespace eosiosystem {
             }
         }
 
-        eosio::print("update...vote ....5");
+        eosio::print(current_time(),"update...vote ....5\r\n");
 
         if (isSuccess) {
             _burnproducerstatinfos.modify(*itl, 0, [&](auto &p) {
@@ -265,7 +265,7 @@ namespace eosiosystem {
             });
         }
 
-        eosio::print("update...vote ....6");
+        eosio::print(current_time(),"update...vote ....6\r\n");
 
         {
             auto temp = _burnblockstatinfos.find(block_number);
@@ -282,7 +282,7 @@ namespace eosiosystem {
             }
         }
 
-        eosio::print("update...vote ....7");
+        eosio::print(current_time(),"update...vote ....7\r\n");
 
         // 记录总计投票数
         _gstate.total_activated_stake++;
@@ -297,7 +297,7 @@ namespace eosiosystem {
             }
         }
 
-        eosio::print("update...vote ....10");
+        eosio::print(current_time(),"update...vote ....10\r\n");
     }
 
     /**
