@@ -216,8 +216,8 @@ void celesos::miner_plugin::plugin_startup() {
                 [this, &the_chain_plugin, launch_time](auto is_success,
                                                        auto block_num,
                                                        const auto &wood_opt) {
-//                    ilog("Receive mine callback with is_success: ${is_success} block_num: ${block_num}",
-//                         ("is_success", is_success)("block_num", block_num));
+                    dlog("Receive mine callback with is_success: ${is_success} block_num: ${block_num}",
+                         ("is_success", is_success)("block_num", block_num));
 
                     //TODO 考虑系统合约未安装的情况
                     if (!is_success) {
@@ -231,17 +231,16 @@ void celesos::miner_plugin::plugin_startup() {
                     }
 
                     try {
-//                        ilog("begin prepare transaction about voteproducer");
+                        dlog("begin prepare transaction about voteproducer");
                         auto &cc = the_chain_plugin.chain();
                         const auto &chain_id = cc.get_chain_id();
                         const auto &voter_name = this->my->_voter_name;
                         const auto &producer_name = this->my->_producer_name;
-//                        std::string wood_hex{130, '0', std::string::allocator_type{}};
                         std::string wood_hex{};
                         ethash::uint256_to_hex(wood_hex, wood_opt.get());
                         auto bank = forest::forest_bank::getInstance(the_chain_plugin.chain());
-//                        ilog("wood should pass varify check: ${is_pass}",
-//                             ("is_pass", bank->verify_wood(block_num, voter_name, wood_hex.c_str())));
+                        dlog("wood should pass varify check: ${is_pass}",
+                             ("is_pass", bank->verify_wood(block_num, voter_name, wood_hex.c_str())));
 
                         chain::signed_transaction tx{};
                         vector<chain::permission_level> auth{{voter_name, "active"}};
@@ -268,18 +267,18 @@ void celesos::miner_plugin::plugin_startup() {
                             tx.signatures.push_back(signature);
                         }
                         auto packed_tx_ptr = std::make_shared<chain::packed_transaction>(chain::packed_transaction{tx});
-//                        ilog("end prepare transaction about voteproducer");
+                        dlog("end prepare transaction about voteproducer");
                         using method_type = chain::plugin_interface::incoming::methods::transaction_async;
                         using handler_param_type = fc::static_variant<fc::exception_ptr, chain::transaction_trace_ptr>;
-//                        ilog("start to push transation about voteproducer");
+                        dlog("start to push transation about voteproducer");
                         auto handler = [](const handler_param_type &param) {
                             if (param.contains<fc::exception_ptr>()) {
                                 auto exp_ptr = param.get<fc::exception_ptr>();
-//                                ilog("fail to push transaction about voteproducer with error: \n${error}",
-//                                     ("error", exp_ptr->to_detail_string().c_str()));
+                                dlog("fail to push transaction about voteproducer with error: \n${error}",
+                                     ("error", exp_ptr->to_detail_string().c_str()));
                             } else {
                                 auto trace_ptr = param.get<chain::transaction_trace_ptr>();
-//                                ilog("suceess to push transaction about voteproducer");
+                                dlog("suceess to push transaction about voteproducer");
                             }
                         };
                         app().get_method<method_type>()(packed_tx_ptr, true, handler);
@@ -293,9 +292,9 @@ void celesos::miner_plugin::plugin_startup() {
 
 void celesos::miner_plugin::plugin_shutdown() {
     try {
-        dlog("plugin_shutdown() begin");
+        ilog("plugin_shutdown() begin");
         this->my->_miner_opt->stop(false);
         this->my->_miner_opt.reset();
-        dlog("plugin_shutdown() end");
+        ilog("plugin_shutdown() end");
     } FC_LOG_AND_RETHROW()
 }

@@ -168,11 +168,15 @@ namespace eosiosystem {
     bool
     system_contract::verify(const std::string wood, const uint32_t block_number, const account_name wood_owner_name) {
 
+        eosio::print(current_time2(),"update...verify ....1\r\n");
+
         auto voter_wood = wood_burn_info::key(wood_owner_name,block_number,wood);
         auto idx = _burninfos.get_index<N(voter_wood)>();
 
         auto itl = idx.lower_bound(voter_wood);
         auto itu = idx.upper_bound(voter_wood);
+
+        eosio::print(current_time2(),"update...verify ....2\r\n");
 
         while (itl != itu) {
             if (itl->wood == wood && itl->block_number == block_number && itl->voter == wood_owner_name) {
@@ -180,6 +184,8 @@ namespace eosiosystem {
             }
             ++itl;
         }
+
+        eosio::print(current_time2(),"update...verify ....3\r\n");
 
         return verify_wood(block_number, wood_owner_name, wood.c_str());
     }
