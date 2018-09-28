@@ -66,14 +66,15 @@ BOOST_AUTO_TEST_SUITE(worker_suite)
         BOOST_TEST_MESSAGE("end prepare dataset with count: " << DATASET_COUNT);
 
         miner::worker_ctx ctx{
+                .dataset_ptr = dataset_ptr,
+                .seed_ptr = seed_ptr,
+                .forest_ptr = forest_ptr,
+                .nonce_start_ptr = nonce_start_ptr,
+                .retry_count_ptr = retry_count_ptr,
+                .target_ptr = target_ptr,
                 .block_num = 1024,
                 .io_service_ptr = io_service_ptr,
                 .signal_ptr = signal_ptr,
-                .nonce_start_ptr = nonce_start_ptr,
-                .retry_count_ptr = retry_count_ptr,
-                .forest_ptr = forest_ptr,
-                .target_ptr = target_ptr,
-                .dataset_ptr = dataset_ptr,
         };
         miner::worker worker{std::move(ctx)};
         worker.start();

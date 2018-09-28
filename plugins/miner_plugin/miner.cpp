@@ -212,15 +212,15 @@ void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::fore
         for (int i = 0; i < _worker_count; ++i) {
             auto nonce_start_ptr = make_shared<uint256_t>(nonce_init + (*retry_count_ptr) * i);
             worker_ctx ctx{
+                    .dataset_ptr = dataset_ptr,
                     .seed_ptr = seed_ptr,
                     .forest_ptr = forest_ptr,
-                    .target_ptr = target_ptr,
-                    .dataset_ptr = dataset_ptr,
-                    .retry_count_ptr = retry_count_ptr,
-                    .block_num = forest_info.block_number,
                     .nonce_start_ptr = std::move(nonce_start_ptr),
-                    .signal_ptr = this->_signal_ptr,
+                    .retry_count_ptr = retry_count_ptr,
+                    .target_ptr = target_ptr,
+                    .block_num = forest_info.block_number,
                     .io_service_ptr = this->_main_io_service_ptr,
+                    .signal_ptr = this->_signal_ptr,
             };
             this->_alive_worker_ptrs[i] = make_shared<worker>(std::move(ctx));
         }

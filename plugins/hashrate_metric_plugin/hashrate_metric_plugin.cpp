@@ -42,8 +42,8 @@ void celesos::hashrate_metric_plugin::set_program_options(options_description &,
     cfg.add_options()
             ("hashrate-seed", boost::program_options::value<string>(), "seed to generate cache")
             ("hashrate-forest", boost::program_options::value<string>(), "forest to about calc hash")
-            ("hashrate-cache-count", boost::program_options::value<uint32_t>(), "count of cache's element")
-            ("hashrate-dataset-count", boost::program_options::value<uint32_t>(), "count of dataset's element")
+            ("hashrate-cache-count", boost::program_options::value<uint32_t>()->default_value(512), "count of cache's element")
+            ("hashrate-dataset-count", boost::program_options::value<uint32_t>()->default_value(1024), "count of dataset's element")
             ("hashrate-concurrency-count", boost::program_options::value<uint32_t>()->default_value(1),
              "concurrency count for calc hash")
             ("hashrate-output-path", boost::program_options::value<std::string>(), "output path for csv data");
