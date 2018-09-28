@@ -1653,7 +1653,10 @@ class call_depth_api : public context_aware_api {
                     : context_aware_api(ctx, true) {}
 
             bool verify_wood(uint32_t block_number, const account_name &account, char *wood) const {
-                return context.verify_wood(block_number, account, wood);
+                dlog("start verify_wood");
+                bool result =  context.verify_wood(block_number, account, wood);
+                  dlog("finish verify_wood");
+                  return result;
             }
 
             uint32_t get_chain_head_num() {
