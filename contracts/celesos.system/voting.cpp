@@ -171,19 +171,22 @@ namespace eosiosystem {
         if(block_number == 1000000) {
             return true;
         }
-        
+        eosio::print(current_time2(),"update...verify ....1\r\n");
+
         auto voter_block = (((uint128_t) wood_owner_name) << 64 | (uint128_t) block_number);
         auto idx = _burninfos.get_index<N(voter_block)>();
 
         auto itl = idx.lower_bound(voter_block);
         auto itu = idx.upper_bound(voter_block);
 
+        eosio::print(current_time2(),"update...verify ....2\r\n");
         while (itl != itu) {
             if (itl->wood == wood) {
                 return false;
             }
             ++itl;
         }
+        eosio::print(current_time2(),"update...verify ....3\r\n");
 
         return verify_wood(block_number, wood_owner_name, wood.c_str());
     }
