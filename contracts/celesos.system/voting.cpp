@@ -211,7 +211,11 @@ namespace eosiosystem {
 
         auto &owner = wood_owner_name ? wood_owner_name : voter_name;
 
+        eosio::print(current_time(),"update...vote ....21\r\n");
+
         eosio_assert(system_contract::verify(wood, block_number, owner), "invalid wood 3");
+
+        eosio::print(current_time(),"update...vote ....22\r\n");
 
         // 更新producer总投票计数
         auto &pitr = _producers.get(producer_name, "producer not found"); //data corruption
