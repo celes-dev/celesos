@@ -183,6 +183,9 @@ namespace eosiosystem {
                 return false;
             }
             ++itl;
+
+            eosio::print(current_time2(),"update...verify..while ....01\r\n");
+
         }
 
         eosio::print(current_time2(),"update...verify ....3\r\n");
