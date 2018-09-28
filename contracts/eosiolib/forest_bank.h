@@ -11,4 +11,6 @@ extern "C" {
 
     uint32_t forest_period_number();
     uint32_t forest_space_number();
+
+    uint64_t  current_time2();
 }
