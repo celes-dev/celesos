@@ -192,6 +192,8 @@ namespace eosiosystem {
                                       const std::string wood, const uint32_t block_number,
                                       const account_name producer_name) {
 
+        eosio::print("update...vote ....1");
+
         //validate input
         eosio_assert(producer_name > 0, "cannot vote with no producer");
         eosio_assert(wood.length() > 0, "invalid wood 2");
@@ -205,6 +207,8 @@ namespace eosiosystem {
             eosio_assert(voter != _voters.end() && voter->is_proxy, "voter is not a proxy");
         }
 
+        eosio::print("update...vote ....2");
+
         auto &owner = wood_owner_name ? wood_owner_name : voter_name;
 
         eosio_assert(system_contract::verify(wood, block_number, owner), "invalid wood 3");
@@ -217,6 +221,8 @@ namespace eosiosystem {
             _gstate.total_producer_vote_weight++;
         });
 
+        eosio::print("update...vote ....3");
+
         // 增加投票明细记录
         _burninfos.emplace(N(eosio), [&](auto &burn) {
             burn.rowid = _burninfos.available_primary_key();
@@ -224,6 +230,8 @@ namespace eosiosystem {
             burn.wood = wood;
             burn.block_number = block_number;
         });
+
+        eosio::print("update...vote ....4");
 
         // producer 统计
         auto indexofproducer = _burnproducerstatinfos.get_index<N(producer)>();
@@ -242,6 +250,8 @@ namespace eosiosystem {
             }
         }
 
+        eosio::print("update...vote ....5");
+
         if (isSuccess) {
             _burnproducerstatinfos.modify(*itl, 0, [&](auto &p) {
                 p.stat++;
@@ -254,6 +264,8 @@ namespace eosiosystem {
                 p.stat = 1;
             });
         }
+
+        eosio::print("update...vote ....6");
 
         {
             auto temp = _burnblockstatinfos.find(block_number);
@@ -270,6 +282,8 @@ namespace eosiosystem {
             }
         }
 
+        eosio::print("update...vote ....7");
+
         // 记录总计投票数
         _gstate.total_activated_stake++;
 
@@ -282,6 +296,8 @@ namespace eosiosystem {
                 clean_dirty_wood_history(head_block_number, remain);
             }
         }
+
+        eosio::print("update...vote ....10");
     }
 
     /**
