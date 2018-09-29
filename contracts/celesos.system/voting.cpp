@@ -172,6 +172,8 @@ namespace eosiosystem {
 
         auto woodkey = wood_burn_info::woodkey(wood);
         auto idx = _burninfos.get_index<N(wood)>();
+        
+        eosio::print(current_time2(), "update...verify ....1.1\r\n");
 
         auto itl = idx.lower_bound(woodkey);
         auto itu = idx.upper_bound(woodkey);
@@ -179,13 +181,16 @@ namespace eosiosystem {
         eosio::print(current_time2(), "update...verify ....2\r\n");
 
         while (itl != itu) {
+
+            eosio::print(current_time2(), "update...verify ....2.1\r\n");
+
             if (itl->wood == wood && itl->block_number == block_number && itl->voter == wood_owner_name) {
                 return false;
             }
 
             itl++;
 
-            eosio::print(current_time2(), "update...verify..while ....01\r\n");
+            eosio::print(current_time2(), "update...verify ....2.2\r\n");
         }
 
         eosio::print(current_time2(), "update...verify ....3\r\n");
