@@ -13,6 +13,7 @@
 #include <celesos.system/exchange_state.hpp>
 
 #include <musl/upstream/include/bits/stdint.h>
+#include <cstdlib>
 #include <string>
 
 #define REWARD_HALF_TIME (21*pow(10,8)/2)
@@ -99,7 +100,8 @@ namespace eosiosystem {
                                          (last_producer_schedule_block)
                                          (total_unpaid_fee)(total_activated_stake)(
                                          thresh_activated_stake_time)
-                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(is_network_active)(active_touch_count))
+                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(
+                                         is_network_active)(active_touch_count))
     };
 
     struct producer_info {
@@ -169,12 +171,34 @@ namespace eosiosystem {
 
         uint64_t primary_key() const { return rowid; }
 
-        static eosio::key256 key(uint64_t voter, uint64_t block_number, std::string wood) {
-            return eosio::fixed_key<32>::make_from_word_sequence<uint64_t>(voter, block_number, eosio::string_to_name(wood.c_str()));
+        static uint64_t woodkey(std::string wood) {
+            if (wood.length() > 16) {
+                return hextoint64(wood.substr(wood.length() - 16, 16));
+            } else {
+                return hextoint64(wood);
+            }
         }
 
-        eosio::key256 get_voter_wood() const {
-            return key(voter,(uint64_t)block_number,wood);
+        static uint64_t hextoint64(std::string str) {
+            uint64_t result = 0;
+            const char *ch = str.c_str();
+            for (int i = 0; (size_t)i < strlen(ch); i++) {
+                if (ch[i] >= '0' && ch[i] <= '9') {
+                    result = result * 16 + (uint64_t) (ch[i] - '0');
+                } else if (ch[i] >= 'A' && ch[i] <= 'Z') {
+                    result = result * 16 + (uint64_t) (ch[i] - 'A');
+                } else if (ch[i] >= 'a' && ch[i] <= 'z') {
+                    result = result * 16 + (uint64_t) (ch[i] - 'a');
+                } else {
+                    result = result * 16;
+                }
+            }
+
+            return result;
+        }
+
+        uint64_t get_wood_index() const {
+            return woodkey(wood);
         }
 
         uint64_t get_block_number() const { return (uint64_t) block_number; }
@@ -192,7 +216,11 @@ namespace eosiosystem {
 
         uint64_t primary_key() const { return rowid; }
 
-        account_name get_producer() const { return producer; }
+        static uint128_t bpblockkey(account_name producer, uint32_t block_number) {
+            return (uint128_t) producer << 32 | block_number;
+        }
+
+        uint128_t get_producer_block() const { return bpblockkey(producer, block_number); }
 
         uint64_t get_block_number() const { return (uint64_t) block_number; }
 
@@ -214,11 +242,11 @@ namespace eosiosystem {
     typedef eosio::multi_index<N(voters), voter_info> voters_table;
 
     typedef eosio::multi_index<N(woodburns), wood_burn_info, indexed_by<N(
-            voter_wood), const_mem_fun<wood_burn_info, eosio::key256, &wood_burn_info::get_voter_wood>>, indexed_by<N(
+            wood), const_mem_fun<wood_burn_info, uint64_t, &wood_burn_info::get_wood_index>>, indexed_by<N(
             block_number), const_mem_fun<wood_burn_info, uint64_t, &wood_burn_info::get_block_number>>> wood_burn_table;
 
     typedef eosio::multi_index<N(woodbpblocks), wood_burn_producer_block_stat, indexed_by<N(
-            producer), const_mem_fun<wood_burn_producer_block_stat, account_name, &wood_burn_producer_block_stat::get_producer>>, indexed_by<N(
+            producerblock), const_mem_fun<wood_burn_producer_block_stat, uint128_t, &wood_burn_producer_block_stat::get_producer_block>>, indexed_by<N(
             block_number), const_mem_fun<wood_burn_producer_block_stat, uint64_t, &wood_burn_producer_block_stat::get_block_number>>> wood_burn_producer_block_table;
 
     typedef eosio::multi_index<N(woodblocks), wood_burn_block_stat> wood_burn_block_stat_table;
