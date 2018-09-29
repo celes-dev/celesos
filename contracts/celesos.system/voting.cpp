@@ -304,7 +304,7 @@ namespace eosiosystem {
             uint32_t head_block_number = get_chain_head_num();
 
             if (head_block_number > forest_period_number()) {
-                uint32_t max_clean_limit = 30;
+                uint32_t max_clean_limit = 5;
                 uint32_t remain = clean_dirty_stat_producers(head_block_number, max_clean_limit);
                 clean_dirty_wood_history(head_block_number, remain);
             }
