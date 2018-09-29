@@ -15,6 +15,7 @@ namespace celesos {
 //        static uint32_t question_space_number = 600;//问题间隔块数
 //        static uint32_t question_period = 21600;//问题有效期
 
+        map<uint32_t, eosio::chain::block_id_type> block_id_cache;
 
         uint32_t dataset_count() {
 //            return 1024*1024*1024/64;
@@ -64,11 +65,41 @@ namespace celesos {
             return result_value;
         }
 
+        eosio::chain::block_id_type forest_bank::getBlockIdWithCache(uint32_t block_number) {
+            auto iter = block_id_cache.find(block_number);
+            if (iter == block_id_cache.end()) {
+                block_id_cache[block_number] = chain.get_block_id_for_num(block_number);
+                forest_bank::cleanBlockIdCache(block_number);
+            }
+
+            return block_id_cache[block_number];
+        }
+
+        void forest_bank::cleanBlockIdCache(uint32_t block_number) {
+
+            if (block_number <= forest_period_number())
+                return;
+
+            vector<uint32_t> vector;
+            auto iter = block_id_cache.begin();
+            while (iter != block_id_cache.end()) {
+                if (iter->first <= block_number - forest_period_number()) {
+                    vector.emplace_back(iter->first);
+                }
+                iter++;
+            }
+
+            for (auto iter = vector.begin(); iter != vector.end(); iter++) {
+                block_id_cache.erase(*iter);
+            }
+
+        }
+
         bool forest_bank::verify_wood(uint32_t block_number, const account_name &account, const char *wood) {
             dlog("verify wood 1 at time: ${time}", ("time", fc::time_point::now().time_since_epoch().count()));
             uint32_t current_block_number = chain.head_block_num();
 
-            if (block_number + forest_period_number() <= current_block_number) {
+            if (block_number + forest_period_number() <= current_block_number || block_number >= current_block_number) {
                 //wood is past due
                 return false;
             } else if (block_number > 1 && (block_number - 1) % forest_space_number() != 0) {
@@ -76,7 +107,6 @@ namespace celesos {
                 return false;
             } else {
                 //get forest target
-
 
                 dlog("verify wood 2 at time: ${time}", ("time", fc::time_point::now().time_since_epoch().count()));
                 double double_target = chain.get_forest_diff();
@@ -100,14 +130,14 @@ namespace celesos {
                 }
 
                 dlog("verify wood 3 at time: ${time}", ("time", fc::time_point::now().time_since_epoch().count()));
-                block_id_type block_id = chain.get_block_id_for_num(block_number);
+                block_id_type block_id = forest_bank::getBlockIdWithCache(block_number);
                 dlog("verify wood 4 at time: ${time}", ("time", fc::time_point::now().time_since_epoch().count()));
                 block_id_type wood_forest = fc::sha256::hash(block_id.str() + account.to_string());
                 dlog("verify wood 5 at time: ${time}", ("time", fc::time_point::now().time_since_epoch().count()));
                 uint32_t data_set_count = dataset_count();
 
 
-                block_id_type seed = fc::sha256::hash(chain.get_block_id_for_num(first_cache_pair->first).str());
+                block_id_type seed = fc::sha256::hash(forest_bank::getBlockIdWithCache(first_cache_pair->first));
                 dlog("verify wood 6 at time: ${time}", ("time", fc::time_point::now().time_since_epoch().count()));
 
                 //call ethash verify wood
@@ -136,7 +166,7 @@ namespace celesos {
 
             std::vector<celesos::ethash::node> node_vector;
             uint32_t dataset_count = cache_count();
-            block_id_type seed = fc::sha256::hash(chain.get_block_id_for_num(current_cache_number).str());
+            block_id_type seed = fc::sha256::hash(forest_bank::getBlockIdWithCache(current_cache_number));
 
             if (celesos::ethash::calc_cache(node_vector, dataset_count, seed.str())) {
                 if (!(first_cache_pair->second.empty()) && first_cache_pair->second.size() > 0) {
@@ -164,8 +194,8 @@ namespace celesos {
                     (current_block_number - 1) / forest_space_number() * forest_space_number() + 1;
 
             if ((forest.target == 0) || (current_forest_number != forest.block_number)) {
-                block_id_type result_value = chain.get_block_id_for_num(current_forest_number);
-                block_id_type seed_value = chain.get_block_id_for_num(first_cache_pair->first);
+                block_id_type result_value = forest_bank::getBlockIdWithCache(current_forest_number);
+                block_id_type seed_value = forest_bank::getBlockIdWithCache(first_cache_pair->first);
 
                 forest_data.seed = fc::sha256::hash(seed_value.str());
                 forest_data.forest = fc::sha256::hash(result_value.str() + account.to_string());

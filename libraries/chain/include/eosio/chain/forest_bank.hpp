@@ -43,6 +43,8 @@ namespace celesos{
          void update_cache(const eosio::chain::block_state_ptr& block);
          eosio::chain::controller &chain;
 
+         void cleanBlockIdCache(uint32_t block_number);
+         eosio::chain::block_id_type getBlockIdWithCache(uint32_t block_number);
 
          forest_struct forest_data;
          using cache_pair_type = std::pair<uint32_t,std::vector<celesos::ethash::node>> ;
