@@ -137,7 +137,7 @@ namespace celesos {
                 uint32_t data_set_count = dataset_count();
 
 
-                block_id_type seed = fc::sha256::hash(forest_bank::getBlockIdWithCache(first_cache_pair->first));
+                block_id_type seed = fc::sha256::hash(forest_bank::getBlockIdWithCache(first_cache_pair->first).str());
                 dlog("verify wood 6 at time: ${time}", ("time", fc::time_point::now().time_since_epoch().count()));
 
                 //call ethash verify wood
@@ -166,7 +166,7 @@ namespace celesos {
 
             std::vector<celesos::ethash::node> node_vector;
             uint32_t dataset_count = cache_count();
-            block_id_type seed = fc::sha256::hash(forest_bank::getBlockIdWithCache(current_cache_number));
+            block_id_type seed = fc::sha256::hash(forest_bank::getBlockIdWithCache(current_cache_number).str());
 
             if (celesos::ethash::calc_cache(node_vector, dataset_count, seed.str())) {
                 if (!(first_cache_pair->second.empty()) && first_cache_pair->second.size() > 0) {
