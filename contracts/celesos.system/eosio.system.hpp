@@ -16,6 +16,8 @@
 #include <cstdlib>
 #include <string>
 
+#include <eosiolib/forest_bank.h>
+
 #define REWARD_HALF_TIME (21*pow(10,8)/2)
 
 
@@ -172,17 +174,28 @@ namespace eosiosystem {
         uint64_t primary_key() const { return rowid; }
 
         static uint64_t woodkey(std::string wood) {
+
+
+            eosio::print(current_time2(), "hextoint64 ....1.01\r\n");
+
             if (wood.length() > 16) {
+
+                eosio::print(current_time2(), "hextoint64 ....1.02\r\n");
                 return hextoint64(wood.substr(wood.length() - 16, 16));
             } else {
+
+                eosio::print(current_time2(), "hextoint64 ....1.03\r\n");
                 return hextoint64(wood);
             }
         }
 
         static uint64_t hextoint64(std::string str) {
+
+            eosio::print(current_time2(), "hextoint64 ....1.1\r\n");
+
             uint64_t result = 0;
             const char *ch = str.c_str();
-            for (int i = 0; (size_t)i < strlen(ch); i++) {
+            for (int i = 0; (size_t) i < strlen(ch); i++) {
                 if (ch[i] >= '0' && ch[i] <= '9') {
                     result = result * 16 + (uint64_t) (ch[i] - '0');
                 } else if (ch[i] >= 'A' && ch[i] <= 'Z') {
@@ -194,10 +207,15 @@ namespace eosiosystem {
                 }
             }
 
+            eosio::print(current_time2(), "hextoint64 ....1.2\r\n");
+
             return result;
         }
 
         uint64_t get_wood_index() const {
+
+            eosio::print(current_time2(), "hextoint64 ....1.0\r\n");
+
             return woodkey(wood);
         }
 
