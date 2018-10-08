@@ -81,9 +81,69 @@ void celesos::hashrate_metric_plugin::plugin_initialize(const variables_map &opt
     FC_LOG_AND_RETHROW()
 }
 
+namespace celesos {
+
+    struct hashrate_metric_plugin_run_arg_t {
+        hashrate_metric_plugin *plugin_ptr;
+        int thread_id;
+        std::shared_ptr<std::ofstream> stream_ptr;
+    };
+
+    void *hashrate_metric_plugin_run(void *arg) {
+        auto casted_arg = static_cast<hashrate_metric_plugin_run_arg_t *>(arg);
+        auto plugin_ptr = casted_arg->plugin_ptr;
+        auto thread_id = casted_arg->thread_id;
+        auto stream_ptr = casted_arg->stream_ptr;
+        const auto &seed = plugin_ptr->my->_seed;
+        const auto &forest = plugin_ptr->my->_forest;
+        const auto separator_symbol = plugin_ptr->my->_separator_symbol.c_str();
+        const auto cache_count = plugin_ptr->my->_cache_count;
+        const auto dataset_count = plugin_ptr->my->_dataset_count;
+
+        ilog("begin calc cache with thread: ${thread_id} count: ${count} seed: ${seed}",
+             ("thread_id", thread_id)("count", cache_count)("seed", seed));
+        std::vector<ethash::node> cache{cache_count, std::vector<ethash::node>::allocator_type()};
+        ethash::calc_cache(cache, cache_count, seed);
+        ilog("end calc cache with thread: ${thread_id} count: ${count} seed: ${seed}",
+             ("thread_id", thread_id)("count", cache_count)("seed", seed));
+        ilog("begin calc dataset with thread: ${thread_id} count: ${count}",
+             ("thread_id", thread_id)("count", dataset_count));
+        std::vector<ethash::node> dataset{dataset_count, std::vector<ethash::node>::allocator_type()};
+        ethash::calc_dataset(dataset, dataset_count, cache);
+        ilog("end calc dataset with thread: ${thread_id} count: ${count}",
+             ("thread_id", thread_id)("count", dataset_count));
+
+        char buffer[1024];
+        for (;;) {
+            const auto &start_time_in_micro = fc::time_point::now().time_since_epoch();
+            static const auto threashold = fc::seconds(1);
+            uint64_t hash_count{0};
+            uint256_t nonce{0};
+            do {
+                ethash::hash_light(forest, nonce++, dataset_count, cache);
+                ++hash_count;
+            } while ((fc::time_point::now().time_since_epoch() - start_time_in_micro) < threashold);
+            ilog("hashrate is: ${hash_count}/sec on thread: ${thread_id}",
+                 ("thread_id", thread_id)("hash_count", hash_count));
+            if (stream_ptr != nullptr) {
+                auto &stream = *stream_ptr;
+                auto len = sprintf(buffer,
+                                   "%d%s%d%s%ld\n",
+                                   thread_id,
+                                   separator_symbol,
+                                   fc::time_point::now().sec_since_epoch(),
+                                   separator_symbol,
+                                   hash_count);
+                stream << std::string{buffer, static_cast<std::string::size_type>(len)};
+                stream.flush();
+            }
+        }
+    }
+}
+
 void celesos::hashrate_metric_plugin::plugin_startup() {
     const auto concurrency_count = this->my->_concurrency_count;
-    vector<std::thread> threads{};
+    vector<pthread_t> threads{};
 
     std::shared_ptr<std::ofstream> stream_ptr{};
 
@@ -94,56 +154,30 @@ void celesos::hashrate_metric_plugin::plugin_startup() {
     }
 
     for (int thread_id = 1; thread_id <= concurrency_count; ++thread_id) {
-        std::thread a_thread{[this, thread_id, stream_ptr]() {
-            const auto &seed = this->my->_seed;
-            const auto &forest = this->my->_forest;
-            const auto separator_symbol = this->my->_separator_symbol.c_str();
-            const auto cache_count = this->my->_cache_count;
-            const auto dataset_count = this->my->_dataset_count;
+        pthread_attr_t attr{};
+        pthread_attr_init(&attr);
+        if (pthread_attr_setschedpolicy(&attr, SCHED_RR) != 0) {
+            elog("fail to set sched policy");
+        }
+        sched_param param{
+                .__sched_priority = 1,
+        };
 
-            ilog("begin calc cache with thread: ${thread_id} count: ${count} seed: ${seed}",
-                 ("thread_id", thread_id)("count", cache_count)("seed", seed));
-            std::vector<ethash::node> cache{cache_count, std::vector<ethash::node>::allocator_type()};
-            ethash::calc_cache(cache, cache_count, seed);
-            ilog("end calc cache with thread: ${thread_id} count: ${count} seed: ${seed}",
-                 ("thread_id", thread_id)("count", cache_count)("seed", seed));
-            ilog("begin calc dataset with thread:${thread_id} count: ${count}",
-                 ("thread_id", thread_id)("count", dataset_count));
-            std::vector<ethash::node> dataset{dataset_count, std::vector<ethash::node>::allocator_type()};
-            ethash::calc_dataset(dataset, dataset_count, cache);
-            ilog("end calc dataset with thread: ${thread_id} count: ${count}",
-                 ("thread_id", thread_id)("count", dataset_count));
-
-            char buffer[1024];
-            for (;;) {
-                const auto &start_time_in_micro = fc::time_point::now().time_since_epoch();
-                static const auto threashold = fc::seconds(1);
-                uint64_t hash_count{0};
-                uint256_t nonce{0};
-                do {
-                    ethash::hash_light(forest, nonce++, dataset_count, cache);
-                    ++hash_count;
-                } while ((fc::time_point::now().time_since_epoch() - start_time_in_micro) < threashold);
-                ilog("hashrate is: ${hash_count}/sec on thread: ${thread_id}",
-                     ("thread_id", thread_id)("hash_count", hash_count));
-                if (stream_ptr != nullptr) {
-                    auto &stream = *stream_ptr;
-                    auto len = sprintf(buffer,
-                                       "%d%s%d%s%ld\n",
-                                       thread_id,
-                                       separator_symbol,
-                                       fc::time_point::now().sec_since_epoch(),
-                                       separator_symbol,
-                                       hash_count);
-                    stream << std::string{buffer, static_cast<std::string::size_type>(len)};
-                    stream.flush();
-                }
-            }
-        }};
+        if (pthread_attr_setschedparam(&attr, &param) != 0) {
+            elog("fail to set sched param");
+        }
+        hashrate_metric_plugin_run_arg_t arg{
+                .plugin_ptr = this,
+                .thread_id = thread_id,
+                .stream_ptr = stream_ptr,
+        };
+        pthread_t a_thread{};
+        pthread_create(&a_thread, &attr, celesos::hashrate_metric_plugin_run, &arg);
         threads.emplace_back(std::move(a_thread));
     }
     for (auto &thread : threads) {
-        thread.join();
+        void *thread_ret;
+        pthread_join(thread, &thread_ret);
     }
 }
 

@@ -9,6 +9,8 @@
 namespace celesos {
     class hashrate_metric_plugin : public appbase::plugin<hashrate_metric_plugin> {
     public:
+        std::unique_ptr<class hashrate_metric_plugin_impl> my;
+
         hashrate_metric_plugin();
 
         virtual ~hashrate_metric_plugin();
@@ -23,8 +25,5 @@ namespace celesos {
         void plugin_startup();
 
         void plugin_shutdown();
-
-    private:
-        std::unique_ptr<class hashrate_metric_plugin_impl> my;
     };
 }
