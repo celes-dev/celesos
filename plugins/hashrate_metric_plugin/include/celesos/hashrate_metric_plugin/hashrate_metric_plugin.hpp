@@ -8,8 +8,11 @@
 
 namespace celesos {
     class hashrate_metric_plugin : public appbase::plugin<hashrate_metric_plugin> {
-    public:
+    private:
         std::unique_ptr<class hashrate_metric_plugin_impl> my;
+
+        static void* thread_run(void *arg);
+    public:
 
         hashrate_metric_plugin();
 
