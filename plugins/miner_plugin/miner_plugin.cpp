@@ -33,6 +33,7 @@ public:
     boost::optional<miner_type> _miner_opt;
     account_name _voter_name;
     account_name _producer_name;
+//    uint32_t _worker_priority;
     unsigned int _worker_count;
     std::map<chain::public_key_type, signature_provider_type> _signature_providers;
     fc::microseconds _keosd_provider_timeout_us;
@@ -53,28 +54,6 @@ public:
         auto &&ret = the_plugin.get_read_only_api().abi_json_to_bin(params);
         return chain::action{auth, account, name, ret.binargs};
     }
-
-//    static vector<char> variant_to_bin( const chain::account_name& account, const chain::action_name& action, const fc::variant& action_args_var ) {
-//        static unordered_map<chain::account_name, std::vector<char> > abi_cache;
-//        auto it = abi_cache.find( account );
-//        if ( it == abi_cache.end() ) {
-//            const auto result = call(get_raw_code_and_abi_func, fc::mutable_variant_object("account_name", account));
-//            std::tie( it, std::ignore ) = abi_cache.emplace( account, result["abi"].as_blob().data );
-//            //we also received result["wasm"], but we don't use it
-//        }
-//        const std::vector<char>& abi_v = it->second;
-//
-//        abi_def abi;
-//        if( abi_serializer::to_abi(abi_v, abi) ) {
-//            abi_serializer abis( abi, fc::seconds(10) );
-//            auto action_type = abis.get_action_type(action);
-//            FC_ASSERT(!action_type.empty(), "Unknown action ${action} in contract ${contract}", ("action", action)("contract", account));
-//            return abis.variant_to_binary(action_type, action_args_var, fc::seconds(10));
-//        } else {
-//            FC_ASSERT(false, "No ABI found for ${contract}", ("contract", account));
-//        }
-//    }
-
 
     static signature_provider_type make_key_signature_provider(const chain::private_key_type &key) {
         return [key](const chain::digest_type &digest) {
@@ -132,6 +111,9 @@ void celesos::miner_plugin::set_program_options(options_description &, options_d
              "   KEOSD:<data>    \tis the URL where keosd is available and the approptiate wallet(s) are unlocked")
             ("miner-keosd-provider-timeout", boost::program_options::value<int32_t>()->default_value(5),
              "Limits the maximum time (in milliseconds) that is allowd for sending blocks to a keosd provider for signing")
+//            ("miner-worker-priority",
+//             boost::program_options::value<uint32_t>()->default_value(1),
+//             "Worker thread priority, default is 1")
             ("miner-worker-count",
              boost::program_options::value<unsigned int>()->default_value(
                      std::max(std::thread::hardware_concurrency() / 2, 1U)),
@@ -197,6 +179,12 @@ void celesos::miner_plugin::plugin_initialize(const variables_map &options) {
                 }
             }
         }
+
+//        auto worker_priority = options["miner-worker-priority"].as<uint32_t>();
+//        if (worker_priority < 1 || worker_priority > 99) {
+//            FC_THROW("worker priority must between [1,99]");
+//        }
+//        this->my->_worker_priority = worker_priority;
 
         this->my->_keosd_provider_timeout_us = fc::milliseconds(
                 options["miner-keosd-provider-timeout"].as<int32_t>());

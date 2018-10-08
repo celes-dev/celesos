@@ -13,59 +13,26 @@ using namespace eosio;
 
 using boost::multiprecision::uint256_t;
 
-celesos::miner::worker::worker(worker_ctx ctx) :
-        _ctx{std::move(ctx)},
-        _state{state::initialized} {
-}
+void *celesos::miner::worker::thread_run(void *arg) {
+    auto worker_ptr = static_cast<miner::worker *>(arg);
 
-celesos::miner::worker::~worker() {
-    this->stop();
-}
-
-void celesos::miner::worker::start() {
-    write_lock_type lock{this->_mutex};
-    if (this->_state == state::initialized) {
-        this->_state = state::started;
-        this->_alive_thread_opt.emplace(std::bind(&worker::run, this));
-    }
-    lock.unlock();
-}
-
-void celesos::miner::worker::stop(bool wait) {
-    write_lock_type lock{this->_mutex};
-    if (this->_state == state::started) {
-        this->_state = state::stopped;
-        lock.unlock();
-
-        if (this->_alive_thread_opt && this->_alive_thread_opt->joinable()) {
-            if (wait) {
-                this->_alive_thread_opt->join();
-            } else {
-                this->_alive_thread_opt->detach();
-            }
-            this->_alive_thread_opt.reset();
-        }
-    }
-}
-
-void celesos::miner::worker::run() {
     std::stringstream buffer{};
     buffer << std::this_thread::get_id();
     auto thread_id = buffer.str();
 
     ilog("begin run() on thread: ${t_id}", ("t_id", thread_id));
 
-    const auto &target = *this->_ctx.target_ptr;
-    const auto &dataset = *this->_ctx.dataset_ptr;
+    const auto &target = *worker_ptr->_ctx.target_ptr;
+    const auto &dataset = *worker_ptr->_ctx.dataset_ptr;
     const auto dataset_count = dataset.size();
-    const auto &seed = *this->_ctx.seed_ptr;
-    const auto &forest = *this->_ctx.forest_ptr;
-    auto retry_count = *this->_ctx.retry_count_ptr;
-    uint256_t nonce_current = *this->_ctx.nonce_start_ptr;
+    const auto &seed = *worker_ptr->_ctx.seed_ptr;
+    const auto &forest = *worker_ptr->_ctx.forest_ptr;
+    auto retry_count = *worker_ptr->_ctx.retry_count_ptr;
+    uint256_t nonce_current = *worker_ptr->_ctx.nonce_start_ptr;
     boost::optional<uint256_t> wood_opt{};
     do {
-        read_lock_type lock{this->_mutex};
-        if (this->_state == state::stopped) {
+        read_lock_type lock{worker_ptr->_mutex};
+        if (worker_ptr->_state == state::stopped) {
             break;
         }
         lock.unlock();
@@ -80,8 +47,8 @@ void celesos::miner::worker::run() {
 //                            ("target", target.str(0, std::ios_base::hex).c_str())
 //                            ("dataset_count", dataset_count)
 //                    );
-            this->_ctx.io_service_ptr->post(
-                    [signal = this->_ctx.signal_ptr, block_num = this->_ctx.block_num, wood_opt = wood_opt]() {
+            worker_ptr->_ctx.io_service_ptr->post(
+                    [signal = worker_ptr->_ctx.signal_ptr, block_num = worker_ptr->_ctx.block_num, wood_opt = wood_opt]() {
                         auto is_success = !!wood_opt;
                         (*signal)(std::move(is_success), block_num, wood_opt);
                     });
@@ -90,5 +57,60 @@ void celesos::miner::worker::run() {
     } while (--retry_count > 0);
 
     ilog("end run() on thread: ${t_id}", ("t_id", thread_id));
+    pthread_exit(nullptr);
 }
+
+celesos::miner::worker::worker(worker_ctx ctx) :
+        _ctx{std::move(ctx)},
+        _state{state::initialized} {
+}
+
+celesos::miner::worker::~worker() {
+    this->stop();
+}
+
+void celesos::miner::worker::start() {
+    write_lock_type lock{this->_mutex};
+    if (this->_state == state::initialized) {
+        this->_state = state::started;
+//        this->_alive_thread_opt.emplace(std::bind(&worker::run, this));
+//        auto native_handle = this->_alive_thread_opt->native_handle();
+
+        ilog("begin create thread for mine");
+        this->_alive_thread_opt.emplace();
+        pthread_attr_t attr{};
+        sched_param param{};
+        pthread_attr_init(&attr);
+        pthread_attr_setschedpolicy(&attr, SCHED_RR);
+        param.__sched_priority = 1;
+        pthread_attr_setschedparam(&attr, &param);
+        auto thread_ptr = this->_alive_thread_opt.get_ptr();
+
+        pthread_create(thread_ptr, &attr, miner::worker::thread_run, this);
+        ilog("end create thread for mine");
+        this->_alive_thread_opt.emplace(std::move(*thread_ptr));
+    }
+    lock.unlock();
+}
+
+void celesos::miner::worker::stop(bool wait) {
+    write_lock_type lock{this->_mutex};
+    if (this->_state == state::started) {
+        this->_state = state::stopped;
+        lock.unlock();
+
+        if (this->_alive_thread_opt) {
+            auto thread_ptr = this->_alive_thread_opt.get_ptr();
+            if (wait) {
+                pthread_join(*thread_ptr, nullptr);
+//                this->_alive_thread_opt->join();
+            } else {
+                pthread_detach(*thread_ptr);
+//                this->_alive_thread_opt->detach();
+            }
+            this->_alive_thread_opt.reset();
+        }
+    }
+}
+
 

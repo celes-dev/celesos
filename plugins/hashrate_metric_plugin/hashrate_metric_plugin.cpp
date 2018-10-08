@@ -44,19 +44,19 @@ celesos::hashrate_metric_plugin::~hashrate_metric_plugin() {}
 
 void celesos::hashrate_metric_plugin::set_program_options(options_description &, options_description &cfg) {
     cfg.add_options()
-            ("hashrate-seed", boost::program_options::value<string>(), "seed to generate cache")
-            ("hashrate-forest", boost::program_options::value<string>(), "forest to about calc hash")
+            ("hashrate-seed", boost::program_options::value<string>(), "Seed to generate cache")
+            ("hashrate-forest", boost::program_options::value<string>(), "Forest to about calc hash")
             ("hashrate-cache-count", boost::program_options::value<uint32_t>()->default_value(512),
-             "count of cache's element")
+             "Count of cache's element, default is 512")
             ("hashrate-dataset-count", boost::program_options::value<uint32_t>()->default_value(1024),
-             "count of dataset's element")
+             "Count of dataset's element, default is 1024")
             ("hashrate-thread-priority", boost::program_options::value<uint32_t>()->default_value(1),
-             "thread priority")
+             "Thread priority, default is 1")
             ("hashrate-concurrency-count", boost::program_options::value<uint32_t>()->default_value(1),
-             "concurrency count for calc hash")
+             "Concurrency count for calc hash, default is 1")
             ("hashrate-separator-symbol", boost::program_options::value<std::string>()->default_value(";"),
-             "separator symbol for output data")
-            ("hashrate-output-path", boost::program_options::value<std::string>(), "output path for csv data");
+             "Separator symbol for output data, default is ';'")
+            ("hashrate-output-path", boost::program_options::value<std::string>(), "Output path for csv data");
 }
 
 void celesos::hashrate_metric_plugin::plugin_initialize(const variables_map &options) {
@@ -138,6 +138,8 @@ void *celesos::hashrate_metric_plugin::thread_run(void *arg) {
             stream.flush();
         }
     }
+
+    pthread_exit(nullptr);
 }
 
 
@@ -198,8 +200,7 @@ void celesos::hashrate_metric_plugin::plugin_startup() {
         threads.emplace_back(std::move(a_thread));
     }
     for (auto &thread : threads) {
-        void *thread_ret;
-        pthread_join(thread, &thread_ret);
+        pthread_join(thread, nullptr);
     }
 }
 

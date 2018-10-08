@@ -5,6 +5,7 @@
 #ifndef CELESOS_MINER_PLUGIN_WORKER_H
 #define CELESOS_MINER_PLUGIN_WORKER_H
 
+#include <pthread.h>
 #include <thread>
 #include <shared_mutex>
 #include <boost/multiprecision/cpp_int.hpp>
@@ -46,14 +47,12 @@ namespace celesos {
             worker_ctx _ctx;
             state _state;
             mutex_type _mutex;
-            boost::optional<std::thread> _alive_thread_opt;
+            boost::optional<pthread_t> _alive_thread_opt;
 
-            void run();
-
-        protected:
-            worker() = default;
+            static void *thread_run(void *arg);
 
         public:
+            worker() = default;
 
             worker(worker_ctx ctx);
 
@@ -61,11 +60,12 @@ namespace celesos {
 
             ~worker();
 
-            worker &operator=(const worker &) = delete;
 
             void start();
 
             void stop(bool wait = true);
+
+            worker &operator=(const worker &) = delete;
         };
     }
 }
