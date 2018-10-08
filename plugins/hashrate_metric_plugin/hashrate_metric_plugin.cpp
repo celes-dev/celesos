@@ -19,6 +19,7 @@ namespace celesos {
     public:
         std::string _seed;
         std::string _forest;
+        std::string _separator_symbol;
         uint32_t _cache_count;
         uint32_t _dataset_count;
         uint32_t _concurrency_count;
@@ -26,6 +27,7 @@ namespace celesos {
 
         hashrate_metric_plugin_impl() : _seed{},
                                         _forest{},
+                                        _separator_symbol{},
                                         _cache_count{0},
                                         _dataset_count{0},
                                         _concurrency_count{0},
@@ -42,10 +44,14 @@ void celesos::hashrate_metric_plugin::set_program_options(options_description &,
     cfg.add_options()
             ("hashrate-seed", boost::program_options::value<string>(), "seed to generate cache")
             ("hashrate-forest", boost::program_options::value<string>(), "forest to about calc hash")
-            ("hashrate-cache-count", boost::program_options::value<uint32_t>()->default_value(512), "count of cache's element")
-            ("hashrate-dataset-count", boost::program_options::value<uint32_t>()->default_value(1024), "count of dataset's element")
+            ("hashrate-cache-count", boost::program_options::value<uint32_t>()->default_value(512),
+             "count of cache's element")
+            ("hashrate-dataset-count", boost::program_options::value<uint32_t>()->default_value(1024),
+             "count of dataset's element")
             ("hashrate-concurrency-count", boost::program_options::value<uint32_t>()->default_value(1),
              "concurrency count for calc hash")
+            ("hashrate-separator-symbol", boost::program_options::value<std::string>()->default_value(";"),
+             "separator symbol for output data")
             ("hashrate-output-path", boost::program_options::value<std::string>(), "output path for csv data");
 }
 
@@ -66,6 +72,7 @@ void celesos::hashrate_metric_plugin::plugin_initialize(const variables_map &opt
         this->my->_cache_count = options["hashrate-cache-count"].as<uint32_t>();
         this->my->_dataset_count = options["hashrate-dataset-count"].as<uint32_t>();
         this->my->_concurrency_count = options["hashrate-concurrency-count"].as<uint32_t>();
+        this->my->_separator_symbol = options["hashrate-separator-symbol"].as<std::string>();
 
         if (options.count("hashrate-output-path")) {
             this->my->_output_path_opt.emplace(options["hashrate-output-path"].as<std::string>());
@@ -90,6 +97,7 @@ void celesos::hashrate_metric_plugin::plugin_startup() {
         std::thread a_thread{[this, thread_id, stream_ptr]() {
             const auto &seed = this->my->_seed;
             const auto &forest = this->my->_forest;
+            const auto separator_symbol = this->my->_separator_symbol.c_str();
             const auto cache_count = this->my->_cache_count;
             const auto dataset_count = this->my->_dataset_count;
 
@@ -121,9 +129,11 @@ void celesos::hashrate_metric_plugin::plugin_startup() {
                 if (stream_ptr != nullptr) {
                     auto &stream = *stream_ptr;
                     auto len = sprintf(buffer,
-                                       "%d,%d,%ld\n",
+                                       "%d%s%d%s%ld\n",
                                        thread_id,
+                                       separator_symbol,
                                        fc::time_point::now().sec_since_epoch(),
+                                       separator_symbol,
                                        hash_count);
                     stream << std::string{buffer, static_cast<std::string::size_type>(len)};
                     stream.flush();
