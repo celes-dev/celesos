@@ -82,7 +82,12 @@ void celesos::miner::worker::start() {
         sched_param param{};
         pthread_attr_init(&attr);
         pthread_attr_setschedpolicy(&attr, SCHED_RR);
+#ifdef __APPLE__
+        param.sched_priority = 1;
+#else
         param.__sched_priority = 1;
+#endif
+
         pthread_attr_setschedparam(&attr, &param);
         auto thread_ptr = this->_alive_thread_opt.get_ptr();
 

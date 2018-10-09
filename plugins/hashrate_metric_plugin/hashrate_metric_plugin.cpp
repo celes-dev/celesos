@@ -184,9 +184,16 @@ void celesos::hashrate_metric_plugin::plugin_startup() {
         if (pthread_attr_setschedpolicy(&attr, SCHED_RR) != 0) {
             FC_THROW("fail to set sched policy");
         }
+
+#ifdef __APPLE__
+        sched_param param{
+                .sched_priority = static_cast<int>(thread_priority),
+        };
+#else
         sched_param param{
                 .__sched_priority = static_cast<int>(thread_priority),
         };
+#endif
 
         if (pthread_attr_setschedparam(&attr, &param) != 0) {
             FC_THROW("fail to set sched param");
