@@ -103,12 +103,15 @@ namespace celesos {
     };
 }
 
-void *celesos::hashrate_metric_plugin::thread_run(void *arg) {
-    auto casted_arg = static_cast<hashrate_metric_plugin_run_arg_t *>(arg);
-    auto plugin_ptr = casted_arg->plugin_ptr;
-    auto thread_id = casted_arg->thread_id;
-    auto stream_ptr = casted_arg->stream_ptr;
-    auto &cache = *casted_arg->cache_ptr;
+void *celesos::hashrate_metric_plugin::thread_run(void *arg_ptr) {
+    auto casted_arg_ptr = static_cast<hashrate_metric_plugin_run_arg_t *>(arg_ptr);
+    auto arg = *casted_arg_ptr;
+    delete casted_arg_ptr;
+
+    auto plugin_ptr = arg.plugin_ptr;
+    auto thread_id = arg.thread_id;
+    auto stream_ptr = arg.stream_ptr;
+    auto &cache = *arg.cache_ptr;
     const auto &forest = plugin_ptr->my->_forest;
     const auto separator_symbol = plugin_ptr->my->_separator_symbol.c_str();
     const auto dataset_count = plugin_ptr->my->_dataset_count;
@@ -188,7 +191,7 @@ void celesos::hashrate_metric_plugin::plugin_startup() {
         if (pthread_attr_setschedparam(&attr, &param) != 0) {
             FC_THROW("fail to set sched param");
         }
-        hashrate_metric_plugin_run_arg_t arg{
+        auto arg_ptr = new hashrate_metric_plugin_run_arg_t{
                 .plugin_ptr = this,
                 .thread_id = thread_id,
                 .stream_ptr = stream_ptr,
@@ -196,7 +199,7 @@ void celesos::hashrate_metric_plugin::plugin_startup() {
                 .dataset_ptr = dataset_ptr,
         };
         pthread_t a_thread{};
-        pthread_create(&a_thread, &attr, celesos::hashrate_metric_plugin::thread_run, &arg);
+        pthread_create(&a_thread, &attr, celesos::hashrate_metric_plugin::thread_run, arg_ptr);
         threads.emplace_back(std::move(a_thread));
     }
     for (auto &thread : threads) {
