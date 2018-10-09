@@ -114,9 +114,6 @@ namespace celesos {
                 temp_double_target = temp_double_target / double_target;
                 uint256_t target = static_cast<uint256_t>(temp_double_target);
 
-//                ilog("*******verify_wood target_value:${target}",
-//                     ("target",target));
-
                 //prepare parameter for ethash
                 uint32_t cache_number = block_number / forest_period_number() + 1;
                 std::vector<celesos::ethash::node> cache_data;
@@ -144,6 +141,12 @@ namespace celesos {
                 auto result_value = celesos::ethash::hash_light_hex(wood_forest, string(wood), data_set_count,
                                                                     cache_data);
                 dlog("verify wood 7 at time: ${time}", ("time", fc::time_point::now().time_since_epoch().count()));
+
+
+                dlog("forest_bank::verify_wood target_value:${target}", ("target", target));
+                dlog("forest_bank::verify_wood wood_forest:${wood_forest}", ("wood_forest", wood_forest));
+                dlog("forest_bank::verify_wood wood:${wood}", ("wood", wood));
+                dlog("forest_bank::verify_wood data_set_count:${data_set_count}", ("data_set_count", data_set_count));
 
                 return result_value <= target;
             }
