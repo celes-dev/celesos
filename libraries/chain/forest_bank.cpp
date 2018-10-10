@@ -185,23 +185,25 @@ namespace celesos {
 
                 first_cache_pair = std::make_shared<cache_pair_type>(temp_cache);
             }
+            //update forest
+            forest_bank::update_forest(block);
         }
 
-        bool forest_bank::get_forest(forest_struct &forest, const account_name &account) {
+        void forest_bank::update_forest(const block_state_ptr &block){
             uint32_t current_block_number = chain.head_block_num();
             if (current_block_number <= 1) {
-                return false;
+                return;
             }
 
             uint32_t current_forest_number =
                     (current_block_number - 1) / forest_space_number() * forest_space_number() + 1;
 
-            if ((forest.target == 0) || (current_forest_number != forest.block_number)) {
+            if ((forest_data.target == 0) || (current_forest_number > forest_data.block_number)) {
                 block_id_type result_value = forest_bank::getBlockIdWithCache(current_forest_number);
                 block_id_type seed_value = forest_bank::getBlockIdWithCache(first_cache_pair->first);
 
                 forest_data.seed = fc::sha256::hash(seed_value.str());
-                forest_data.forest = fc::sha256::hash(result_value.str() + account.to_string());
+                forest_data.forest = result_value;
                 forest_data.block_number = current_forest_number;
                 forest_data.next_block_num = current_forest_number + forest_space_number();
 
@@ -211,13 +213,23 @@ namespace celesos {
                 temp_double_target = temp_double_target / double_target;
                 uint256_t value = static_cast<uint256_t>(temp_double_target);
 
-                ilog("*******get_forest value:${value}",
-                     ("value", value));
-
-
                 forest_data.target = value;
             }
-            forest = forest_data;
+        }
+
+
+        bool forest_bank::get_forest(forest_struct &forest, const account_name &account) {
+            uint32_t current_block_number = chain.head_block_num();
+            if (current_block_number <= 1 || forest_data == nullptr) {
+                return false;
+            }
+
+            forest.seed = forest_data.seed;
+            forest.forest = fc::sha256::hash(forest_data.forest.str() + account.to_string());
+            forest.block_number = forest_data.block_number;
+            forest.next_block_num = forest_data.next_block_num;
+            forest.target = forest_data.target;
+
             return true;
         }
     }

@@ -41,6 +41,7 @@ namespace celesos{
          ~forest_bank();
 
          void update_cache(const eosio::chain::block_state_ptr& block);
+         void update_forest(const eosio::chain::block_state_ptr &block);
          eosio::chain::controller &chain;
 
          void cleanBlockIdCache(uint32_t block_number);
