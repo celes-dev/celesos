@@ -2,7 +2,6 @@
 // Created by huberyzhang on 2018/7/25.
 //
 
-#include "eosio/chain/block.hpp"
 #include "eosio/chain/block_header.hpp"
 #include "eosio/chain/fork_database.hpp"
 #include <eosio/chain/forest_bank.hpp>
