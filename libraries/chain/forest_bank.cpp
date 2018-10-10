@@ -219,6 +219,9 @@ bool forest_bank::verify_wood(uint32_t block_number,
 
 void forest_bank::update_cache(const block_state_ptr &block)
 {
+    // update forest
+    forest_bank::update_forest(block);
+
     // store current and last period feed cache for verify wood
     if (chain.head_block_num() <= 1)
     {
@@ -259,8 +262,6 @@ void forest_bank::update_cache(const block_state_ptr &block)
 
         first_cache_pair = std::make_shared<cache_pair_type>(temp_cache);
     }
-    // update forest
-    forest_bank::update_forest(block);
 }
 
 void forest_bank::update_forest(const block_state_ptr &block)
