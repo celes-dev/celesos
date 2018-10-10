@@ -53,6 +53,8 @@ forest_bank::forest_bank(controller &control) : chain(control)
     // set accepted_block signal function
     chain.accepted_block.connect(
         boost::bind(&forest_bank::update_cache, this, _1));
+    chain.accepted_block.connect(
+        boost::bind(&forest_bank::update_forest, this, _1));
 }
 
 forest_bank::~forest_bank() {}
@@ -218,9 +220,6 @@ bool forest_bank::verify_wood(uint32_t block_number,
 
 void forest_bank::update_cache(const block_state_ptr &block)
 {
-    // update forest
-    forest_bank::update_forest(block);
-
     // store current and last period feed cache for verify wood
     if (chain.head_block_num() <= 1)
     {
@@ -240,7 +239,7 @@ void forest_bank::update_cache(const block_state_ptr &block)
     std::vector<celesos::ethash::node> node_vector;
     uint32_t dataset_count = cache_count();
     block_id_type seed = fc::sha256::hash(
-        forest_bank::getBlockIdFromCache(current_cache_number).str());
+        chain.get_block_id_for_num(current_cache_number).str());
 
     if (celesos::ethash::calc_cache(node_vector, dataset_count, seed.str()))
     {
@@ -306,6 +305,8 @@ void forest_bank::update_forest(const block_state_ptr &block)
         forestLock.unlock();
 
         forest_bank::cacheBlockInfo(current_forest_number,result_value,double_target);
+
+        ilog("update forest number: ${current_forest_number},result_value:${result_value},double_target:${double_target},target:${target}",("current_forest_number", current_forest_number)("result_value", result_value)("double_target", double_target)("target", value));
     }
 }
 
