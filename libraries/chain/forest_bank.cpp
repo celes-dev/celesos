@@ -139,6 +139,8 @@ void forest_bank::cleanBlockCache(const uint32_t block_number)
 bool forest_bank::verify_wood(uint32_t block_number,
                               const account_name &account, const char *wood)
 {
+    return true;
+    
     dlog("verify wood 1 at time: ${time}",
          ("time", fc::time_point::now().time_since_epoch().count()));
     uint32_t current_block_number = chain.head_block_num();
