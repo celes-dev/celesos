@@ -278,10 +278,16 @@ void forest_bank::update_forest(const block_state_ptr &block)
 
     if (current_forest_number > forest_data.block_number)
     {
-        block_id_type result_value =
-            forest_bank::getBlockIdFromCache(current_forest_number);
-        block_id_type seed_value =
-            forest_bank::getBlockIdFromCache(first_cache_pair->first);
+        block_id_type result_value = chain.get_block_id_for_num(block_number);
+        block_id_type seed_value;
+        if(first_cache_pair->first == block_number)
+        {
+            seed_value = result_value;
+        }
+        else
+        {
+            seed_value = chain.get_block_id_for_num(first_cache_pair->first);;
+        }
 
         //计算难度
         double double_target = chain.get_forest_diff();
