@@ -18,7 +18,7 @@ namespace forest
 
 map<uint32_t, std::pair<eosio::chain::block_id_type, double>> block_cache;
 
-std::mutex forestLock;
+boost::mutex forestLock;
 
 uint32_t dataset_count()
 {
