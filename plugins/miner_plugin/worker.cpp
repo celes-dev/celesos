@@ -39,14 +39,14 @@ void *celesos::miner::worker::thread_run(void *arg) {
 
         if (ethash::hash_full(forest, nonce_current, dataset_count, dataset) <= target) {
             wood_opt = nonce_current;
-//            ilog(
-//                    "success to compute valid wood: ${wood} with \n\t\tseed:${seed} \n\t\tforest: ${forest} \n\t\ttarget:${target} \n\t\tdataset_count:${dataset_count}",
-//                    ("wood", wood_opt->str(0, std::ios_base::hex).c_str())
-//                            ("seed", seed.c_str())
-//                            ("forest", forest.c_str())
-//                            ("target", target.str(0, std::ios_base::hex).c_str())
-//                            ("dataset_count", dataset_count)
-//                    );
+            ilog(
+                    "success to compute valid wood with \n\t\twood: ${wood} \n\t\tseed:${seed} \n\t\tforest: ${forest} \n\t\ttarget:${target} \n\t\tdataset_count:${dataset_count}",
+                    ("wood", wood_opt->str(0, std::ios_base::hex).c_str())
+                            ("seed", seed.c_str())
+                            ("forest", forest.c_str())
+                            ("target", target.str(0, std::ios_base::hex).c_str())
+                            ("dataset_count", dataset_count)
+            );
             worker_ptr->_ctx.io_service_ptr->post(
                     [signal = worker_ptr->_ctx.signal_ptr, block_num = worker_ptr->_ctx.block_num, wood_opt = wood_opt]() {
                         auto is_success = !!wood_opt;
