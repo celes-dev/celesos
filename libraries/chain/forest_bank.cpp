@@ -278,9 +278,9 @@ void forest_bank::update_forest(const block_state_ptr &block)
 
     if (current_forest_number > forest_data.block_number)
     {
-        block_id_type result_value = chain.get_block_id_for_num(block_number);
+        block_id_type result_value = chain.get_block_id_for_num(current_forest_number);
         block_id_type seed_value;
-        if(first_cache_pair->first == block_number)
+        if(first_cache_pair->first == current_forest_number)
         {
             seed_value = result_value;
         }
