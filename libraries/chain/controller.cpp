@@ -1298,7 +1298,11 @@ void controller::startup() {
    if( !my->head ) {
       elog( "No head block in fork db, perhaps we need to replay" );
    }
+
+   celesos::forest::forest_bank::getInstance(my);
+
    my->init();
+
 }
 
 chainbase::database& controller::db()const { return my->db; }
