@@ -112,6 +112,7 @@ void forest_bank::cacheBlockInfo(const uint32_t block_number,
                                  const double diff)
 {
     block_cache[block_number] = std::make_pair(block_id, diff);
+    cleanBlockCache(block_number);
 }
 
 void forest_bank::cleanBlockCache(const uint32_t block_number)
@@ -205,6 +206,10 @@ bool forest_bank::verify_wood(uint32_t block_number,
         dlog("verify wood 7 at time: ${time}",
              ("time", fc::time_point::now().time_since_epoch().count()));
 
+
+        dlog("forest_bank::verify_wood block_value:${block_number}", ("block_number", block_number));
+        dlog("forest_bank::verify_wood double_target:${double_target}", ("double_target", double_target));
+        dlog("forest_bank::verify_wood temp_double_target:${temp_double_target}", ("temp_double_target", target));
         dlog("forest_bank::verify_wood target_value:${target}", ("target", target));
         dlog("forest_bank::verify_wood wood_forest:${wood_forest}",
              ("wood_forest", wood_forest));
@@ -265,12 +270,12 @@ void forest_bank::update_cache(const block_state_ptr &block)
 void forest_bank::update_forest(const block_state_ptr &block)
 {
     uint32_t current_block_number = chain.head_block_num();
-    if (current_block_number <= 1)
+    if (current_block_number <= 2)
     {
         return;
     }
 
-    uint32_t current_forest_number = (current_block_number - 1) /
+    uint32_t current_forest_number = (current_block_number - 2) /
                                          forest_space_number() *
                                          forest_space_number() +
                                      1;
