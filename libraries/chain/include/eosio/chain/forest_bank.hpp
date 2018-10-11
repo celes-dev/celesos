@@ -20,9 +20,9 @@ typedef struct
 {
   eosio::chain::block_id_type seed;
   eosio::chain::block_id_type forest;
-  uint32_t block_number;
-  uint32_t next_block_num;
-  boost::multiprecision::uint256_t target;
+  uint32_t block_number = 0;
+  uint32_t next_block_num = 0;
+  boost::multiprecision::uint256_t target = 0;
 } forest_struct;
 
 uint32_t cache_count();
