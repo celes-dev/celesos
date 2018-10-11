@@ -20,6 +20,7 @@
 #include <fc/scoped_exit.hpp>
 
 #include <eosio/chain/eosio_contract.hpp>
+#include <eosio/chain/forest_bank.hpp>
 
 namespace eosio { namespace chain {
 
@@ -199,6 +200,8 @@ struct controller_impl {
    }
 
    void init() {
+
+      celesos::forest::forest_bank::getInstance(self);
 
       /**
       *  The fork database needs an initial block_state to be set before
@@ -1298,11 +1301,7 @@ void controller::startup() {
    if( !my->head ) {
       elog( "No head block in fork db, perhaps we need to replay" );
    }
-
-   celesos::forest::forest_bank::getInstance(my);
-
    my->init();
-
 }
 
 chainbase::database& controller::db()const { return my->db; }
