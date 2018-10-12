@@ -170,7 +170,7 @@ bool forest_bank::verify_wood(uint32_t block_number,
         uint256_t target = static_cast<uint256_t>(temp_double_target);
 
         // prepare parameter for ethash
-        uint32_t cache_number = (block_number -1) / forest_period_number() + 1;
+        uint32_t cache_number = (block_number -1) / forest_period_number() * forest_period_number()  + 1;
         std::vector<celesos::ethash::node> cache_data;
         if (cache_number == first_cache_pair->first)
         {
@@ -197,8 +197,15 @@ bool forest_bank::verify_wood(uint32_t block_number,
              ("time", fc::time_point::now().time_since_epoch().count()));
         uint32_t data_set_count = dataset_count();
 
-        block_id_type seed = fc::sha256::hash(
-            forest_bank::getBlockIdFromCache((first_cache_pair->first -1) * forest_period_number() + 1).str());
+        auto block_id_tmp = forest_bank::getBlockIdFromCache((first_cache_pair->first -1) * forest_period_number() + 1).str();
+        block_id_type seed = fc::sha256::hash(block_id_tmp);
+        ilog("calc seed with "
+            "\n\t\tblock_num: ${block_num}"
+            "\n\t\tblock_id: ${block_id}"
+            "\n\t\tseed: ${seed}",
+            ("block_num", (first_cache_pair->first -1) * forest_period_number() + 1)
+            ("block_id", block_id_tmp)
+            ("seed", seed.str()));
         dlog("verify wood 6 at time: ${time}",
              ("time", fc::time_point::now().time_since_epoch().count()));
 
@@ -210,16 +217,17 @@ bool forest_bank::verify_wood(uint32_t block_number,
 
 
         dlog("forest_bank::verify_wood block_value:${block_number}", ("block_number", block_number));
+        dlog("forest_bank::verify_wood seed:${seed}", ("seed", seed.str()));
         dlog("forest_bank::verify_wood double_target:${double_target}", ("double_target", double_target));
-        dlog("forest_bank::verify_wood temp_double_target:${temp_double_target}", ("temp_double_target", target));
-        dlog("forest_bank::verify_wood target_value:${target}", ("target", target));
+        dlog("forest_bank::verify_wood temp_double_target:${temp_double_target}", ("temp_double_target", target.str(0, std::ios_base::hex)));
+        dlog("forest_bank::verify_wood target_value:${target}", ("target", target.str(0, std::ios_base::hex)));
         dlog("forest_bank::verify_wood wood_forest:${wood_forest}",
              ("wood_forest", wood_forest));
         dlog("forest_bank::verify_wood wood:${wood}", ("wood", wood));
         dlog("forest_bank::verify_wood data_set_count:${data_set_count}",
              ("data_set_count", data_set_count));
         dlog("forest_bank::verify_wood result_value:${result_value}",
-             ("result_value", result_value));
+             ("result_value", result_value.str(0, std::ios_base::hex)));
 
         return result_value <= target;
     }
@@ -262,7 +270,7 @@ void forest_bank::update_cache(const block_state_ptr &block)
         }
 
         std::pair<uint32_t, std::vector<celesos::ethash::node>> temp_cache =
-            std::make_pair(current_cache_number, node_vector);
+            std::make_pair(block_number + 1, node_vector);
         //                first_cache_pair = &temp_cache;
 
         first_cache_pair = std::make_shared<cache_pair_type>(temp_cache);
@@ -309,6 +317,16 @@ void forest_bank::update_forest(const block_state_ptr &block)
         forest_data.next_block_num = current_forest_number + forest_space_number();
         forest_data.target = value;
 
+        ilog("calc seed with"
+            "\n\t\tseed: ${seed} "
+            "\n\t\tblock_num_1: ${block_num_1} "
+            "\n\t\tblock_num_2: ${block_num_2} "
+            "\n\t\ttarget: ${target}",
+            ("seed", forest_data.seed.str())
+            ("block_num_1", first_cache_pair->first)
+            ("block_num_2", forest_data.block_number)
+            ("target", forest_data.target.str(0, std::ios_base::hex)));
+
         forestLock.unlock();
 
     std::ostringstream oss;
@@ -319,7 +337,12 @@ void forest_bank::update_forest(const block_state_ptr &block)
 
         forest_bank::cacheBlockInfo(current_forest_number,result_value,double_target);
 
-        ilog("update forest number: ${current_forest_number},result_value:${result_value},double_target:${double_target},target:${target}",("current_forest_number", current_forest_number)("result_value", result_value)("double_target", double_target)("target", value));
+        ilog("update forest with "
+             "\n\t\tnumber: ${current_forest_number} "
+             "\n\t\tresult_value: ${result_value} "
+             "\n\t\tdouble_target: ${double_target} "
+             "\n\t\ttarget: ${target}",
+             ("current_forest_number", current_forest_number)("result_value", result_value)("double_target", double_target)("target", value));
     }
 }
 

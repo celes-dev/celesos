@@ -71,8 +71,19 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
                                    ("account", relative_account));
             }
 
-            ilog("update field \"next_block_number\" with value: ${block_num}",
-                 ("block_num", forest_info_ptr->next_block_num));
+//            ilog("update field \"next_block_number\" with value: ${block_num}",
+//                 ("block_num", forest_info_ptr->next_block_num));
+            ilog("success to get latest forest_info with "
+                 "\n\t\tseed: ${seed} "
+                 "\n\t\tforest: ${forest} "
+                 "\n\t\tblock_num: ${block_num}"
+                 "\n\t\tnext_block_num: ${next_block_num}"
+                 "\n\t\ttarget: ${target}",
+                 ("seed", forest_info_ptr->seed.str())
+                         ("forest", forest_info_ptr->forest.str())
+                         ("block_num", forest_info_ptr->block_number)
+                         ("next_block_num", forest_info_ptr->next_block_num)
+                         ("target", forest_info_ptr->target.str(0, std::ios_base::hex)));
 
             this->_sub_io_service_ptr->post([this, forest_info_ptr, relative_account]() {
                 this->on_forest_updated(forest_info_ptr, relative_account);
