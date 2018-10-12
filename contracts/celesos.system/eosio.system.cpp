@@ -17,7 +17,7 @@ namespace eosiosystem {
               _burninfos(_self, _self),
               _burnproducerstatinfos(_self, _self),
               _burnblockstatinfos(_self, _self),
-              _rammarket(_self, _self) {
+              _rammarket(_self, _self){
         //print( "construct system\n" );
         _gstate = _global.exists() ? _global.get() : get_default_parameters();
 
@@ -180,7 +180,7 @@ namespace eosiosystem {
             }
         }
 
-        user_resources_table userres(_self, newact);
+        user_resources_table userres(_self, _self);
 
         userres.emplace(newact, [&](auto &res) {
             res.owner = newact;

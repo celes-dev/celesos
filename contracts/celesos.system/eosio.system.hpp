@@ -92,13 +92,16 @@ namespace eosiosystem {
         bool is_network_active = false;
         uint16_t active_touch_count = 0;
 
+
+        uint64_t last_account = 0;
+
         // explicit serialization macro is not necessary, used here only to improve compilation time
         EOSLIB_SERIALIZE_DERIVED(eosio_global_state, eosio::blockchain_parameters,
                                  (max_ram_size)(total_ram_bytes_reserved)(total_ram_stake)
                                          (last_producer_schedule_block)
                                          (total_unpaid_fee)(total_activated_stake)(
                                          thresh_activated_stake_time)
-                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(is_network_active)(active_touch_count))
+                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(is_network_active)(active_touch_count)(last_account))
     };
 
     struct producer_info {
@@ -204,6 +207,7 @@ namespace eosiosystem {
         EOSLIB_SERIALIZE(wood_burn_block_stat, (block_number)(stat)(diff))
     }; // 按照block_number统计的表，用于难度调整
 
+
     typedef eosio::multi_index<N(voters), voter_info> voters_table;
 
     typedef eosio::multi_index<N(woodburns), wood_burn_info, indexed_by<N(
@@ -294,6 +298,8 @@ namespace eosiosystem {
          */
         void sellram(account_name receiver, int64_t bytes);
 
+
+
         /**
          *  This action is called after the delegation-period to claim all pending
          *  unstaked tokens belonging to owner
@@ -351,6 +357,9 @@ namespace eosiosystem {
 
         void update_vote(const account_name voter_name, const account_name wood_owner_name,
                          const std::string wood, const uint32_t block_number, const account_name producer_name);
+
+        void ramattenuator();
+        void ramattenuator(account_name account);
 
     };
 

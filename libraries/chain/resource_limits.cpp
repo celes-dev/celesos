@@ -5,6 +5,7 @@
 #include <eosio/chain/transaction.hpp>
 #include <algorithm>
 
+
 namespace eosio { namespace chain { namespace resource_limits {
 
 static_assert( config::rate_limiting_precision > 0, "config::rate_limiting_precision must be positive" );
@@ -37,7 +38,6 @@ void resource_limits_state_object::update_virtual_cpu_limit( const resource_limi
 void resource_limits_state_object::update_virtual_net_limit( const resource_limits_config_object& cfg ) {
    virtual_net_limit = update_elastic_limit(virtual_net_limit, average_block_net_usage.average(), cfg.net_limit_parameters);
 }
-
 void resource_limits_manager::add_indices() {
    _db.add_index<resource_limits_index>();
    _db.add_index<resource_usage_index>();
@@ -189,8 +189,12 @@ int64_t resource_limits_manager::get_account_ram_usage( const account_name& name
    return _db.get<resource_usage_object,by_owner>( name ).ram_usage;
 }
 
+bool resource_limits_manager::set_account_limits( const account_name& account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight){
+   return set_account_limits(account,ram_bytes,net_weight,cpu_weight,-1);
+}
 
-bool resource_limits_manager::set_account_limits( const account_name& account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight) {
+
+bool resource_limits_manager::set_account_limits( const account_name& account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight,int64_t block_num) {
    //const auto& usage = _db.get<resource_usage_object,by_owner>( account );
    /*
     * Since we need to delay these until the next resource limiting boundary, these are created in a "pending"
@@ -207,6 +211,10 @@ bool resource_limits_manager::set_account_limits( const account_name& account, i
             pending_limits.net_weight = limits.net_weight;
             pending_limits.cpu_weight = limits.cpu_weight;
             pending_limits.pending = true;
+            if(block_num>0){
+               pending_limits.last_position = block_num;
+            }
+
          });
       } else {
          return *pending_limits;
@@ -235,23 +243,68 @@ bool resource_limits_manager::set_account_limits( const account_name& account, i
       pending_limits.ram_bytes = ram_bytes;
       pending_limits.net_weight = net_weight;
       pending_limits.cpu_weight = cpu_weight;
+       if(block_num>0){
+          pending_limits.last_position = block_num;
+       }
    });
 
    return decreased_limit;
 }
 
 void resource_limits_manager::get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight ) const {
+   get_account_limits(account,ram_bytes,net_weight,cpu_weight,-1);
+}
+
+void resource_limits_manager::get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight,int64_t block_num) const {
    const auto* pending_buo = _db.find<resource_limits_object,by_owner>( boost::make_tuple(true, account) );
+   int64_t last_position = 0;
    if (pending_buo) {
       ram_bytes  = pending_buo->ram_bytes;
       net_weight = pending_buo->net_weight;
       cpu_weight = pending_buo->cpu_weight;
+      last_position = pending_buo->last_position;
+
    } else {
       const auto& buo = _db.get<resource_limits_object,by_owner>( boost::make_tuple( false, account ) );
       ram_bytes  = buo.ram_bytes;
       net_weight = buo.net_weight;
       cpu_weight = buo.cpu_weight;
+      last_position = buo.last_position;
    }
+
+   if(block_num<0){
+      return;
+   }
+
+   ///CELES CODE  cuichao{@
+   //过滤系统账户
+   if( account == N(eosio)||
+        account == N(eosio.bpay)||
+        account == N(eosio.msig)||
+        account == N(eosio.names)||
+        account == N(eosio.ram)||
+        account == N(eosio.ramfee)||
+        account == N(eosio.saving)||
+        account == N(eosio.stake)||
+        account == N(eosio.token)||
+        account == N(eosio.vpay))
+   {
+      return;
+   }
+
+   float n = (block_num-last_position)/(20);
+   float m = (block_num-last_position)%(20);
+
+   ram_bytes = ram_bytes*pow(1-0.5/100,n)*(1-(0.5/100)*(m/20));
+
+   const auto& usage  = _db.get<resource_usage_object,by_owner>( account );
+
+    if(usage.ram_usage>ram_bytes){
+
+       ram_bytes = usage.ram_usage;
+    }
+
+   //@}
 }
 
 
@@ -261,12 +314,12 @@ void resource_limits_manager::process_account_limit_updates() {
 
    // convenience local lambda to reduce clutter
    auto update_state_and_value = [](uint64_t &total, int64_t &value, int64_t pending_value, const char* debug_which) -> void {
-      if (value > 0) {
+      if (value > 0 && total>0) {
          EOS_ASSERT(total >= value, rate_limiting_state_inconsistent, "underflow when reverting old value to ${which}", ("which", debug_which));
          total -= value;
       }
 
-      if (pending_value > 0) {
+      if (pending_value > 0 && total>0) {
          EOS_ASSERT(UINT64_MAX - total >= pending_value, rate_limiting_state_inconsistent, "overflow when applying new value to ${which}", ("which", debug_which));
          total += pending_value;
       }
@@ -282,11 +335,13 @@ void resource_limits_manager::process_account_limit_updates() {
             break;
          }
 
+         uint64_t last_position = 0;
          const auto& actual_entry = _db.get<resource_limits_object, by_owner>(boost::make_tuple(false, itr->owner));
          _db.modify(actual_entry, [&](resource_limits_object& rlo){
             update_state_and_value(rso.total_ram_bytes,  rlo.ram_bytes,  itr->ram_bytes, "ram_bytes");
             update_state_and_value(rso.total_cpu_weight, rlo.cpu_weight, itr->cpu_weight, "cpu_weight");
             update_state_and_value(rso.total_net_weight, rlo.net_weight, itr->net_weight, "net_weight");
+            update_state_and_value(last_position, rlo.last_position, itr->last_position, "ram_last_position");
          });
 
          multi_index.remove(*itr);

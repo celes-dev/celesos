@@ -70,6 +70,8 @@ namespace eosiosystem {
                 }
             }
         }
+
+        ramattenuator();
     }
 
     using namespace eosio;

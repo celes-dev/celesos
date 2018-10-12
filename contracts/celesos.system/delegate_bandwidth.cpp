@@ -13,7 +13,7 @@
 #include <eosiolib/transaction.hpp>
 
 #include <eosio.token/eosio.token.hpp>
-
+#include <eosiolib/forest_bank.h>
 
 #include <cmath>
 #include <map>
@@ -30,18 +30,6 @@ namespace eosiosystem {
 
     static constexpr time refund_delay = 3 * 24 * 3600;
     static constexpr time refund_expiration_time = 3600;
-
-    struct user_resources {
-        account_name owner;
-        asset net_weight;
-        asset cpu_weight;
-        int64_t ram_bytes = 0;
-
-        uint64_t primary_key() const { return owner; }
-
-        // explicit serialization macro is not necessary, used here only to improve compilation time
-        EOSLIB_SERIALIZE(user_resources, (owner)(net_weight)(cpu_weight)(ram_bytes))
-    };
 
 
     /**
@@ -72,10 +60,26 @@ namespace eosiosystem {
         EOSLIB_SERIALIZE(refund_request, (owner)(request_time)(net_amount)(cpu_amount))
     };
 
+    struct user_resources {
+        account_name owner;
+        asset net_weight;
+        asset cpu_weight;
+        int64_t ram_bytes = 0;
+
+        int32_t last_position = 0;
+
+
+        uint64_t primary_key() const { return owner; }
+
+        // explicit serialization macro is not necessary, used here only to improve compilation time
+        EOSLIB_SERIALIZE(user_resources, (owner)(net_weight)(cpu_weight)(ram_bytes)(last_position))
+    };
+
     /**
      *  These tables are designed to be constructed in the scope of the relevant user, this
      *  facilitates simpler API for per-user queries
      */
+
     typedef eosio::multi_index<N(userres), user_resources> user_resources_table;
     typedef eosio::multi_index<N(delband), delegated_bandwidth> del_bandwidth_table;
     typedef eosio::multi_index<N(refunds), refund_request> refunds_table;
@@ -104,6 +108,11 @@ namespace eosiosystem {
     void system_contract::buyram(account_name payer, account_name receiver, asset quant) {
         require_auth(payer);
         eosio_assert(quant.amount > 0, "must purchase a positive amount");
+
+        ///CELES CODE  cuichao{@
+        //买入ram前先进行结算
+        ramattenuator(receiver);
+        //@}
 
         auto fee = quant;
         fee.amount = (fee.amount + 199) / 200; /// .5% fee (round up)
@@ -135,12 +144,13 @@ namespace eosiosystem {
         _gstate.total_ram_bytes_reserved += uint64_t(bytes_out);
         _gstate.total_ram_stake += quant_after_fee.amount;
 
-        user_resources_table userres(_self, receiver);
+        user_resources_table userres(_self,_self);
         auto res_itr = userres.find(receiver);
         if (res_itr == userres.end()) {
             res_itr = userres.emplace(receiver, [&](auto &res) {
                 res.owner = receiver;
                 res.ram_bytes = bytes_out;
+                res.last_position = get_chain_head_num();
             });
         } else {
             userres.modify(res_itr, receiver, [&](auto &res) {
@@ -148,6 +158,7 @@ namespace eosiosystem {
             });
         }
         set_resource_limits(res_itr->owner, res_itr->ram_bytes, res_itr->net_weight.amount, res_itr->cpu_weight.amount);
+
     }
 
 
@@ -161,7 +172,12 @@ namespace eosiosystem {
         require_auth(account);
         eosio_assert(bytes > 0, "cannot sell negative byte");
 
-        user_resources_table userres(_self, account);
+        ///CELES CODE  cuichao{@
+        //卖出ram前先进行结算
+        ramattenuator(account);
+        //@}
+
+        user_resources_table userres(_self,_self);
         auto res_itr = userres.find(account);
         eosio_assert(res_itr != userres.end(), "no resource row");
         eosio_assert(res_itr->ram_bytes >= bytes, "insufficient quota");
@@ -198,7 +214,124 @@ namespace eosiosystem {
                                                          {account, N(eosio.ramfee), asset(fee),
                                                           std::string("sell ram fee")});
         }
+
     }
+
+    /**
+     * CELES CODE
+     * @author cuichao
+     * ram随时间衰减函数
+     */
+    void system_contract::ramattenuator(account_name account){
+
+        user_resources_table userres(_self,_self);
+        auto item = userres.lower_bound(account);
+
+        //如果没有找到记录，取第一条  （表可能是空，或者已经是最后一条记录）
+        if(item == userres.end()){
+            item = userres.begin();
+        }
+
+        if(item == userres.end()){
+            return;
+        }
+
+        uint64_t  owner = item->owner;
+
+        //过滤系统账户
+        if( owner == N(eosio)||
+            owner == N(eosio.bpay)||
+            owner == N(eosio.msig)||
+            owner == N(eosio.names)||
+            owner == N(eosio.ram)||
+            owner == N(eosio.ramfee)||
+            owner == N(eosio.saving)||
+            owner == N(eosio.stake)||
+            owner == N(eosio.token)||
+            owner == N(eosio.vpay))
+        {
+            return;
+        }
+
+        print( ",owner=", name{item->owner});
+
+        //当前区块位置
+        uint32_t current_p =  get_chain_head_num();
+
+
+        //上次衰减过的位置
+        uint32_t last_p = item->last_position;
+
+        float n = (current_p-last_p)/(20);
+        float m = (current_p-last_p)%(20);
+
+        auto ram_bytes = item->ram_bytes;
+
+        //最小边界
+        if(ram_bytes < 100){
+            return;
+        }
+
+        ram_bytes = ram_bytes*pow(1-0.5/100,n)*(1-(0.5/100)*(m/20));
+
+        uint64_t bytes = item->ram_bytes - ram_bytes;
+        asset tokens_out;
+        auto itr = _rammarket.find(S(4, RAMCORE));
+        _rammarket.modify(itr, 0, [&](auto &es) {
+            tokens_out = es.convert(asset(bytes, S(0, RAM)), CORE_SYMBOL);
+        });
+
+
+
+//        eosio_assert(tokens_out.amount > 1, "token amount received from selling ram is too low");
+
+        _gstate.total_ram_bytes_reserved -= static_cast<decltype(_gstate.total_ram_bytes_reserved)>(bytes); // bytes > 0 is asserted above
+        _gstate.total_ram_stake -= tokens_out.amount;
+
+        userres.modify(item, item->owner, [&](auto &res) {
+            res.ram_bytes = ram_bytes;
+            res.last_position = current_p;
+        });
+
+        //将收取的费用从eosio.ram转入eosio.ramfee账户
+        INLINE_ACTION_SENDER(eosio::token, transfer)(N(eosio.token), {N(eosio.ram), N(active)},
+                                                     {N(eosio.ram), N(eosio.ramfee), tokens_out, std::string("ram fee")});
+
+        set_resource_limits(item->owner, item->ram_bytes, item->net_weight.amount, item->cpu_weight.amount);
+    }
+
+
+    /**
+     * CELES CODE
+     * @author cuichao
+     * ram随时间衰减函数
+     */
+    void system_contract::ramattenuator(){
+
+        uint64_t last = _gstate.last_account;
+        user_resources_table userres(_self,_self);
+        auto item = userres.lower_bound(last);
+
+        //如果没有找到记录，取第一条  （表可能是空，或者已经是最后一条记录）
+        if(item == userres.end()){
+            item = userres.begin();
+        }
+
+        if(item == userres.end()){
+            return;
+        }
+        //TODO 考虑系统账户
+        ramattenuator(last);
+
+        if(item!= userres.end()){
+            item++;
+        }
+
+        _gstate.last_account = item->owner;
+    }
+
+
+
 
     void validate_b1_vesting(int64_t stake) {
         const int64_t base_time = 1527811200; /// 2018-06-01
@@ -247,7 +380,7 @@ namespace eosiosystem {
 
         // update totals of "receiver"
         {
-            user_resources_table totals_tbl(_self, receiver);
+            user_resources_table totals_tbl(_self, _self);
             auto tot_itr = totals_tbl.find(receiver);
             if (tot_itr == totals_tbl.end()) {
                 tot_itr = totals_tbl.emplace(from, [&](auto &tot) {
