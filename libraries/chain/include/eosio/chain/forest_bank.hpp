@@ -59,6 +59,9 @@ private:
   using cache_pair_type = std::pair<uint32_t, std::vector<celesos::ethash::node>>;
   std::shared_ptr<cache_pair_type> first_cache_pair;
   std::shared_ptr<cache_pair_type> second_cache_pair;
+
+  std::map<uint32_t, std::pair<eosio::chain::block_id_type, double>> block_cache;
+  boost::mutex forestLock;
 };
 } // namespace forest
 } // namespace celesos

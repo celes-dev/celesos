@@ -15,10 +15,6 @@ namespace forest
 //        static uint32_t question_space_number = 600;//问题间隔块数
 //        static uint32_t question_period = 21600;//问题有效期
 
-map<uint32_t, std::pair<eosio::chain::block_id_type, double>> block_cache;
-
-boost::mutex forestLock;
-
 uint32_t dataset_count()
 {
     //            return 1024*1024*1024/64;
@@ -63,7 +59,7 @@ uint32_t forest_bank::forest_period_number()
 {
     uint32_t result_value = 24 * 60 * 21 * 6;
 #ifdef DEBUG
-    result_value = 10 * 21 * 6;
+    result_value = 2 * 21 * 6;
 #endif
     return result_value;
 }
@@ -87,7 +83,7 @@ forest_bank::getBlockIdFromCache(const uint32_t block_number)
     }
     else
     {
-        elog("can not fount block id from cache");
+        elog("can not fount block id from cache:${block_number}",("block_number",block_number));
         eosio::chain::block_id_type block_id;
         return block_id;
     }
@@ -102,7 +98,7 @@ double forest_bank::getBlockDiffFromCache(const uint32_t block_number)
     }
     else
     {
-        elog("can not fount diff from cache");
+        elog("can not fount diff from cache:${block_number}",("block_number",block_number));
         return 1.0;
     }
 }
@@ -121,8 +117,8 @@ void forest_bank::cleanBlockCache(const uint32_t block_number)
         return;
 
     vector<uint32_t> vector;
-    auto iter = block_cache.begin();
-    while (iter != block_cache.end())
+    auto iter = block_cache.cbegin();
+    while (iter != block_cache.cend())
     {
         if (iter->first <= block_number - forest_period_number())
         {
@@ -131,8 +127,9 @@ void forest_bank::cleanBlockCache(const uint32_t block_number)
         iter++;
     }
 
-    for (auto iter = vector.begin(); iter != vector.end(); iter++)
+    for (auto iter = vector.cbegin(); iter != vector.cend(); iter++)
     {
+        ilog("block_cache:erase for key:${key}",("key",*iter));
         block_cache.erase(*iter);
     }
 }
@@ -140,6 +137,11 @@ void forest_bank::cleanBlockCache(const uint32_t block_number)
 bool forest_bank::verify_wood(uint32_t block_number,
                               const account_name &account, const char *wood)
 {
+    std::ostringstream oss;
+	oss << boost::this_thread::get_id();
+	std::string stid = oss.str();
+
+    dlog("verify wood at threadid:${threadid}",("threadid",stid));
     dlog("verify wood 1 at time: ${time}",
          ("time", fc::time_point::now().time_since_epoch().count()));
     uint32_t current_block_number = chain.head_block_num();
@@ -168,7 +170,7 @@ bool forest_bank::verify_wood(uint32_t block_number,
         uint256_t target = static_cast<uint256_t>(temp_double_target);
 
         // prepare parameter for ethash
-        uint32_t cache_number = block_number / forest_period_number() + 1;
+        uint32_t cache_number = (block_number -1) / forest_period_number() + 1;
         std::vector<celesos::ethash::node> cache_data;
         if (cache_number == first_cache_pair->first)
         {
@@ -196,7 +198,7 @@ bool forest_bank::verify_wood(uint32_t block_number,
         uint32_t data_set_count = dataset_count();
 
         block_id_type seed = fc::sha256::hash(
-            forest_bank::getBlockIdFromCache(first_cache_pair->first).str());
+            forest_bank::getBlockIdFromCache((first_cache_pair->first -1) * forest_period_number() + 1).str());
         dlog("verify wood 6 at time: ${time}",
              ("time", fc::time_point::now().time_since_epoch().count()));
 
@@ -231,8 +233,8 @@ void forest_bank::update_cache(const block_state_ptr &block)
         return;
     }
 
-    uint32_t block_number = chain.head_block_num() - 1;
-    uint32_t current_cache_number = block_number / forest_period_number() + 1;
+    uint32_t block_number = chain.head_block_num() - 2;
+    uint32_t current_cache_number =  block_number / forest_period_number() + 1;
 
     if (!(first_cache_pair->second.empty()) &&
         first_cache_pair->first == current_cache_number)
@@ -244,7 +246,7 @@ void forest_bank::update_cache(const block_state_ptr &block)
     std::vector<celesos::ethash::node> node_vector;
     uint32_t dataset_count = cache_count();
     block_id_type seed = fc::sha256::hash(
-        chain.get_block_id_for_num(current_cache_number).str());
+        chain.get_block_id_for_num(block_number + 1).str());
 
     if (celesos::ethash::calc_cache(node_vector, dataset_count, seed.str()))
     {
@@ -308,6 +310,12 @@ void forest_bank::update_forest(const block_state_ptr &block)
         forest_data.target = value;
 
         forestLock.unlock();
+
+    std::ostringstream oss;
+	oss << boost::this_thread::get_id();
+	std::string stid = oss.str();
+
+        dlog("cacheBlockInfo at threadId:${threadid}",("threadid",stid));
 
         forest_bank::cacheBlockInfo(current_forest_number,result_value,double_target);
 
