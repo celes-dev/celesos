@@ -2,8 +2,6 @@
 // Created by huberyzhang on 2018/7/25.
 //
 
-#include "eosio/chain/block_header.hpp"
-#include "eosio/chain/fork_database.hpp"
 #include <eosio/chain/forest_bank.hpp>
 
 namespace celesos
@@ -197,13 +195,13 @@ bool forest_bank::verify_wood(uint32_t block_number,
              ("time", fc::time_point::now().time_since_epoch().count()));
         uint32_t data_set_count = dataset_count();
 
-        auto block_id_tmp = forest_bank::getBlockIdFromCache((first_cache_pair->first -1) * forest_period_number() + 1).str();
+        auto block_id_tmp = forest_bank::getBlockIdFromCache(first_cache_pair->first).str();
         block_id_type seed = fc::sha256::hash(block_id_tmp);
         ilog("calc seed with "
             "\n\t\tblock_num: ${block_num}"
             "\n\t\tblock_id: ${block_id}"
             "\n\t\tseed: ${seed}",
-            ("block_num", (first_cache_pair->first -1) * forest_period_number() + 1)
+            ("block_num", first_cache_pair->first)
             ("block_id", block_id_tmp)
             ("seed", seed.str()));
         dlog("verify wood 6 at time: ${time}",
@@ -242,7 +240,7 @@ void forest_bank::update_cache(const block_state_ptr &block)
     }
 
     uint32_t block_number = chain.head_block_num() - 2;
-    uint32_t current_cache_number =  block_number / forest_period_number() + 1;
+    uint32_t current_cache_number =  block_number / forest_period_number() * forest_period_number() + 1;
 
     if (!(first_cache_pair->second.empty()) &&
         first_cache_pair->first == current_cache_number)
