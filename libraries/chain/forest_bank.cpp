@@ -252,7 +252,7 @@ void forest_bank::update_cache(const block_state_ptr &block)
     std::vector<celesos::ethash::node> node_vector;
     uint32_t dataset_count = cache_count();
     block_id_type seed = fc::sha256::hash(
-        chain.get_block_id_for_num(block_number + 1).str());
+        chain.get_block_id_for_num(current_cache_number).str());
 
     if (celesos::ethash::calc_cache(node_vector, dataset_count, seed.str()))
     {
@@ -268,7 +268,7 @@ void forest_bank::update_cache(const block_state_ptr &block)
         }
 
         std::pair<uint32_t, std::vector<celesos::ethash::node>> temp_cache =
-            std::make_pair(block_number + 1, node_vector);
+            std::make_pair(current_cache_number, node_vector);
         //                first_cache_pair = &temp_cache;
 
         first_cache_pair = std::make_shared<cache_pair_type>(temp_cache);
