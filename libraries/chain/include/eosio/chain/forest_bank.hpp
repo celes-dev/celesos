@@ -28,6 +28,34 @@ typedef struct
 uint32_t cache_count();
 uint32_t dataset_count();
 
+struct forest_info_cache_object : public chainbase::object<eosio::chain::forest_info_cache_object_type, forest_info_cache_object>
+{
+  OBJECT_CTOR(forest_info_cache_object);
+
+  id_type id;
+  uint32_t block_number;
+  double diff;
+  eosio::chain::block_id_type block_id;
+};
+
+struct by_block_number;
+
+using forest_info_multi_index = chainbase::shared_multi_index_container<
+    forest_info_cache_object,
+    indexed_by<
+        ordered_unique<tag<by_id>, member<forest_info_cache_object, forest_info_cache_object::id_type, &forest_info_cache_object::id>>,
+        ordered_unique<tag<by_block_number>, member<forest_info_cache_object, uint32_t, &forest_info_cache_object::block_number>>>>;
+} // namespace forest
+} // namespace celesos
+
+CHAINBASE_SET_INDEX_TYPE(celesos::forest::forest_info_cache_object, celesos::forest::forest_info_multi_index)
+
+namespace celesos
+{
+
+namespace forest
+{
+
 class forest_bank
 {
 public:
@@ -44,7 +72,10 @@ private:
   ~forest_bank();
 
   void update_cache(const eosio::chain::block_state_ptr &block);
+  void update_cache_with_block_number(uint32_t current_block_number);
   void update_forest(const eosio::chain::block_state_ptr &block);
+  void update_forest_with_block_number(const uint32_t current_block_number,const double diff,const bool bcache);
+
   eosio::chain::controller &chain;
 
   eosio::chain::block_id_type getBlockIdFromCache(const uint32_t block_number);
@@ -54,6 +85,8 @@ private:
   void cacheBlockInfo(const uint32_t block_number, const eosio::chain::block_id_type block_id, const double diff);
 
   void cleanBlockCache(const uint32_t block_number);
+
+  void loadBlockCacheInfo();
 
   forest_struct forest_data;
   using cache_pair_type = std::pair<uint32_t, std::vector<celesos::ethash::node>>;

@@ -201,8 +201,6 @@ struct controller_impl {
 
    void init() {
 
-      celesos::forest::forest_bank::getInstance(self);
-
       /**
       *  The fork database needs an initial block_state to be set before
       *  it can accept any new blocks. This initial block state can be found
@@ -270,6 +268,7 @@ struct controller_impl {
          db.undo();
       }
 
+      celesos::forest::forest_bank::getInstance(self);
    }
 
    ~controller_impl() {
@@ -298,7 +297,7 @@ struct controller_impl {
       db.add_index<block_summary_multi_index>();
       db.add_index<transaction_multi_index>();
       db.add_index<generated_transaction_multi_index>();
-
+      
       authorization.add_indices();
       resource_limits.add_indices();
    }
