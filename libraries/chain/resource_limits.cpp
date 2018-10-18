@@ -292,10 +292,14 @@ void resource_limits_manager::get_account_limits( const account_name& account, i
       return;
    }
 
-   float n = (block_num-last_position)/(20);
-   float m = (block_num-last_position)%(20);
+   float n = (block_num-last_position)/(1440);
+   float m = (block_num-last_position)%(1440);
 
-   ram_bytes = ram_bytes*pow(1-0.5/100,n)*(1-(0.5/100)*(m/20));
+   ram_bytes = ram_bytes*pow(1-0.5/100,n)*(1-(0.5/100)*(m/1440));
+   //最小边界
+   if(ram_bytes < 100){
+      return;
+   }
 
    const auto& usage  = _db.get<resource_usage_object,by_owner>( account );
 

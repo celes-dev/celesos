@@ -262,8 +262,8 @@ namespace eosiosystem {
         //上次衰减过的位置
         uint32_t last_p = item->last_position;
 
-        float n = (current_p-last_p)/(20);
-        float m = (current_p-last_p)%(20);
+        float n = (current_p-last_p)/(1440);
+        float m = (current_p-last_p)%(1440);
 
         auto ram_bytes = item->ram_bytes;
 
@@ -272,7 +272,13 @@ namespace eosiosystem {
             return;
         }
 
-        ram_bytes = ram_bytes*pow(1-0.5/100,n)*(1-(0.5/100)*(m/20));
+        ram_bytes = ram_bytes*pow(1-0.5/100,n)*(1-(0.5/100)*(m/1440));
+
+
+        //最小边界
+        if(ram_bytes < 100){
+            return;
+        }
 
         uint64_t bytes = item->ram_bytes - ram_bytes;
         asset tokens_out;
