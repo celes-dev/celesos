@@ -1,4 +1,4 @@
-FROM eosio/builder as builder
+FROM eosio/builder:v1.2.5 as builder
 ARG branch=master
 ARG symbol=SYS
 ARG http_proxy=""

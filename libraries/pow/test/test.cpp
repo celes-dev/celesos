@@ -112,11 +112,11 @@ BOOST_AUTO_TEST_CASE(light_and_full_client_checks) {
 
 BOOST_AUTO_TEST_CASE(light_and_full_client_checks_hex) {
     const static auto CACHE_COUNT = 512;
-    const static auto DATASET_COUNT = 512 * 16;
+    const static auto DATASET_COUNT = 8192;
 
-    uint256_t target{"0x68DB8BAC710CB295E9E1B089A027525460AA64C2F837B4A2339C0EBEDFA"};
-    std::string seed{"15fb89b6d22d57d008d74c4dfa8ae5e2ea2f2cda5f050d690d3d67e31cd15b8b"};
-    std::string forest{"ee4da936687ccd26b510b23b600a8cf461b30b1d61f51bcaa9f6a27d2e55a9bc"};
+    uint256_t target{"586331470385716162175479365644515953327327300448928783824253240972673024"};
+    std::string seed{"101dcbc6b7cf5170508696a930a6a03bc893d13ebb96067a2752bf8c37b97382"};
+    std::string forest{"5b1eb124908f2ffe503c07a3ed74c3dffb0eef47d6650fba37b2a05ebc8a9960"};
 
     auto cache = std::vector<ethash::node>{CACHE_COUNT, std::vector<ethash::node>::allocator_type()};
     calc_cache(cache, CACHE_COUNT, seed);
@@ -124,8 +124,9 @@ BOOST_AUTO_TEST_CASE(light_and_full_client_checks_hex) {
     auto dataset = std::vector<ethash::node>{DATASET_COUNT, std::vector<ethash::node>::allocator_type()};
     calc_dataset(dataset, DATASET_COUNT, cache);
 
-    uint256_t wood{0x190FAB};
-    std::string wood_hex{"0x190FAB"};
+//    uint256_t wood{0xA8E25909D52F01212ACAFA6398E0CD6AFE169C247E4F59B9457393918E9F34BA};
+    std::string wood_hex{"0x5F064CC659695DE19E14C742E05C8D22804613A2D0D448DB7C2EF3EEC5C676AF"};
+    uint256_t wood{"0x5F064CC659695DE19E14C742E05C8D22804613A2D0D448DB7C2EF3EEC5C676AF"};
     auto light_ret = ethash::hash_light(forest, wood, DATASET_COUNT, cache).str(0, std::ios_base::hex);
     auto full_ret = ethash::hash_full(forest, wood, DATASET_COUNT, dataset).str(0, std::ios_base::hex);
     auto light_hex_ret = ethash::hash_light_hex(forest, wood_hex, DATASET_COUNT, cache).str(0, std::ios_base::hex);
@@ -134,4 +135,5 @@ BOOST_AUTO_TEST_CASE(light_and_full_client_checks_hex) {
     BOOST_REQUIRE(full_ret == full_hex_ret);
     BOOST_REQUIRE(light_ret == full_ret);
     BOOST_REQUIRE(light_hex_ret == full_hex_ret);
+    BOOST_REQUIRE(uint256_t{std::string{"0x"} + light_ret} <= target);
 }

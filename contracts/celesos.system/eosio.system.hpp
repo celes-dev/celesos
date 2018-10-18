@@ -9,29 +9,33 @@
 #include <eosiolib/time.hpp>
 #include <eosiolib/privileged.hpp>
 #include <eosiolib/singleton.hpp>
+#include <eosiolib/fixed_key.hpp>
 #include <celesos.system/exchange_state.hpp>
 
 #include <musl/upstream/include/bits/stdint.h>
+#include <cstdlib>
 #include <string>
+
+#include <eosiolib/forest_bank.h>
 
 #define REWARD_HALF_TIME (21*pow(10,8)/2)
 
 
 #ifdef DEBUG
 
-#define TARGET_WOOD_NUMBER 30
+#define TARGET_WOOD_NUMBER 10
 // number of bp,BP个数
 #define BP_COUNT 2
 // when the bp count is ok cycle for this number,the active the network(主网启动条件，BP个数达标轮数）
-#define ACTIVE_NETWORK_CYCLE 2
+#define ACTIVE_NETWORK_CYCLE 10
 // origin reward number (初始出块奖励，折半衰减）
 #define ORIGIN_REWARD_NUMBER 20000
 // reward get min（if smaller than this number，you can't get the reward）最小奖励领取数，低于此数字将领取失败
-#define REWARD_GET_MIN 1
+#define REWARD_GET_MIN 100
 // get reward time sep(奖励领取间隔时间，单位：秒）
 #define REWARD_TIME_SEP 5*60
 // singing ticker sep（唱票间隔期，每隔固定时间进行唱票）
-#define SINGING_TICKER_SEP BP_COUNT*6*10
+#define SINGING_TICKER_SEP 2*6*10
 
 #else
 
@@ -101,7 +105,7 @@ namespace eosiosystem {
                                          (last_producer_schedule_block)
                                          (total_unpaid_fee)(total_activated_stake)(
                                          thresh_activated_stake_time)
-                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(is_network_active)(active_touch_count)(last_account))
+                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(is_network_active)(active_touch_count))
     };
 
     struct producer_info {
@@ -171,7 +175,55 @@ namespace eosiosystem {
 
         uint64_t primary_key() const { return rowid; }
 
-        uint128_t get_voter_block() const { return ((uint128_t) voter) << 64 | (uint128_t) block_number; }
+        static uint64_t woodkey(std::string wood) {
+
+
+            eosio::print(current_time2(), "hextoint64 ....1.01\r\n");
+
+            if (wood.length() > 16) {
+
+                eosio::print(current_time2(), "hextoint64 ....1.02\r\n");
+                return hextoint64(wood.substr(wood.length() - 16, 16));
+            } else {
+
+                eosio::print(current_time2(), "hextoint64 ....1.03\r\n");
+                return hextoint64(wood);
+            }
+        }
+
+        static uint64_t hextoint64(std::string str) {
+
+            eosio::print(current_time2(), "hextoint64 ....1.10\r\n");
+
+            uint64_t result = 0;
+            const char *ch = str.c_str();
+
+            eosio::print(current_time2(), "hextoint64 ....1.11\r\n");
+
+
+            for (int i = 0; (size_t) i < strlen(ch); i++) {
+                if (ch[i] >= '0' && ch[i] <= '9') {
+                    result = result * 16 + (uint64_t) (ch[i] - '0');
+                } else if (ch[i] >= 'A' && ch[i] <= 'Z') {
+                    result = result * 16 + (uint64_t) (ch[i] - 'A');
+                } else if (ch[i] >= 'a' && ch[i] <= 'z') {
+                    result = result * 16 + (uint64_t) (ch[i] - 'a');
+                } else {
+                    result = result * 16;
+                }
+            }
+
+            eosio::print(current_time2(), "hextoint64 ....1.20\r\n");
+
+            return result;
+        }
+
+        uint64_t get_wood_index() const {
+
+            eosio::print(current_time2(), "hextoint64 ....1.0\r\n");
+
+            return woodkey(wood);
+        }
 
         uint64_t get_block_number() const { return (uint64_t) block_number; }
 
@@ -188,7 +240,11 @@ namespace eosiosystem {
 
         uint64_t primary_key() const { return rowid; }
 
-        account_name get_producer() const { return producer; }
+        static uint128_t bpblockkey(account_name producer, uint32_t block_number) {
+            return (uint128_t) producer << 32 | block_number;
+        }
+
+        uint128_t get_producer_block() const { return bpblockkey(producer, block_number); }
 
         uint64_t get_block_number() const { return (uint64_t) block_number; }
 
@@ -211,11 +267,11 @@ namespace eosiosystem {
     typedef eosio::multi_index<N(voters), voter_info> voters_table;
 
     typedef eosio::multi_index<N(woodburns), wood_burn_info, indexed_by<N(
-            voter_block), const_mem_fun<wood_burn_info, uint128_t, &wood_burn_info::get_voter_block>>, indexed_by<N(
+            wood), const_mem_fun<wood_burn_info, uint64_t, &wood_burn_info::get_wood_index>>, indexed_by<N(
             block_number), const_mem_fun<wood_burn_info, uint64_t, &wood_burn_info::get_block_number>>> wood_burn_table;
 
     typedef eosio::multi_index<N(woodbpblocks), wood_burn_producer_block_stat, indexed_by<N(
-            producer), const_mem_fun<wood_burn_producer_block_stat, account_name, &wood_burn_producer_block_stat::get_producer>>, indexed_by<N(
+            producerblock), const_mem_fun<wood_burn_producer_block_stat, uint128_t, &wood_burn_producer_block_stat::get_producer_block>>, indexed_by<N(
             block_number), const_mem_fun<wood_burn_producer_block_stat, uint64_t, &wood_burn_producer_block_stat::get_block_number>>> wood_burn_producer_block_table;
 
     typedef eosio::multi_index<N(woodblocks), wood_burn_block_stat> wood_burn_block_stat_table;

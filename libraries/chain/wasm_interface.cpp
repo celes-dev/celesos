@@ -23,6 +23,14 @@
 #include <boost/bind.hpp>
 #include <fstream>
 
+#include <fc/time.hpp>
+#include <fc/variant.hpp>
+#include <boost/chrono/system_clocks.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <sstream>
+#include <fc/string.hpp>
+#include <fc/exception/exception.hpp>
+
 namespace eosio { namespace chain {
    using namespace webassembly;
    using namespace webassembly::common;
@@ -1654,7 +1662,10 @@ class call_depth_api : public context_aware_api {
                     : context_aware_api(ctx, true) {}
 
             bool verify_wood(uint32_t block_number, const account_name &account, char *wood) const {
-                return context.verify_wood(block_number, account, wood);
+                dlog("start verify_wood");
+                bool result =  context.verify_wood(block_number, account, wood);
+                  dlog("finish verify_wood");
+                  return result;
             }
 
             uint32_t get_chain_head_num() {
@@ -1666,6 +1677,11 @@ class call_depth_api : public context_aware_api {
             }
             uint32_t forest_space_number() const{
                 return context.forest_space_number();
+            }
+
+            uint64_t  current_time2()
+            {
+                return fc::time_point::now().time_since_epoch().count();
             }
         };
 ///@}
@@ -1880,6 +1896,7 @@ REGISTER_INTRINSICS(forest_bank_api,
    (get_chain_head_num,      int())
    (forest_period_number,    int())
    (forest_space_number,     int())
+   (current_time2,           int64_t())
 );
 ///@}
 

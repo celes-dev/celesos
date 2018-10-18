@@ -20,6 +20,7 @@
 #include <fc/scoped_exit.hpp>
 
 #include <eosio/chain/eosio_contract.hpp>
+#include <eosio/chain/forest_bank.hpp>
 
 namespace eosio { namespace chain {
 
@@ -267,6 +268,7 @@ struct controller_impl {
          db.undo();
       }
 
+      celesos::forest::forest_bank::getInstance(self);
    }
 
    ~controller_impl() {
@@ -295,7 +297,7 @@ struct controller_impl {
       db.add_index<block_summary_multi_index>();
       db.add_index<transaction_multi_index>();
       db.add_index<generated_transaction_multi_index>();
-
+      
       authorization.add_indices();
       resource_limits.add_indices();
    }
@@ -645,6 +647,17 @@ struct controller_impl {
 
          resource_limits.add_transaction_usage( trx_context.bill_to_accounts, cpu_time_to_bill_us, 0,
                                                 block_timestamp_type(self.pending_block_time()).slot ); // Should never fail
+
+         dlog("failed---------------------------------------------------${e}",("e",trace->except->to_detail_string()));
+         dlog("failed---------======-trxid:${trx_id}", ("trx_id", gtrx.trx_id));
+         dlog("failed---------======-packed_trx:${packed_trx}", ("packed_trx", gtrx.packed_trx));
+
+         auto actions = dtrx.actions;
+
+         for(auto ac : actions)
+         {
+            dlog("failed---------======-ac:${action}", ("action", ac));
+         }
 
          trace->receipt = push_receipt(gtrx.trx_id, transaction_receipt::hard_fail, cpu_time_to_bill_us, 0);
          emit( self.applied_transaction, trace );

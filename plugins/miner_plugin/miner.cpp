@@ -71,8 +71,19 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
                                    ("account", relative_account));
             }
 
-            ilog("update field \"next_block_number\" with value: ${block_num}",
-                 ("block_num", forest_info_ptr->next_block_num));
+//            ilog("update field \"next_block_number\" with value: ${block_num}",
+//                 ("block_num", forest_info_ptr->next_block_num));
+            ilog("success to get latest forest_info with "
+                 "\n\t\tseed: ${seed} "
+                 "\n\t\tforest: ${forest} "
+                 "\n\t\tblock_num: ${block_num}"
+                 "\n\t\tnext_block_num: ${next_block_num}"
+                 "\n\t\ttarget: ${target}",
+                 ("seed", forest_info_ptr->seed.str())
+                         ("forest", forest_info_ptr->forest.str())
+                         ("block_num", forest_info_ptr->block_number)
+                         ("next_block_num", forest_info_ptr->next_block_num)
+                         ("target", forest_info_ptr->target.str(0, std::ios_base::hex)));
 
             this->_sub_io_service_ptr->post([this, forest_info_ptr, relative_account]() {
                 this->on_forest_updated(forest_info_ptr, relative_account);
@@ -212,15 +223,15 @@ void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::fore
         for (int i = 0; i < _worker_count; ++i) {
             auto nonce_start_ptr = make_shared<uint256_t>(nonce_init + (*retry_count_ptr) * i);
             worker_ctx ctx{
+                    .dataset_ptr = dataset_ptr,
                     .seed_ptr = seed_ptr,
                     .forest_ptr = forest_ptr,
-                    .target_ptr = target_ptr,
-                    .dataset_ptr = dataset_ptr,
-                    .retry_count_ptr = retry_count_ptr,
-                    .block_num = forest_info.block_number,
                     .nonce_start_ptr = std::move(nonce_start_ptr),
-                    .signal_ptr = this->_signal_ptr,
+                    .retry_count_ptr = retry_count_ptr,
+                    .target_ptr = target_ptr,
+                    .block_num = forest_info.block_number,
                     .io_service_ptr = this->_main_io_service_ptr,
+                    .signal_ptr = this->_signal_ptr,
             };
             this->_alive_worker_ptrs[i] = make_shared<worker>(std::move(ctx));
         }
