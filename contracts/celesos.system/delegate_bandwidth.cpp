@@ -66,7 +66,7 @@ namespace eosiosystem {
         asset cpu_weight;
         int64_t ram_bytes = 0;
 
-        int32_t last_position = 0;
+        uint32_t last_position = 0;
 
 
         uint64_t primary_key() const { return owner; }
@@ -287,6 +287,10 @@ namespace eosiosystem {
             tokens_out = es.convert(asset(bytes, S(0, RAM)), CORE_SYMBOL);
         });
 
+
+        if(tokens_out.amount<=0){
+            return;
+        }
 
 
 //        eosio_assert(tokens_out.amount > 1, "token amount received from selling ram is too low");
