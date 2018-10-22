@@ -250,7 +250,11 @@ bool forest_bank::verify_wood(uint32_t block_number,
         (block_number - 1) / forest_period_number() * forest_period_number() +
         1;
     std::vector<celesos::ethash::node> *cache_data_ptr = &(first_cache_pair->second);
-    if (cache_number == second_cache_pair->first)
+    if (cache_number == first_cache_pair->first)
+    {
+       // do nothing...
+    }
+    else if (cache_number == second_cache_pair->first)
     {
       cache_data_ptr = &(second_cache_pair->second);
     }
