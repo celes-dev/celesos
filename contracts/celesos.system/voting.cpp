@@ -276,16 +276,20 @@ void system_contract::update_vote(const account_name voter_name,
     eosio_assert(system_contract::verify(wood, block_number, owner),
                  "invalid wood 3");
 
-    eosio::print(current_time2(), "update...vote ....22\r\n");
+    eosio::print(current_time2(), "update...vote ....221\r\n");
 
     // 更新producer总投票计数
     auto &pitr =
         _producers.get(producer_name, "producer not found"); // data corruption
     eosio_assert(pitr.is_active, "producer is not active");
+
+    eosio::print(current_time2(), "update...vote ....222\r\n");
+
     _producers.modify(pitr, 0, [&](auto &p) {
         p.total_votes++;
-        _gstate.total_producer_vote_weight++;
     });
+
+    _gstate.total_producer_vote_weight++;
 
     eosio::print(current_time2(), "update...vote ....3\r\n");
 

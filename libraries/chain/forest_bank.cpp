@@ -249,7 +249,7 @@ bool forest_bank::verify_wood(uint32_t block_number,
     uint32_t cache_number =
         (block_number - 1) / forest_period_number() * forest_period_number() +
         1;
-    std::vector<celesos::ethash::node> cache_data;
+    std::vector<celesos::ethash::node> &cache_data;
     if (cache_number == first_cache_pair->first)
     {
       cache_data = first_cache_pair->second;
@@ -357,10 +357,10 @@ void forest_bank::update_cache_with_block_number(uint32_t current_blck_number)
     }
 
     std::pair<uint32_t, std::vector<celesos::ethash::node>> temp_cache =
-        std::make_pair(current_cache_number, node_vector);
+        std::make_pair(current_cache_number, std::move(node_vector));
     //                first_cache_pair = &temp_cache;
 
-    first_cache_pair = std::make_shared<cache_pair_type>(temp_cache);
+    first_cache_pair = std::make_shared<cache_pair_type>(std::move(temp_cache));
   }
 }
 
