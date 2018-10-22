@@ -249,20 +249,18 @@ bool forest_bank::verify_wood(uint32_t block_number,
     uint32_t cache_number =
         (block_number - 1) / forest_period_number() * forest_period_number() +
         1;
-    std::vector<celesos::ethash::node> &cache_data;
-    if (cache_number == first_cache_pair->first)
+    std::vector<celesos::ethash::node> *cache_data_ptr = &(first_cache_pair->second);
+    if (cache_number == second_cache_pair->first)
     {
-      cache_data = first_cache_pair->second;
-    }
-    else if (cache_number == second_cache_pair->first)
-    {
-      cache_data = second_cache_pair->second;
+      cache_data_ptr = &(second_cache_pair->second);
     }
     else
     {
       // not found matched period
       return false;
     }
+
+    std::vector<celesos::ethash::node> &cache_data = *cache_data_ptr;
 
     dlog("verify wood 3 at time: ${time}",
          ("time", fc::time_point::now().time_since_epoch().count()));
