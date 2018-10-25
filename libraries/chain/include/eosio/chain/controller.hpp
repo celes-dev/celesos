@@ -191,9 +191,6 @@ namespace eosio { namespace chain {
 
          uint256_t       origin_difficulty()const;
 
-         time_point      pending_block_time()const;
-         block_state_ptr pending_block_state()const;
-
          const producer_schedule_type&    active_producers()const;
          const producer_schedule_type&    pending_producers()const;
          optional<producer_schedule_type> proposed_producers()const;
