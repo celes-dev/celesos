@@ -3,6 +3,7 @@
 #include <eosio/chain/types.hpp>
 #include <chainbase/chainbase.hpp>
 #include <set>
+#include <eosio/chain/controller.hpp>
 
 namespace eosio { namespace chain { namespace resource_limits {
    namespace impl {
@@ -39,6 +40,7 @@ namespace eosio { namespace chain { namespace resource_limits {
          explicit resource_limits_manager(chainbase::database& db)
          :_db(db)
          {
+
          }
 
          void add_indices();
@@ -54,7 +56,10 @@ namespace eosio { namespace chain { namespace resource_limits {
 
          /// set_account_limits returns true if new ram_bytes limit is more restrictive than the previously set one
          bool set_account_limits( const account_name& account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight);
+         bool set_account_limits( const account_name& account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight,int64_t block_num);
+
          void get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight) const;
+         void get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight,int64_t block_num) const;
 
          void process_account_limit_updates();
          void process_block_usage( uint32_t block_num );
@@ -73,9 +78,9 @@ namespace eosio { namespace chain { namespace resource_limits {
          account_resource_limit get_account_net_limit_ex( const account_name& name, bool elastic = true) const;
 
          int64_t get_account_ram_usage( const account_name& name ) const;
-
       private:
          chainbase::database& _db;
+
    };
 } } } /// eosio::chain
 

@@ -140,6 +140,7 @@ namespace eosio { namespace chain { namespace resource_limits {
       int64_t cpu_weight = -1;
       int64_t ram_bytes = -1;
 
+      int64_t last_position = 0;
    };
 
    struct by_owner;

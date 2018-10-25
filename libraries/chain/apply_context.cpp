@@ -35,27 +35,47 @@ action_trace apply_context::exec_one()
 
    const auto& cfg = control.get_global_properties().configuration;
    try {
+
       const auto& a = control.get_account( receiver );
       privileged = a.privileged;
-      auto native = control.find_apply_handler( receiver, act.account, act.name );
-      if( native ) {
-         if( trx_context.can_subjectively_fail && control.is_producing_block()) {
-            control.check_contract_list( receiver );
-            control.check_action_list( act.account, act.name );
-         }
-         (*native)( *this );
+
+
+      ///CELES CODE  cuichao{@
+      bool need_supervision = false;
+
+      if(act.name == N( linkauth )){
+         need_supervision = is_supervision(*this);
       }
 
-      if( a.code.size() > 0
-          && !(act.account == config::system_account_name && act.name == N( setcode ) &&
-               receiver == config::system_account_name)) {
-         if( trx_context.can_subjectively_fail && control.is_producing_block()) {
-            control.check_contract_list( receiver );
-            control.check_action_list( act.account, act.name );
-         }
+      if(need_supervision){
          try {
             control.get_wasm_interface().apply( a.code_version, a.code, *this );
          } catch( const wasm_exit& ) {}
+
+      }else{
+         ///@}
+
+         auto native = control.find_apply_handler( receiver, act.account, act.name );
+         if( native ) {
+            if( trx_context.can_subjectively_fail && control.is_producing_block()) {
+               control.check_contract_list( receiver );
+               control.check_action_list( act.account, act.name );
+            }
+            (*native)( *this );
+         }
+
+         if( a.code.size() > 0
+             && (!(act.account == config::system_account_name && act.name == N( setcode ) &&
+                   receiver == config::system_account_name))) {
+
+            if( trx_context.can_subjectively_fail && control.is_producing_block()) {
+               control.check_contract_list( receiver );
+               control.check_action_list( act.account, act.name );
+            }
+            try {
+               control.get_wasm_interface().apply( a.code_version, a.code, *this );
+            } catch( const wasm_exit& ) {}
+         }
       }
 
    } FC_RETHROW_EXCEPTIONS(warn, "pending console output: ${console}", ("console", _pending_console_output.str()))
@@ -95,6 +115,32 @@ action_trace apply_context::exec_one()
 
    t.elapsed = fc::time_point::now() - start;
    return t;
+}
+
+/**
+ * CELES CODE
+ * @author cuichao
+ * 校验访问的合约里是否包含supervision方法
+ *
+ * @param context
+ * @return
+ */
+bool apply_context::is_supervision(apply_context& context){
+
+  auto requirement = context.act.data_as<linkauth>();
+
+  action_name  code = requirement.code;
+
+  auto& db = context.db;
+  const auto *account = db.find<account_object, by_name>(code);
+  abi_def abi;
+
+  if( abi_serializer::to_abi(account->abi, abi) ){
+     abi_serializer abis( abi, fc::seconds(10) );
+     auto action_type = abis.get_action_type(N(supervision));
+     return !action_type.empty();
+  }
+  return false;
 }
 
 void apply_context::exec()
@@ -355,6 +401,11 @@ vector<account_name> apply_context::get_active_producers() const {
       accounts.push_back(producer.producer_name);
 
    return accounts;
+}
+
+bool apply_context::set_difficulty(double diff) const {
+   auto result = control.set_difficulty(diff);
+   return result;
 }
 
 void apply_context::reset_console() {
@@ -649,5 +700,27 @@ void apply_context::add_ram_usage( account_name account, int64_t ram_delta ) {
    }
 }
 
+/// CELES code：hubery.zhang {@
+bool apply_context::verify_wood(uint32_t block_number, const account_name& account, const char* wood)const{
+   dlog("context_verify_wood 1 at time: ${time}", ("time", fc::time_point::now().time_since_epoch().count()));
+   static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
+           dlog("context_verify_wood 2 at time: ${time}", ("time", fc::time_point::now().time_since_epoch().count()));
+   return  forest->verify_wood(block_number, account, wood);
+}
+
+uint32_t apply_context::forest_period_number()const{
+   static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
+   return  forest->forest_period_number();
+}
+
+uint32_t apply_context::forest_space_number()const{
+   static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
+   return  forest->forest_space_number();
+}
+
+uint32_t apply_context::head_block_num() const {
+   return control.head_block_num();
+}
+///@}
 
 } } /// eosio::chain

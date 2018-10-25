@@ -10,6 +10,7 @@
 #include <sstream>
 #include <algorithm>
 #include <set>
+#include <eosio/chain/forest_bank.hpp>
 
 namespace chainbase { class database; }
 
@@ -566,6 +567,7 @@ class apply_context {
       int get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size )const;
       int get_context_free_data( uint32_t index, char* buffer, size_t buffer_size )const;
       vector<account_name> get_active_producers() const;
+      bool set_difficulty(double diff) const;
       bytes  get_packed_transaction();
 
       uint64_t next_global_sequence();
@@ -612,6 +614,18 @@ class apply_context {
       flat_set<account_delta>             _account_ram_deltas; ///< flat_set of account_delta so json is an array of objects
 
       //bytes                               _cached_trx;
+
+    /// CELES code：hubery.zhang {@
+    /// forest bank method
+    public:
+      bool verify_wood(uint32_t block_number, const account_name& account, const char* wood)const;
+      uint32_t head_block_num() const;
+      uint32_t forest_period_number()const;
+      uint32_t forest_space_number()const;
+    ///@}
+    /// CELES code：cuichao{@
+    bool is_supervision(apply_context& context);
+    ///@}
 };
 
 using apply_handler = std::function<void(apply_context&)>;

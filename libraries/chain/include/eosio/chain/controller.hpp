@@ -189,6 +189,11 @@ namespace eosio { namespace chain {
          block_state_ptr         pending_block_state()const;
          optional<block_id_type> pending_producer_block_id()const;
 
+         uint256_t       origin_difficulty()const;
+
+         time_point      pending_block_time()const;
+         block_state_ptr pending_block_state()const;
+
          const producer_schedule_type&    active_producers()const;
          const producer_schedule_type&    pending_producers()const;
          optional<producer_schedule_type> proposed_producers()const;
@@ -227,6 +232,15 @@ namespace eosio { namespace chain {
          int64_t set_proposed_producers( vector<producer_key> producers );
 
          bool light_validation_allowed(bool replay_opts_disabled_by_policy) const;
+         /// CELES code: fengdong.ning {@
+         /*
+         * set the difficulty value of pow
+         */
+         bool set_difficulty(double difficulty);
+         /// @}
+
+         double get_forest_diff() const;
+
          bool skip_auth_check()const;
          bool skip_db_sessions( )const;
          bool skip_db_sessions( block_status bs )const;

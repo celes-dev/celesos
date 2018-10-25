@@ -34,7 +34,6 @@ namespace eosio { namespace chain {
       optional<producer_schedule_type>  new_producers;
       extensions_type                   header_extensions;
 
-
       digest_type       digest()const;
       block_id_type     id() const;
       uint32_t          block_num() const { return num_from_id(previous) + 1; }

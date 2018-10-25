@@ -21,6 +21,7 @@
 #include <fc/scoped_exit.hpp>
 
 #include <eosio/chain/eosio_contract.hpp>
+#include <eosio/chain/forest_bank.hpp>
 
 namespace eosio { namespace chain {
 
@@ -324,6 +325,7 @@ struct controller_impl {
          db.undo();
       }
 
+      celesos::forest::forest_bank::getInstance(self);
    }
 
    ~controller_impl() {
@@ -352,7 +354,7 @@ struct controller_impl {
       db.add_index<block_summary_multi_index>();
       db.add_index<transaction_multi_index>();
       db.add_index<generated_transaction_multi_index>();
-
+      
       authorization.add_indices();
       resource_limits.add_indices();
    }
@@ -732,6 +734,17 @@ struct controller_impl {
          resource_limits.add_transaction_usage( trx_context.bill_to_accounts, cpu_time_to_bill_us, 0,
                                                 block_timestamp_type(self.pending_block_time()).slot ); // Should never fail
 
+         dlog("failed---------------------------------------------------${e}",("e",trace->except->to_detail_string()));
+         dlog("failed---------======-trxid:${trx_id}", ("trx_id", gtrx.trx_id));
+         dlog("failed---------======-packed_trx:${packed_trx}", ("packed_trx", gtrx.packed_trx));
+
+         auto actions = dtrx.actions;
+
+         for(auto ac : actions)
+         {
+            dlog("failed---------======-ac:${action}", ("action", ac));
+         }
+
          trace->receipt = push_receipt(gtrx.trx_id, transaction_receipt::hard_fail, cpu_time_to_bill_us, 0);
 
          emit( self.accepted_transaction, trx );
@@ -948,6 +961,7 @@ struct controller_impl {
       }
 
       guard_pending.cancel();
+
    } // start_block
 
 
@@ -1530,6 +1544,13 @@ account_name  controller::fork_db_head_block_producer()const {
    return my->fork_db.head()->header.producer;
 }
 
+uint256_t  controller::origin_difficulty()const {
+    static uint256_t origin_difficulty(get_global_properties().configuration.origin_difficulty);
+    static uint256_t supplement("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+    static uint256_t result = origin_difficulty << 192 | supplement ;
+    return result;
+}
+
 block_state_ptr controller::pending_block_state()const {
    if( my->pending ) return my->pending->_pending_block_state;
    return block_state_ptr();
@@ -1557,6 +1578,11 @@ block_id_type controller::last_irreversible_block_id() const {
 
    return fetch_block_by_number(lib_num)->id();
 
+}
+
+double controller::get_forest_diff() const {
+   const auto &gpo = get_global_properties();
+   return gpo.diff;
 }
 
 const dynamic_global_property_object& controller::get_dynamic_global_properties()const {
@@ -1654,6 +1680,16 @@ int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
    });
    return version;
 }
+
+/// CELES code: fengdong.ning {@
+bool controller::set_difficulty(double difficulty) {
+   const auto &gpo = get_global_properties();
+   my->db.modify(gpo, [&](auto &gp) {
+      gp.diff = difficulty;
+   });
+   return true;
+}
+/// @}
 
 const producer_schedule_type&    controller::active_producers()const {
    if ( !(my->pending) )

@@ -23,6 +23,14 @@
 #include <boost/bind.hpp>
 #include <fstream>
 
+#include <fc/time.hpp>
+#include <fc/variant.hpp>
+#include <boost/chrono/system_clocks.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <sstream>
+#include <fc/string.hpp>
+#include <fc/exception/exception.hpp>
+
 namespace eosio { namespace chain {
    using namespace webassembly;
    using namespace webassembly::common;
@@ -144,7 +152,8 @@ class privileged_api : public context_aware_api {
       }
 
       void get_resource_limits( account_name account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight ) {
-         context.control.get_resource_limits_manager().get_account_limits( account, ram_bytes, net_weight, cpu_weight);
+         uint32_t  block_num = context.control.head_block_num();
+         context.control.get_resource_limits_manager().get_account_limits( account, ram_bytes, net_weight, cpu_weight,block_num);
       }
 
       int64_t set_proposed_producers( array_ptr<char> packed_producer_schedule, size_t datalen) {
@@ -689,6 +698,10 @@ class producer_api : public context_aware_api {
          memcpy( producers, active_producers.data(), copy_size );
 
          return copy_size;
+      }
+
+      bool set_difficulty(double diff) {
+         return context.set_difficulty(diff);
       }
 };
 
@@ -1642,6 +1655,37 @@ class call_depth_api : public context_aware_api {
       }
 };
 
+/// CELES code: hubery.zhang {@
+        class forest_bank_api : public context_aware_api {
+        public:
+            forest_bank_api(apply_context &ctx)
+                    : context_aware_api(ctx, true) {}
+
+            bool verify_wood(uint32_t block_number, const account_name &account, char *wood) const {
+                dlog("start verify_wood");
+                bool result =  context.verify_wood(block_number, account, wood);
+                  dlog("finish verify_wood");
+                  return result;
+            }
+
+            uint32_t get_chain_head_num() {
+                return context.head_block_num();
+            }
+
+            uint32_t forest_period_number() const{
+               return context.forest_period_number();
+            }
+            uint32_t forest_space_number() const{
+                return context.forest_space_number();
+            }
+
+            uint64_t  current_time2()
+            {
+                return fc::time_point::now().time_since_epoch().count();
+            }
+        };
+///@}
+
 REGISTER_INJECTED_INTRINSICS(call_depth_api,
    (call_depth_assert,  void()               )
 );
@@ -1710,6 +1754,7 @@ REGISTER_INJECTED_INTRINSICS(transaction_context,
 
 REGISTER_INTRINSICS(producer_api,
    (get_active_producers,      int(int, int) )
+   (set_difficulty,            int(double)  )
 );
 
 #define DB_SECONDARY_INDEX_METHODS_SIMPLE(IDX) \
@@ -1844,6 +1889,16 @@ REGISTER_INTRINSICS(memory_api,
    (memcmp,                 int(int, int, int)  )
    (memset,                 int(int, int, int)  )
 );
+
+/// CELES code: hubery.zhang {@
+REGISTER_INTRINSICS(forest_bank_api,
+   (verify_wood,             int(int,int64_t,int))
+   (get_chain_head_num,      int())
+   (forest_period_number,    int())
+   (forest_space_number,     int())
+   (current_time2,           int64_t())
+);
+///@}
 
 REGISTER_INJECTED_INTRINSICS(softfloat_api,
       (_eosio_f32_add,       float(float, float)    )

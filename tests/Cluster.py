@@ -1162,9 +1162,10 @@ class Cluster(object):
                 return None
 
             contract="eosio.system"
-            contractDir="contracts/%s" % (contract)
-            wasmFile="%s.wasm" % (contract)
-            abiFile="%s.abi" % (contract)
+            contractD="celesos.system"
+            contractDir="contracts/%s" % (contractD)
+            wasmFile="contracts/%s/%s.wasm" % (contractD, contract)
+            abiFile="contracts/%s/%s.abi" % (contractD, contract)
             Utils.Print("Publish %s contract" % (contract))
             trans=biosNode.publishContract(eosioAccount.name, contractDir, wasmFile, abiFile, waitForTransBlock=True)
             if trans is None:

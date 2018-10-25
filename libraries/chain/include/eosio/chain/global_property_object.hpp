@@ -32,6 +32,7 @@ namespace eosio { namespace chain {
       optional<block_num_type>          proposed_schedule_block_num;
       shared_producer_schedule_type     proposed_schedule;
       chain_config                      configuration;
+      double                            diff = 1.0;
    };
 
 

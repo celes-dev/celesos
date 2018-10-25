@@ -152,6 +152,7 @@ namespace eosio { namespace chain {
       resource_limits_config_object_type,
       account_history_object_type,              ///< Defined by history_plugin
       action_history_object_type,               ///< Defined by history_plugin
+      forest_info_cache_object_type,
       reversible_block_object_type,
       OBJECT_TYPE_COUNT ///< Sentry value which contains the number of different object types
    };

@@ -12,7 +12,7 @@ add_subdirectory(eosio.token)
 add_subdirectory(eosio.msig)
 add_subdirectory(eosio.sudo)
 add_subdirectory(multi_index_test)
-add_subdirectory(eosio.system)
+add_subdirectory(celesos.system)
 add_subdirectory(identity)
 add_subdirectory(stltest)
 add_subdirectory(test.inline)
@@ -34,7 +34,6 @@ add_subdirectory(dice)
 add_subdirectory(tic_tac_toe)
 add_subdirectory(payloadless)
 add_subdirectory(integration_test)
-
 
 file(GLOB SKELETONS RELATIVE ${CMAKE_SOURCE_DIR}/contracts "skeleton/*")
 
