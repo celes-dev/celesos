@@ -331,9 +331,9 @@ if( options.count(name) ) { \
 
         try {
             try {
-                genesis_state gs; // Check if EOSIO_ROOT_KEY is bad
+                genesis_state gs; // Check if CELESOS_ROOT_KEY is bad
             } catch ( const fc::exception& ) {
-                elog( "EOSIO_ROOT_KEY ('${root_key}') is invalid. Recompile with a valid public key.",
+                elog( "CELESOS_ROOT_KEY ('${root_key}') is invalid. Recompile with a valid public key.",
                       ("root_key", genesis_state::eosio_root_key));
                 throw;
             }
@@ -942,7 +942,7 @@ if( options.count(name) ) { \
 
     void chain_plugin::handle_db_exhaustion() {
         elog("database memory exhausted: increase chain-state-db-size-mb and/or reversible-blocks-db-size-mb");
-        //return 1 -- it's what programs/nodeos/main.cpp considers "BAD_ALLOC"
+        //return 1 -- it's what programs/nodceles/main.cpp considers "BAD_ALLOC"
         std::_Exit(1);
     }
 

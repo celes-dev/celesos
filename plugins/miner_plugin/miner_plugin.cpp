@@ -36,7 +36,7 @@ public:
 //    uint32_t _worker_priority;
     unsigned int _worker_count;
     std::map<chain::public_key_type, signature_provider_type> _signature_providers;
-    fc::microseconds _keosd_provider_timeout_us;
+    fc::microseconds _kcelesd_provider_timeout_us;
 
     miner_plugin_impl() {
     };
@@ -61,21 +61,21 @@ public:
         };
     }
 
-    static signature_provider_type make_keosd_signature_provider(const std::shared_ptr<miner_plugin_impl> &impl,
+    static signature_provider_type make_kcelesd_signature_provider(const std::shared_ptr<miner_plugin_impl> &impl,
                                                                  const string &url_str,
                                                                  const public_key_type pubkey) {
-        auto keosd_url = fc::url(url_str);
+        auto kcelesd_url = fc::url(url_str);
         std::weak_ptr<miner_plugin_impl> weak_impl = impl;
 
-        return [weak_impl, keosd_url, pubkey](const chain::digest_type &digest) {
+        return [weak_impl, kcelesd_url, pubkey](const chain::digest_type &digest) {
             auto impl = weak_impl.lock();
             if (impl) {
                 fc::variant params;
                 fc::to_variant(std::make_pair(digest, pubkey), params);
-                auto deadline = impl->_keosd_provider_timeout_us.count() >= 0 ? fc::time_point::now() +
-                                                                                impl->_keosd_provider_timeout_us
+                auto deadline = impl->_kcelesd_provider_timeout_us.count() >= 0 ? fc::time_point::now() +
+                                                                                impl->_kcelesd_provider_timeout_us
                                                                               : fc::time_point::maximum();
-                return app().get_plugin<eosio::http_client_plugin>().get_client().post_sync(keosd_url, params,
+                return app().get_plugin<eosio::http_client_plugin>().get_client().post_sync(kcelesd_url, params,
                                                                                             deadline).as<chain::signature_type>();
             } else {
                 return chain::signature_type();
@@ -104,13 +104,13 @@ void celesos::miner_plugin::set_program_options(options_description &, options_d
              boost::program_options::value<vector<string>>()->composing()->multitoken(),
              "Key=Value pairs in the form <public-key>=<provider-spec>\n"
              "Where:\n"
-             "   <public-key>    \tis a string form of a vaild EOSIO public key\n\n"
+             "   <public-key>    \tis a string form of a vaild CELESOS public key\n\n"
              "   <provider-spec> \tis a string in the form <provider-type>:<data>\n\n"
-             "   <provider-type> \tis KEY, or KEOSD\n\n"
-             "   KEY:<data>      \tis a string form of a valid EOSIO private key which maps to the provided public key\n\n"
-             "   KEOSD:<data>    \tis the URL where keosd is available and the approptiate wallet(s) are unlocked")
-            ("miner-keosd-provider-timeout", boost::program_options::value<int32_t>()->default_value(5),
-             "Limits the maximum time (in milliseconds) that is allowd for sending blocks to a keosd provider for signing")
+             "   <provider-type> \tis KEY, or KCELESD\n\n"
+             "   KEY:<data>      \tis a string form of a valid CELESOS private key which maps to the provided public key\n\n"
+             "   KCELESD:<data>    \tis the URL where kcelesd is available and the approptiate wallet(s) are unlocked")
+            ("miner-kcelesd-provider-timeout", boost::program_options::value<int32_t>()->default_value(5),
+             "Limits the maximum time (in milliseconds) that is allowd for sending blocks to a kcelesd provider for signing")
 //            ("miner-worker-priority",
 //             boost::program_options::value<uint32_t>()->default_value(1),
 //             "Worker thread priority, default is 1")
@@ -168,8 +168,8 @@ void celesos::miner_plugin::plugin_initialize(const variables_map &options) {
                         auto &&make_provider = celesos::miner_plugin_impl::make_key_signature_provider;
                         this->my->_signature_providers[pubkey] = make_provider(
                                 chain::private_key_type(spec_data));
-                    } else if (spec_type_str == "KEOSD") {
-                        auto &&make_provider = celesos::miner_plugin_impl::make_keosd_signature_provider;
+                    } else if (spec_type_str == "KCELESD") {
+                        auto &&make_provider = celesos::miner_plugin_impl::make_kcelesd_signature_provider;
                         this->my->_signature_providers[pubkey] = make_provider(
                                 this->my, spec_data,
                                 pubkey);
@@ -186,8 +186,8 @@ void celesos::miner_plugin::plugin_initialize(const variables_map &options) {
 //        }
 //        this->my->_worker_priority = worker_priority;
 
-        this->my->_keosd_provider_timeout_us = fc::milliseconds(
-                options["miner-keosd-provider-timeout"].as<int32_t>());
+        this->my->_kcelesd_provider_timeout_us = fc::milliseconds(
+                options["miner-kcelesd-provider-timeout"].as<int32_t>());
         ilog("plugin_initialize() end");
     } FC_LOG_AND_RETHROW()
 }
