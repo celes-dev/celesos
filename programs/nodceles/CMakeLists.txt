@@ -16,15 +16,15 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../.git)
         execute_process(
                 COMMAND ${GIT_EXECUTABLE} rev-parse --short=8 HEAD
                 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../.."
-                OUTPUT_VARIABLE "nodeos_BUILD_VERSION"
+                OUTPUT_VARIABLE "nodceles_BUILD_VERSION"
                 ERROR_QUIET
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
-        message(STATUS "Git commit revision: ${nodeos_BUILD_VERSION}")
+        message(STATUS "Git commit revision: ${nodceles_BUILD_VERSION}")
     else ()
-        set(nodeos_BUILD_VERSION 0)
+        set(nodceles_BUILD_VERSION 0)
     endif ()
 else ()
-    set(nodeos_BUILD_VERSION 0)
+    set(nodceles_BUILD_VERSION 0)
 endif ()
 
 configure_file(config.hpp.in config.hpp ESCAPE_QUOTES)
@@ -81,7 +81,7 @@ install( TARGETS
         LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
         )
-install(DIRECTORY DESTINATION ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/log/eosio
+install(DIRECTORY DESTINATION ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/log/celesos
         DIRECTORY_PERMISSIONS OWNER_READ
         OWNER_WRITE
         OWNER_EXECUTE
@@ -91,7 +91,7 @@ install(DIRECTORY DESTINATION ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/log/eosio
         WORLD_READ
         WORLD_EXECUTE
         )
-install(DIRECTORY DESTINATION ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/lib/eosio
+install(DIRECTORY DESTINATION ${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/lib/celesos
         DIRECTORY_PERMISSIONS OWNER_READ
         OWNER_WRITE
         OWNER_EXECUTE
