@@ -23,7 +23,7 @@ class Utils:
     EosServerName="nodeos"
     EosServerPath="programs/nodeos/"+ EosServerName
 
-    EosLauncherPath="programs/eosio-launcher/eosio-launcher"
+    EosLauncherPath="programs/celes-launcher/celes-launcher"
     MongoPath="mongo"
     ShuttingDown=False
     CheckOutputDeque=deque(maxlen=10)

@@ -1,8 +1,8 @@
 #! /bin/bash
 
 binaries=(cleos
-          eosio-abigen
-          eosio-launcher
+          celes-abigen
+          celes-launcher
           eosio-s2wasm
           eosio-wast2wasm
           eosiocpp

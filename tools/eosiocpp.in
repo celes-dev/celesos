@@ -5,10 +5,10 @@ if [ "${EOSIO_BIN_INSTALL_DIR}" == "." ]; then
   EOSIO_BIN_INSTALL_DIR=`pwd`
 fi
 EOSIO_INSTALL_DIR=`dirname ${EOSIO_BIN_INSTALL_DIR}`
-if [ -x "@CMAKE_BINARY_DIR@/programs/eosio-abigen/eosio-abigen" ]; then
-    ABIGEN="@CMAKE_BINARY_DIR@/programs/eosio-abigen/eosio-abigen"
-elif [ -x "${EOSIO_INSTALL_DIR}/bin/eosio-abigen" ]; then
-    ABIGEN=${EOSIO_INSTALL_DIR}/bin/eosio-abigen
+if [ -x "@CMAKE_BINARY_DIR@/programs/celes-abigen/celes-abigen" ]; then
+    ABIGEN="@CMAKE_BINARY_DIR@/programs/celes-abigen/celes-abigen"
+elif [ -x "${EOSIO_INSTALL_DIR}/bin/celes-abigen" ]; then
+    ABIGEN=${EOSIO_INSTALL_DIR}/bin/celes-abigen
 fi
 if [ -x "@CMAKE_BINARY_DIR@/externals/binaryen/bin/eosio-s2wasm" ]; then
     EOSIO_S2WASM="@CMAKE_BINARY_DIR@/externals/binaryen/bin/eosio-s2wasm"

@@ -49,11 +49,11 @@ libraries/wasm-jit/Source/Programs/wavm
 programs/cleos/cleos
 programs/js_operation_serializer/js_operation_serializer
 programs/data-dir
-programs/eosio-abigen/eosio-abigen
+programs/celes-abigen/celes-abigen
 programs/cleos/config.hpp
 programs/eosio-applesedemo/eosio-applesedemo
-programs/eosio-launcher/config.hpp
-programs/eosio-launcher/eosio-launcher
+programs/celes-launcher/config.hpp
+programs/celes-launcher/celes-launcher
 programs/keosd/keosd
 programs/nodeos/config.hpp
 programs/nodeos/nodeos

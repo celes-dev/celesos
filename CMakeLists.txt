@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.5 )
 
-project( EOSIO )
+project( CELESOS )
 
 enable_testing()
 
@@ -201,10 +201,10 @@ endif()
 message( STATUS "Using '${CORE_SYMBOL_NAME}' as CORE symbol name" )
 
 if ("${CELESOS_ROOT_KEY}" STREQUAL "")
-   set(CELESOS_ROOT_KEY "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV")
+   set(CELESOS_ROOT_KEY "CELES6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV")
 endif()
 
-message( STATUS "Using '${CELESOS_ROOT_KEY}' as public key for 'eosio' account" )
+message( STATUS "Using '${CELESOS_ROOT_KEY}' as public key for 'celesos' account" )
 
 include(wasm)
 
