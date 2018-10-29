@@ -48,7 +48,7 @@
    DISK_MIN=20
    DOXYGEN=false
    ENABLE_COVERAGE_TESTING=false
-   CORE_SYMBOL_NAME="SYS"
+   CORE_SYMBOL_NAME="CCHN"
    # Use current directory's tmp directory if noexec is enabled for /tmp
    if (mount | grep "/tmp " | grep --quiet noexec); then
         mkdir -p $SOURCE_DIR/tmp
@@ -303,5 +303,5 @@
    printf "\\tEOSIO website: https://eos.io\\n"
    printf "\\tEOSIO Telegram channel @ https://t.me/EOSProject\\n"
    printf "\\tEOSIO resources: https://eos.io/resources/\\n"
-   printf "\\tEOSIO Stack Exchange: https://eosio.stackexchange.com\\n"
+   printf "\\tEOSIO Stack Exchange: https://celes.stackexchange.com\\n"
    printf "\\tEOSIO wiki: https://github.com/EOSIO/eos/wiki\\n\\n\\n"

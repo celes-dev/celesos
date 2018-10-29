@@ -1,7 +1,7 @@
 #include <celesos.system/exchange_state.hpp>
 
-namespace eosiosystem {
-    asset exchange_state::convert_to_exchange( connector& c, asset in ) {
+namespace celesossystem {
+    eosio::asset exchange_state::convert_to_exchange( connector& c, eosio::asset in ) {
 
         real_type R(supply.amount);
         real_type C(c.balance.amount+in.amount);
@@ -19,8 +19,8 @@ namespace eosiosystem {
         return asset( issued, supply.symbol );
     }
 
-    asset exchange_state::convert_from_exchange( connector& c, asset in ) {
-        eosio_assert( in.symbol== supply.symbol, "unexpected asset symbol input" );
+    eosio::asset exchange_state::convert_from_exchange( connector& c, eosio::asset in ) {
+        eosio_assert( in.symbol== supply.symbol, "unexpected eosio::asset symbol input" );
 
         real_type R(supply.amount - in.amount);
         real_type C(c.balance.amount);
@@ -45,7 +45,7 @@ namespace eosiosystem {
         return asset( out, c.balance.symbol );
     }
 
-    asset exchange_state::convert( asset from, symbol_type to ) {
+    eosio::asset exchange_state::convert( eosio::asset from, symbol_type to ) {
         auto sell_symbol  = from.symbol;
         auto ex_symbol    = supply.symbol;
         auto base_symbol  = base.balance.symbol;
@@ -82,4 +82,4 @@ namespace eosiosystem {
 
 
 
-} /// namespace eosiosystem
+} /// namespace celesossystem

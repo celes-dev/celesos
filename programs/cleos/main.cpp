@@ -723,7 +723,7 @@ asset to_asset(account_name code, const string &s) {
 }
 
 inline asset to_asset(const string &s) {
-    return to_asset(N(eosio.token), s);
+    return to_asset(N(celes.token), s);
 }
 
 struct set_account_permission_subcommand {
@@ -2728,7 +2728,7 @@ int main(int argc, char **argv) {
     auto setActionPermission = set_action_permission_subcommand(setAction);
 
     // Transfer subcommand
-    string con = "eosio.token";
+    string con = "celes.token";
     string sender;
     string recipient;
     string amount;
@@ -3177,8 +3177,8 @@ int main(int argc, char **argv) {
                 ("requested", requested_perm_var)
                 ("trx", trx_var);
 
-        send_actions({chain::action{accountPermissions, "eosio.msig", "propose",
-                                    variant_to_bin(N(eosio.msig), N(propose), args)}});
+        send_actions({chain::action{accountPermissions, "celes.msig", "propose",
+                                    variant_to_bin(N(celes.msig), N(propose), args)}});
     });
 
     //multisige propose transaction
@@ -3223,8 +3223,8 @@ int main(int argc, char **argv) {
                 ("requested", requested_perm_var)
                 ("trx", trx_var);
 
-        send_actions({chain::action{accountPermissions, "eosio.msig", "propose",
-                                    variant_to_bin(N(eosio.msig), N(propose), args)}});
+        send_actions({chain::action{accountPermissions, "celes.msig", "propose",
+                                    variant_to_bin(N(celes.msig), N(propose), args)}});
     });
 
 
@@ -3235,7 +3235,7 @@ int main(int argc, char **argv) {
 
     review->set_callback([&] {
         auto result = call(get_table_func, fc::mutable_variant_object("json", true)
-                ("code", "eosio.msig")
+                ("code", "celes.msig")
                 ("scope", proposer)
                 ("table", "proposal")
                 ("table_key", "")
@@ -3282,7 +3282,7 @@ int main(int argc, char **argv) {
         auto accountPermissions = tx_permission.empty() ? vector<chain::permission_level>{{sender, config::active_name}}
                                                         : get_account_permissions(tx_permission);
         send_actions(
-                {chain::action{accountPermissions, "eosio.msig", action, variant_to_bin(N(eosio.msig), action, args)}});
+                {chain::action{accountPermissions, "celes.msig", action, variant_to_bin(N(celes.msig), action, args)}});
     };
 
     // multisig approve
@@ -3328,8 +3328,8 @@ int main(int argc, char **argv) {
                                      ("proposal_name", proposal_name)
                                      ("canceler", canceler);
 
-                             send_actions({chain::action{accountPermissions, "eosio.msig", "cancel",
-                                                         variant_to_bin(N(eosio.msig), N(cancel), args)}});
+                             send_actions({chain::action{accountPermissions, "celes.msig", "cancel",
+                                                         variant_to_bin(N(celes.msig), N(cancel), args)}});
                          }
     );
 
@@ -3359,8 +3359,8 @@ int main(int argc, char **argv) {
                                    ("proposal_name", proposal_name)
                                    ("executer", executer);
 
-                           send_actions({chain::action{accountPermissions, "eosio.msig", "exec",
-                                                       variant_to_bin(N(eosio.msig), N(exec), args)}});
+                           send_actions({chain::action{accountPermissions, "celes.msig", "exec",
+                                                       variant_to_bin(N(celes.msig), N(exec), args)}});
                        }
     );
 
@@ -3389,19 +3389,19 @@ int main(int argc, char **argv) {
         auto accountPermissions = get_account_permissions(tx_permission);
         if (accountPermissions.empty()) {
             accountPermissions = vector<permission_level>{{executer, config::active_name},
-                                                          {"eosio.sudo", config::active_name}};
+                                                          {"celes.sudo", config::active_name}};
         }
 
         auto args = fc::mutable_variant_object()
                 ("executer", executer)
                 ("trx", trx_var);
 
-        send_actions({chain::action{accountPermissions, "eosio.sudo", "exec",
-                                    variant_to_bin(N(eosio.sudo), N(exec), args)}});
+        send_actions({chain::action{accountPermissions, "celes.sudo", "exec",
+                                    variant_to_bin(N(celes.sudo), N(exec), args)}});
     });
 
     // system subcommand
-    auto system = app.add_subcommand("system", localized("Send eosio.system contract action to the blockchain."),
+    auto system = app.add_subcommand("system", localized("Send celesos.system contract action to the blockchain."),
                                      false);
     system->require_subcommand();
 

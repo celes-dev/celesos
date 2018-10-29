@@ -279,16 +279,16 @@ void resource_limits_manager::get_account_limits( const account_name& account, i
 
    ///CELES CODE  cuichao{@
    //过滤系统账户
-   if( account == N(eosio)||
-        account == N(eosio.bpay)||
-        account == N(eosio.msig)||
-        account == N(eosio.names)||
-        account == N(eosio.ram)||
-        account == N(eosio.ramfee)||
-        account == N(eosio.saving)||
-        account == N(eosio.stake)||
-        account == N(eosio.token)||
-        account == N(eosio.vpay))
+   if( account == N(celes)||
+        account == N(celes.bpay)||
+        account == N(celes.msig)||
+        account == N(celes.names)||
+        account == N(celes.ram)||
+        account == N(celes.ramfee)||
+        account == N(celes.saving)||
+        account == N(celes.stake)||
+        account == N(celes.token)||
+        account == N(celes.vpay))
    {
       return;
    }

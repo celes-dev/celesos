@@ -11,7 +11,7 @@
 #endif //EOSIO_SUPERVISION_CONTRACT_HPP
 namespace eosio {
 
-    class supervision_contract : public contract {
+    class supervision_contract : public eosio::contract {
     public:
         using contract::contract;
 

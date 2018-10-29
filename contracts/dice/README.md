@@ -53,22 +53,22 @@ Example game session using cleos
 
 ##### Upload bios contract
 ````bash
-cleos set contract eosio build/contracts/eosio.bios -p eosio
+cleos set contract celes build/contracts/celes.bios -p celes
 ````
 
-##### Ceate eosio.token account
+##### Ceate celes.token account
 ````bash
-cleos create account eosio eosio.token EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C3dC4 EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C3dC4
+cleos create account eosio celes.token EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C3dC4 EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C3dC4
 ````
 
-##### Set eosio.token contract to eosio.token account
+##### Set celes.token contract to celes.token account
 ````bash
-cleos set contract eosio.token build/contracts/eosio.token -p eosio.token
+cleos set contract celes.token build/contracts/celes.token -p celes.token
 ````
 
 ##### Create dice account
 ````bash
-cleos create account eosio dice EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C3dC4 EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C3dC4
+cleos create account celes dice EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C3dC4 EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C3dC4
 ````
 
 ##### Set dice contract to dice account
@@ -78,7 +78,7 @@ cleos set contract dice build/contracts/dice -p dice
 
 ##### Create native EOS token
 ````bash
-cleos push action eosio.token create '[ "eosio", "1000000000.0000 EOS", 0, 0, 0]' -p eosio.token
+cleos push action celes.token create '[ "eosio", "1000000000.0000 EOS", 0, 0, 0]' -p celes.token
 ````
 
 ##### Create alice account
@@ -93,12 +93,12 @@ cleos create account eosio bob EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C
 
 ##### Issue 1000 EOS to alice
 ````bash
-cleos push action eosio.token issue '[ "alice", "1000.0000 EOS", "" ]' -p eosio
+cleos push action celes.token issue '[ "alice", "1000.0000 EOS", "" ]' -p eosio
 ````
 
 ##### Issue 1000 EOS to bob
 ````bash
-cleos push action eosio.token issue '[ "bob", "1000.0000 EOS", "" ]' -p eosio
+cleos push action celes.token issue '[ "bob", "1000.0000 EOS", "" ]' -p eosio
 ````
 
 ##### Allow dice contract to make transfers on alice behalf (deposit)
@@ -263,7 +263,7 @@ cleos push action dice withdraw '[ "alice", "103.0000 EOS" ]' -p alice
 
 ##### Balance of alice after withdraw
 ````bash
-cleos get currency balance eosio.token alice eos
+cleos get currency balance celes.token alice eos
 1003.0000 EOS
 ````
 

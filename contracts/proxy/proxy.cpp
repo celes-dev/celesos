@@ -4,7 +4,7 @@
  */
 #include <proxy/proxy.hpp>
 #include <eosiolib/transaction.hpp>
-#include <eosio.token/eosio.token.hpp>
+#include <celes.token/celes.token.hpp>
 
 namespace proxy {
    using namespace eosio;
@@ -50,7 +50,7 @@ namespace proxy {
          configs::store(code_config, self);
 
          transaction out;
-         out.actions.emplace_back(permission_level{self, N(active)}, N(eosio.token), N(transfer), new_transfer);
+         out.actions.emplace_back(permission_level{self, N(active)}, N(celes.token), N(transfer), new_transfer);
          out.delay_sec = code_config.delay;
          out.send(id, self);
       }
@@ -91,11 +91,11 @@ extern "C" {
 
     /// The apply method implements the dispatch of events to this contract
     void apply( uint64_t receiver, uint64_t code, uint64_t action ) {
-      if( code == N(eosio) && action == N(onerror) ) {
+      if( code == N(celes) && action == N(onerror) ) {
          apply_onerror( receiver, onerror::from_current_action() );
-      } else if( code == N(eosio.token) ) {
+      } else if( code == N(celes.token) ) {
          if( action == N(transfer) ) {
-            apply_transfer(receiver, code, unpack_action_data<eosio::token::transfer_args>());
+            apply_transfer(receiver, code, unpack_action_data<celes::token::transfer_args>());
          }
       } else if( code == receiver ) {
          if( action == N(setowner) ) {

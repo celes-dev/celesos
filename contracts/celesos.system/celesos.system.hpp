@@ -56,7 +56,7 @@
 
 #endif
 
-namespace eosiosystem {
+namespace celesossystem {
 
     using eosio::asset;
     using eosio::indexed_by;
@@ -316,7 +316,7 @@ namespace eosiosystem {
          *  Else 'from' can unstake at any time.
          */
         void delegatebw(account_name from, account_name receiver,
-                        asset stake_net_quantity, asset stake_cpu_quantity, bool transfer);
+                        eosio::asset stake_net_quantity, eosio::asset stake_cpu_quantity, bool transfer);
 
 
         /**
@@ -336,7 +336,7 @@ namespace eosiosystem {
          *  all producer tallies are updated.
          */
         void undelegatebw(account_name from, account_name receiver,
-                          asset unstake_net_quantity, asset unstake_cpu_quantity);
+                          eosio::asset unstake_net_quantity, eosio::asset unstake_cpu_quantity);
 
 
         /**
@@ -344,7 +344,7 @@ namespace eosiosystem {
          * tokens provided. An inline transfer from receiver to system contract of
          * tokens will be executed.
          */
-        void buyram(account_name buyer, account_name receiver, asset tokens);
+        void buyram(account_name buyer, account_name receiver, eosio::asset tokens);
 
         void buyrambytes(account_name buyer, account_name receiver, uint32_t bytes);
 
@@ -387,7 +387,7 @@ namespace eosiosystem {
 
         void rmvproducer(account_name producer);
 
-        void bidname(account_name bidder, account_name newname, asset bid);
+        void bidname(account_name bidder, account_name newname, eosio::asset bid);
 
     private:
         void update_elected_producers(uint32_t head_block_number);
@@ -406,7 +406,7 @@ namespace eosiosystem {
 
         //defind in delegate_bandwidth.cpp
         void changebw(account_name from, account_name receiver,
-                      asset stake_net_quantity, asset stake_cpu_quantity, bool transfer);
+                      eosio::asset stake_net_quantity, eosio::asset stake_cpu_quantity, bool transfer);
 
         //defined in voting.hpp
         static eosio_global_state get_default_parameters();
@@ -419,4 +419,4 @@ namespace eosiosystem {
 
     };
 
-} /// eosiosystem
+} /// celesossystem

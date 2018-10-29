@@ -8,8 +8,8 @@
 
 #include <tic_tac_toe/tic_tac_toe.wast.hpp>
 #include <tic_tac_toe/tic_tac_toe.abi.hpp>
-#include <celesos.system/eosio.system.wast.hpp>
-#include <celesos.system/eosio.system.abi.hpp>
+#include <celesos.system/celesos.system.wast.hpp>
+#include <celesos.system/celesos.system.abi.hpp>
 
 #include <proxy/proxy.wast.hpp>
 #include <proxy/proxy.abi.hpp>

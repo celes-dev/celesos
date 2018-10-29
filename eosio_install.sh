@@ -108,5 +108,5 @@ fi
    printf "\\tEOSIO website: https://eos.io\\n"
    printf "\\tEOSIO Telegram channel @ https://t.me/EOSProject\\n"
    printf "\\tEOSIO resources: https://eos.io/resources/\\n"
-   printf "\\tEOSIO Stack Exchange: https://eosio.stackexchange.com\\n"
+   printf "\\tEOSIO Stack Exchange: https://celes.stackexchange.com\\n"
    printf "\\tEOSIO wiki: https://github.com/EOSIO/eos/wiki\\n\\n\\n"

@@ -1,7 +1,7 @@
-#include <eosio.sudo/eosio.sudo.hpp>
+#include <celes.sudo/celes.sudo.hpp>
 #include <eosiolib/transaction.hpp>
 
-namespace eosio {
+namespace celes {
 
 /*
 exec function manually parses input data (instead of taking parsed arguments from dispatcher)
@@ -23,7 +23,7 @@ void sudo::exec() {
 
    account_name executer;
 
-   datastream<const char*> ds( buffer, size );
+   eosio::datastream <const char*> ds( buffer, size );
    ds >> executer;
 
    require_auth( executer );
@@ -34,4 +34,4 @@ void sudo::exec() {
 
 } /// namespace eosio
 
-EOSIO_ABI( eosio::sudo, (exec) )
+EOSIO_ABI( celes::sudo, (exec) )

@@ -2,9 +2,9 @@
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/privileged.hpp>
 
-namespace eosio {
+namespace celes {
 
-   class bios : public contract {
+   class bios : public eosio::contract {
       public:
          bios( action_name self ):contract(self){}
 
@@ -41,4 +41,4 @@ namespace eosio {
       private:
    };
 
-} /// namespace eosio
+} /// namespace celes

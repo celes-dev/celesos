@@ -7,7 +7,7 @@
 
 namespace eosio {
 
-   class noop: public contract {
+   class noop: public eosio::contract {
       public:
          noop( account_name self ): contract( self ) { }
          void anyaction( account_name from,

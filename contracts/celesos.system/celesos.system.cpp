@@ -1,4 +1,4 @@
-#include "eosio.system.hpp"
+#include "celesos.system.hpp"
 #include <eosiolib/dispatcher.hpp>
 
 #include "producer_pay.cpp"
@@ -7,7 +7,7 @@
 #include "exchange_state.cpp"
 
 
-namespace eosiosystem {
+namespace celesossystem {
 
     system_contract::system_contract(account_name s)
             : native(s),
@@ -24,7 +24,7 @@ namespace eosiosystem {
         auto itr = _rammarket.find(S(4, RAMCORE));
 
         if (itr == _rammarket.end()) {
-            auto system_token_supply = eosio::token(N(eosio.token)).get_supply(
+            auto system_token_supply = celes::token(N(celes.token)).get_supply(
                     eosio::symbol_type(system_token_symbol).name()).amount;
             if (system_token_supply > 0) {
                 itr = _rammarket.emplace(_self, [&](auto &m) {
@@ -78,7 +78,7 @@ namespace eosiosystem {
     }
 
     void system_contract::setparams(const eosio::blockchain_parameters &params) {
-        require_auth(N(eosio));
+        require_auth(N(celes));
         (eosio::blockchain_parameters &) (_gstate) = params;
         eosio_assert(3 <= _gstate.max_authority_depth, "max_authority_depth should be at least 3");
         set_blockchain_parameters(params);
@@ -98,20 +98,20 @@ namespace eosiosystem {
         });
     }
 
-    void system_contract::bidname(account_name bidder, account_name newname, asset bid) {
+    void system_contract::bidname(account_name bidder, account_name newname, eosio::asset bid) {
         require_auth(bidder);
         eosio_assert(eosio::name_suffix(newname) == newname, "you can only bid on top-level suffix");
-        eosio_assert(newname != 0, "the empty name is not a valid account name to bid on");
+        eosio_assert(newname != 0, "the empty eosio::name  is not a valid account eosio::name  to bid on");
         eosio_assert((newname & 0xFull) == 0, "13 character names are not valid account names to bid on");
         eosio_assert((newname & 0x1F0ull) == 0,
                      "accounts with 12 character names and no dots can be created without bidding required");
         eosio_assert(!is_account(newname), "account already exists");
-        eosio_assert(bid.symbol == asset().symbol, "asset must be system token");
+        eosio_assert(bid.symbol == asset().symbol, "eosio::asset must be system token");
         eosio_assert(bid.amount > 0, "insufficient bid");
 
-        INLINE_ACTION_SENDER(eosio::token, transfer)(N(eosio.token), {bidder, N(active)},
-                                                     {bidder, N(eosio.names), bid,
-                                                      std::string("bid name ") + (name{newname}).to_string()});
+        INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {bidder, N(active)},
+                                                     {bidder, N(celes.names), bid,
+                                                      std::string("bid eosio::name  ") + (name{newname}).to_string()});
 
         name_bid_table bids(_self, _self);
         print(name{bidder}, " bid ", bid, " on ", name{newname}, "\n");
@@ -128,10 +128,10 @@ namespace eosiosystem {
             eosio_assert(bid.amount - current->high_bid > (current->high_bid / 10), "must increase bid by 10%");
             eosio_assert(current->high_bidder != bidder, "account is already highest bidder");
 
-            INLINE_ACTION_SENDER(eosio::token, transfer)(N(eosio.token), {N(eosio.names), N(active)},
-                                                         {N(eosio.names), current->high_bidder,
+            INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {N(celes.names), N(active)},
+                                                         {N(celes.names), current->high_bidder,
                                                           asset(current->high_bid),
-                                                          std::string("refund bid on name ") +
+                                                          std::string("refund bid on eosio::name  ") +
                                                           (name{newname}).to_string()});
 
             bids.modify(current, bidder, [&](auto &b) {
@@ -146,9 +146,9 @@ namespace eosiosystem {
      *  Called after a new account is created. This code enforces resource-limits rules
      *  for new accounts as well as new account naming conventions.
      *
-     *  Account names containing '.' symbols must have a suffix equal to the name of the creator.
-     *  This allows users who buy a premium name (shorter than 12 characters with no dots) to be the only ones
-     *  who can create accounts with the creator's name as a suffix.
+     *  Account names containing '.' symbols must have a suffix equal to the eosio::name  of the creator.
+     *  This allows users who buy a premium eosio::name  (shorter than 12 characters with no dots) to be the only ones
+     *  who can create accounts with the creator's eosio::name  as a suffix.
      *
      */
     void native::newaccount(account_name creator,
@@ -172,7 +172,7 @@ namespace eosiosystem {
                     auto current = bids.find(newact);
                     eosio_assert(current != bids.end(), "no active bid for name");
                     eosio_assert(current->high_bidder == creator, "only highest bidder can claim");
-                    eosio_assert(current->high_bid < 0, "auction for name is not closed yet");
+                    eosio_assert(current->high_bid < 0, "auction for eosio::name  is not closed yet");
                     bids.erase(current);
                 } else {
                     eosio_assert(creator == suffix, "only suffix may create this account");
@@ -202,13 +202,13 @@ namespace eosiosystem {
         ).send();
     }
 
-} /// eosio.system
+} /// celesos.system
 
 
-EOSIO_ABI(eosiosystem::system_contract,
-// native.hpp (newaccount definition is actually in eosio.system.cpp)
+EOSIO_ABI(celesossystem::system_contract,
+// native.hpp (newaccount definition is actually in celesos.system.cpp)
           (newaccount)(updateauth)(deleteauth)(linkauth)(unlinkauth)(canceldelay)(onerror)
-                  // eosio.system.cpp
+                  // celesos.system.cpp
                   (setram)(setparams)(setpriv)(rmvproducer)(bidname)
                   // delegate_bandwidth.cpp
                   (buyrambytes)(buyram)(sellram)(delegatebw)(undelegatebw)(refund)

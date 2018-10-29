@@ -4,7 +4,7 @@
 
 namespace eosio {
 
-   class testinline : public contract {
+   class testinline : public eosio::contract {
       public:
          testinline( action_name self ):contract(self){}
 

@@ -1646,7 +1646,7 @@ if( options.count(name) ) { \
             if( abi_serializer::to_abi(code_account.abi, abi) ) {
                 abi_serializer abis( abi, abi_serializer_max_time );
 
-                const auto token_code = N(eosio.token);
+                const auto token_code = N(celes.token);
 
                 auto core_symbol = extract_core_symbol();
 
@@ -1787,7 +1787,7 @@ if( options.count(name) ) { \
 
             // The following code makes assumptions about the contract deployed on eosio account (i.e. the system contract) and how it stores its data.
             const auto& d = db.db();
-            const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( N(eosio), N(eosio), N(rammarket) ));
+            const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( N(celes), N(celes), N(rammarket) ));
             if( t_id != nullptr ) {
                 const auto &idx = d.get_index<key_value_index, by_scope_primary>();
                 auto it = idx.find(boost::make_tuple( t_id->id, eosio::chain::string_to_symbol_c(4,"RAMCORE") ));

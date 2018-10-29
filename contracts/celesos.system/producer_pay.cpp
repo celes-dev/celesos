@@ -1,11 +1,11 @@
-#include "eosio.system.hpp"
+#include "celesos.system.hpp"
 
-#include <eosio.token/eosio.token.hpp>
+#include <celes.token/celes.token.hpp>
 #include <eosiolib/chain.h>
 #include <eosiolib/forest_bank.h>
 #include <math.h>
 
-namespace eosiosystem {
+namespace celesossystem {
 
     const uint32_t seconds_per_year = 52 * 7 * 24 * 3600;
     const uint32_t blocks_per_day = 2 * 24 * 3600;
@@ -16,7 +16,7 @@ namespace eosiosystem {
 
         using namespace eosio;
 
-        require_auth(N(eosio));
+        require_auth(N(celes));
 
         uint32_t head_block_number = get_chain_head_num();
         
@@ -97,10 +97,10 @@ namespace eosiosystem {
         });
 
         if (rewards > 0) {
-            INLINE_ACTION_SENDER(eosio::token, transfer)(N(eosio.token), {N(eosio.bpay), N(active)},
-                                                         {N(eosio.bpay), owner, asset(static_cast<int64_t>(rewards)),
+            INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {N(), N(active)},
+                                                         {N(), owner, asset(static_cast<int64_t>(rewards)),
                                                           std::string("producer block pay")});
         }
     }
 
-} //namespace eosiosystem
+} //namespace celesossystem

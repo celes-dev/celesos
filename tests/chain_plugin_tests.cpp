@@ -18,8 +18,8 @@
 #include <noop/noop.wast.hpp>
 #include <noop/noop.abi.hpp>
 
-#include <celesos.system/eosio.system.wast.hpp>
-#include <celesos.system/eosio.system.abi.hpp>
+#include <celesos.system/celesos.system.wast.hpp>
+#include <celesos.system/celesos.system.abi.hpp>
 
 #include <fc/io/fstream.hpp>
 

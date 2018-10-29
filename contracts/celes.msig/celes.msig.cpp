@@ -1,8 +1,8 @@
-#include <eosio.msig/eosio.msig.hpp>
+#include <celes.msig/celes.msig.hpp>
 #include <eosiolib/action.hpp>
 #include <eosiolib/permission.hpp>
 
-namespace eosio {
+namespace celes {
 
 /*
 propose function manually parses input data (instead of taking parsed arguments from dispatcher)
@@ -11,10 +11,11 @@ because parsing data in the dispatcher uses too much CPU in case if proposed tra
 If we use dispatcher the function signature should be:
 
 void multisig::propose( account_name proposer,
-                        name proposal_name,
+                        eosio::name  proposal_name,
                         vector<permission_level> requested,
                         transaction  trx)
 */
+
 
 void multisig::propose() {
    constexpr size_t max_stack_buffer_size = 512;
@@ -22,12 +23,15 @@ void multisig::propose() {
    char* buffer = (char*)( max_stack_buffer_size < size ? malloc(size) : alloca(size) );
    read_action_data( buffer, size );
 
+   using namespace std;
+   using namespace eosio;
+
    account_name proposer;
-   name proposal_name;
+   name  proposal_name;
    vector<permission_level> requested;
    transaction_header trx_header;
 
-   datastream<const char*> ds( buffer, size );
+   eosio::datastream <const char*> ds( buffer, size );
    ds >> proposer >> proposal_name >> requested;
 
    size_t trx_pos = ds.tellp();
@@ -38,7 +42,7 @@ void multisig::propose() {
    //eosio_assert( trx_header.actions.size() > 0, "transaction must have at least one action" );
 
    proposals proptable( _self, proposer );
-   eosio_assert( proptable.find( proposal_name ) == proptable.end(), "proposal with the same name exists" );
+   eosio_assert( proptable.find( proposal_name ) == proptable.end(), "proposal with the same eosio::name  exists" );
 
    bytes packed_requested = pack(requested);
    auto res = ::check_transaction_authorization( buffer+trx_pos, size-trx_pos,
@@ -59,7 +63,7 @@ void multisig::propose() {
    });
 }
 
-void multisig::approve( account_name proposer, name proposal_name, permission_level level ) {
+void multisig::approve( account_name proposer, eosio::name  proposal_name, eosio::permission_level level ) {
    require_auth( level );
 
    approvals apptable(  _self, proposer );
@@ -74,7 +78,7 @@ void multisig::approve( account_name proposer, name proposal_name, permission_le
    });
 }
 
-void multisig::unapprove( account_name proposer, name proposal_name, permission_level level ) {
+void multisig::unapprove( account_name proposer, eosio::name  proposal_name, eosio::permission_level level ) {
    require_auth( level );
 
    approvals apptable(  _self, proposer );
@@ -88,14 +92,14 @@ void multisig::unapprove( account_name proposer, name proposal_name, permission_
    });
 }
 
-void multisig::cancel( account_name proposer, name proposal_name, account_name canceler ) {
+void multisig::cancel( account_name proposer, eosio::name  proposal_name, account_name canceler ) {
    require_auth( canceler );
 
    proposals proptable( _self, proposer );
    auto& prop = proptable.get( proposal_name, "proposal not found" );
 
    if( canceler != proposer ) {
-      eosio_assert( unpack<transaction_header>( prop.packed_transaction ).expiration < eosio::time_point_sec(now()), "cannot cancel until expiration" );
+      eosio_assert( eosio::unpack<eosio::transaction_header>( prop.packed_transaction ).expiration < eosio::time_point_sec(now()), "cannot cancel until expiration" );
    }
 
    approvals apptable(  _self, proposer );
@@ -105,7 +109,7 @@ void multisig::cancel( account_name proposer, name proposal_name, account_name c
    apptable.erase(apps);
 }
 
-void multisig::exec( account_name proposer, name proposal_name, account_name executer ) {
+void multisig::exec( account_name proposer, eosio::name  proposal_name, account_name executer ) {
    require_auth( executer );
 
    proposals proptable( _self, proposer );
@@ -114,12 +118,12 @@ void multisig::exec( account_name proposer, name proposal_name, account_name exe
    approvals apptable(  _self, proposer );
    auto& apps = apptable.get( proposal_name, "proposal not found" );
 
-   transaction_header trx_header;
-   datastream<const char*> ds( prop.packed_transaction.data(), prop.packed_transaction.size() );
+   eosio::transaction_header trx_header;
+   eosio::datastream <const char*> ds( prop.packed_transaction.data(), prop.packed_transaction.size() );
    ds >> trx_header;
    eosio_assert( trx_header.expiration >= eosio::time_point_sec(now()), "transaction expired" );
 
-   bytes packed_provided_approvals = pack(apps.provided_approvals);
+   eosio::bytes packed_provided_approvals = eosio::pack(apps.provided_approvals);
    auto res = ::check_transaction_authorization( prop.packed_transaction.data(), prop.packed_transaction.size(),
                                                  (const char*)0, 0,
                                                  packed_provided_approvals.data(), packed_provided_approvals.size()
@@ -132,6 +136,6 @@ void multisig::exec( account_name proposer, name proposal_name, account_name exe
    apptable.erase(apps);
 }
 
-} /// namespace eosio
+} /// namespace celes
 
-EOSIO_ABI( eosio::multisig, (propose)(approve)(unapprove)(cancel)(exec) )
+EOSIO_ABI( celes::multisig, (propose)(approve)(unapprove)(cancel)(exec) )

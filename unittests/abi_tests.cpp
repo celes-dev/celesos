@@ -1619,7 +1619,7 @@ BOOST_FIXTURE_TEST_CASE(abigen_eosioabi_macro, abi_gen_helper)
       #pragma GCC diagnostic push
       #pragma GCC diagnostic ignored "-Wpointer-bool-conversion"
 
-      #include <eosiolib/eosio.hpp>
+      #include <eosiolib/celes.hpp>
       #include <eosiolib/print.hpp>
 
 

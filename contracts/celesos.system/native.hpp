@@ -13,14 +13,14 @@
 #include <eosiolib/producer_schedule.hpp>
 #include <eosiolib/contract.hpp>
 
-namespace eosiosystem {
+namespace celesossystem {
    using eosio::permission_level;
    using eosio::public_key;
 
    typedef std::vector<char> bytes;
 
    struct permission_level_weight {
-      permission_level  permission;
+      eosio::permission_level  permission;
       weight_type       weight;
 
       // explicit serialization macro is not necessary, used here only to improve compilation time
@@ -75,7 +75,7 @@ namespace eosiosystem {
           *
           *  1. accounts cannot contain '.' symbols which forces all acccounts to be 12
           *  characters long without '.' until a future account auction process is implemented
-          *  which prevents name squatting.
+          *  which prevents eosio::name  squatting.
           *
           *  2. new accounts must stake a minimal number of tokens (as set in system parameters)
           *     therefore, this method will execute an inline buyram from receiver for newacnt in

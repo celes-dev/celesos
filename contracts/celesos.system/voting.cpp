@@ -2,9 +2,9 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
-#include "eosio.system.hpp"
+#include "celesos.system.hpp"
 
-#include <eosio.token/eosio.token.hpp>
+#include <celes.token/celes.token.hpp>
 #include <eosiolib/crypto.h>
 #include <eosiolib/datastream.hpp>
 #include <eosiolib/eosio.hpp>
@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <time.h>
 
-namespace eosiosystem
+namespace celesossystem
 {
 using eosio::bytes;
 using eosio::const_mem_fun;
@@ -294,7 +294,7 @@ void system_contract::update_vote(const account_name voter_name,
     eosio::print(current_time2(), "update...vote ....3\r\n");
 
     // 增加投票明细记录
-    _burninfos.emplace(N(eosio), [&](auto &burn) {
+    _burninfos.emplace(N(celes), [&](auto &burn) {
         eosio::print(current_time2(), "update...vote ....3.1\r\n");
         burn.rowid = _burninfos.available_primary_key();
         eosio::print(current_time2(), "update...vote ....3.2\r\n");
@@ -325,7 +325,7 @@ void system_contract::update_vote(const account_name voter_name,
     }
     else
     {
-        _burnproducerstatinfos.emplace(N(eosio), [&](auto &p) {
+        _burnproducerstatinfos.emplace(N(celes), [&](auto &p) {
             p.rowid = _burnproducerstatinfos.available_primary_key();
             p.producer = producer_name;
             p.block_number = block_number;
@@ -344,7 +344,7 @@ void system_contract::update_vote(const account_name voter_name,
         }
         else
         {
-            _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
+            _burnblockstatinfos.emplace(N(celes), [&](auto &p) {
                 p.block_number = block_number;
                 p.stat = 1;
                 p.diff = 1;
@@ -489,7 +489,7 @@ double system_contract::calc_diff(uint32_t block_number)
     if (current == _burnblockstatinfos.end())
     {
         // payer is the system account
-        _burnblockstatinfos.emplace(N(eosio), [&](auto &p) {
+        _burnblockstatinfos.emplace(N(celes), [&](auto &p) {
             p.block_number = block_number;
             p.diff = targetdiff;
             p.stat = 0;
@@ -569,4 +569,4 @@ uint32_t system_contract::clean_dirty_wood_history(uint32_t block_number,
     return maxline - round;
 }
 
-} // namespace eosiosystem
+} // namespace celesossystem

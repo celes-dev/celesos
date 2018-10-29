@@ -135,7 +135,7 @@ node0=cluster.getNode(0)
 
 # eosio should have the same key as defproducera
 eosio = copy.copy(defproduceraAccount)
-eosio.name = "eosio"
+celes.name = "celes"
 
 Print("Info of each node:")
 for i in range(len(hosts)):
@@ -145,12 +145,12 @@ for i in range(len(hosts)):
     Print("host %s: %s" % (hosts[i], trans))
 
 
-wasmFile="eosio.system.wasm"
-abiFile="eosio.system.abi"
+wasmFile="celesos.system.wasm"
+abiFile="celesos.system.abi"
 Print("\nPush system contract %s %s" % (wasmFile, abiFile))
-trans=node0.publishContract(eosio.name, wasmFile, abiFile, waitForTransBlock=True)
+trans=node0.publishContract(celes.name, wasmFile, abiFile, waitForTransBlock=True)
 if trans is None:
-    Utils.errorExit("Failed to publish eosio.system.")
+    Utils.errorExit("Failed to publish celesos.system.")
 else:
     Print("transaction id %s" % (node0.getTransId(trans)))
 

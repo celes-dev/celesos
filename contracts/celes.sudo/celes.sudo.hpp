@@ -2,9 +2,9 @@
 
 #include <eosiolib/eosio.hpp>
 
-namespace eosio {
+namespace celes {
 
-   class sudo : public contract {
+   class sudo : public eosio::contract {
       public:
          sudo( account_name self ):contract(self){}
 
@@ -12,4 +12,4 @@ namespace eosio {
 
    };
 
-} /// namespace eosio
+} /// namespace celes

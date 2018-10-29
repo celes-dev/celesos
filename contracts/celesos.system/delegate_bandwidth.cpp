@@ -2,7 +2,7 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
-#include "eosio.system.hpp"
+#include "celesos.system.hpp"
 
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/print.hpp>
@@ -12,13 +12,13 @@
 #include <eosiolib/privileged.h>
 #include <eosiolib/transaction.hpp>
 
-#include <eosio.token/eosio.token.hpp>
+#include <celes.token/celes.token.hpp>
 #include <eosiolib/forest_bank.h>
 
 #include <cmath>
 #include <map>
 
-namespace eosiosystem {
+namespace celesossystem {
     using eosio::asset;
     using eosio::indexed_by;
     using eosio::const_mem_fun;
@@ -38,8 +38,8 @@ namespace eosiosystem {
     struct delegated_bandwidth {
         account_name from;
         account_name to;
-        asset net_weight;
-        asset cpu_weight;
+        eosio::asset net_weight;
+        eosio::asset cpu_weight;
 
         uint64_t primary_key() const { return to; }
 
@@ -62,8 +62,8 @@ namespace eosiosystem {
 
     struct user_resources {
         account_name owner;
-        asset net_weight;
-        asset cpu_weight;
+        eosio::asset net_weight;
+        eosio::asset cpu_weight;
         int64_t ram_bytes = 0;
 
         uint32_t last_position = 0;
@@ -105,7 +105,7 @@ namespace eosiosystem {
      *  RAM is a scarce resource whose supply is defined by global properties max_ram_size. RAM is
      *  priced using the bancor algorithm such that price-per-byte with a constant reserve ratio of 100:1.
      */
-    void system_contract::buyram(account_name payer, account_name receiver, asset quant) {
+    void system_contract::buyram(account_name payer, account_name receiver, eosio::asset quant) {
         require_auth(payer);
         eosio_assert(quant.amount > 0, "must purchase a positive amount");
 
@@ -124,12 +124,12 @@ namespace eosiosystem {
         // quant_after_fee.amount should be > 0 if quant.amount > 1.
         // If quant.amount == 1, then quant_after_fee.amount == 0 and the next inline transfer will fail causing the buyram action to fail.
 
-        INLINE_ACTION_SENDER(eosio::token, transfer)(N(eosio.token), {payer, N(active)},
-                                                     {payer, N(eosio.ram), quant_after_fee, std::string("buy ram")});
+        INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {payer, N(active)},
+                                                     {payer, N(celes.ram), quant_after_fee, std::string("buy ram")});
 
         if (fee.amount > 0) {
-            INLINE_ACTION_SENDER(eosio::token, transfer)(N(eosio.token), {payer, N(active)},
-                                                         {payer, N(eosio.ramfee), fee, std::string("ram fee")});
+            INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {payer, N(active)},
+                                                         {payer, N(celes.ramfee), fee, std::string("ram fee")});
         }
 
         int64_t bytes_out;
@@ -182,7 +182,7 @@ namespace eosiosystem {
         eosio_assert(res_itr != userres.end(), "no resource row");
         eosio_assert(res_itr->ram_bytes >= bytes, "insufficient quota");
 
-        asset tokens_out;
+        eosio::asset tokens_out;
         auto itr = _rammarket.find(S(4, RAMCORE));
         _rammarket.modify(itr, 0, [&](auto &es) {
             /// the cast to int64_t of bytes is safe because we certify bytes is <= quota which is limited by prior purchases
@@ -202,16 +202,16 @@ namespace eosiosystem {
         });
         set_resource_limits(res_itr->owner, res_itr->ram_bytes, res_itr->net_weight.amount, res_itr->cpu_weight.amount);
 
-        INLINE_ACTION_SENDER(eosio::token, transfer)(N(eosio.token), {N(eosio.ram), N(active)},
-                                                     {N(eosio.ram), account, asset(tokens_out),
+        INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {N(celes.ram), N(active)},
+                                                     {N(celes.ram), account, asset(tokens_out),
                                                       std::string("sell ram")});
 
         auto fee = (tokens_out.amount + 199) / 200; /// .5% fee (round up)
         // since tokens_out.amount was asserted to be at least 2 earlier, fee.amount < tokens_out.amount
 
         if (fee > 0) {
-            INLINE_ACTION_SENDER(eosio::token, transfer)(N(eosio.token), {account, N(active)},
-                                                         {account, N(eosio.ramfee), asset(fee),
+            INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {account, N(active)},
+                                                         {account, N(celes.ramfee), asset(fee),
                                                           std::string("sell ram fee")});
         }
 
@@ -239,21 +239,19 @@ namespace eosiosystem {
         uint64_t  owner = item->owner;
 
         //过滤系统账户
-        if( owner == N(eosio)||
-            owner == N(eosio.bpay)||
-            owner == N(eosio.msig)||
-            owner == N(eosio.names)||
-            owner == N(eosio.ram)||
-            owner == N(eosio.ramfee)||
-            owner == N(eosio.saving)||
-            owner == N(eosio.stake)||
-            owner == N(eosio.token)||
-            owner == N(eosio.vpay))
+        if( owner == N(celes)||
+            owner == N(celes.bpay)||
+            owner == N(celes.msig)||
+            owner == N(celes.names)||
+            owner == N(celes.ram)||
+            owner == N(celes.ramfee)||
+            owner == N(celes.saving)||
+            owner == N(celes.stake)||
+            owner == N(celes.token)||
+            owner == N(celes.vpay))
         {
             return;
         }
-
-        print( ",owner=", name{item->owner});
 
         //当前区块位置
         uint32_t current_p =  get_chain_head_num();
@@ -281,7 +279,7 @@ namespace eosiosystem {
         }
 
         uint64_t bytes = item->ram_bytes - ram_bytes;
-        asset tokens_out;
+        eosio::asset tokens_out;
         auto itr = _rammarket.find(S(4, RAMCORE));
         _rammarket.modify(itr, 0, [&](auto &es) {
             tokens_out = es.convert(asset(bytes, S(0, RAM)), CORE_SYMBOL);
@@ -303,9 +301,9 @@ namespace eosiosystem {
             res.last_position = current_p;
         });
 
-        //将收取的费用从eosio.ram转入eosio.ramfee账户
-        INLINE_ACTION_SENDER(eosio::token, transfer)(N(eosio.token), {N(eosio.ram), N(active)},
-                                                     {N(eosio.ram), N(eosio.ramfee), tokens_out, std::string("ram fee")});
+        //将收取的费用从celes.ram转入celes.ramfee账户
+        INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {N(celes.ram), N(active)},
+                                                     {N(celes.ram), N(celes.ramfee), tokens_out, std::string("ram fee")});
 
         set_resource_limits(item->owner, item->ram_bytes, item->net_weight.amount, item->cpu_weight.amount);
     }
@@ -352,7 +350,7 @@ namespace eosiosystem {
     }
 
     void system_contract::changebw(account_name from, account_name receiver,
-                                   const asset stake_net_delta, const asset stake_cpu_delta, bool transfer) {
+                                   const eosio::asset stake_net_delta, const eosio::asset stake_cpu_delta, bool transfer) {
         require_auth(from);
         eosio_assert(stake_net_delta != asset(0) || stake_cpu_delta != asset(0), "should stake non-zero amount");
         eosio_assert(std::abs((stake_net_delta + stake_cpu_delta).amount)
@@ -415,7 +413,7 @@ namespace eosiosystem {
         } // tot_itr can be invalid, should go out of scope
 
         // create refund or update from existing refund
-        if (N(eosio.stake) != source_stake_from) { //for eosio both transfer and refund make no sense
+        if (N(celes.stake) != source_stake_from) { //for eosio both transfer and refund make no sense
             refunds_table refunds_tbl(_self, from);
             auto req = refunds_tbl.find(from);
 
@@ -491,15 +489,15 @@ namespace eosiosystem {
 
             auto transfer_amount = net_balance + cpu_balance;
             if (asset(0) < transfer_amount) {
-                INLINE_ACTION_SENDER(eosio::token, transfer)(N(eosio.token), {source_stake_from, N(active)},
-                                                             {source_stake_from, N(eosio.stake), asset(transfer_amount),
+                INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {source_stake_from, N(active)},
+                                                             {source_stake_from, N(celes.stake), asset(transfer_amount),
                                                               std::string("stake bandwidth")});
             }
         }
 
         // update voting power
         {
-            asset total_update = stake_net_delta + stake_cpu_delta;
+            eosio::asset total_update = stake_net_delta + stake_cpu_delta;
             auto from_voter = _voters.find(from);
             if (from_voter == _voters.end()) {
                 from_voter = _voters.emplace(from, [&](auto &v) {
@@ -523,8 +521,8 @@ namespace eosiosystem {
     }
 
     void system_contract::delegatebw(account_name from, account_name receiver,
-                                     asset stake_net_quantity,
-                                     asset stake_cpu_quantity, bool transfer) {
+                                     eosio::asset stake_net_quantity,
+                                     eosio::asset stake_cpu_quantity, bool transfer) {
         eosio_assert(stake_cpu_quantity >= asset(0), "must stake a positive amount");
         eosio_assert(stake_net_quantity >= asset(0), "must stake a positive amount");
         eosio_assert(stake_net_quantity + stake_cpu_quantity > asset(0), "must stake a positive amount");
@@ -534,7 +532,7 @@ namespace eosiosystem {
     } // delegatebw
 
     void system_contract::undelegatebw(account_name from, account_name receiver,
-                                       asset unstake_net_quantity, asset unstake_cpu_quantity) {
+                                       eosio::asset unstake_net_quantity, eosio::asset unstake_cpu_quantity) {
         eosio_assert(asset() <= unstake_cpu_quantity, "must unstake a positive amount");
         eosio_assert(asset() <= unstake_net_quantity, "must unstake a positive amount");
         eosio_assert(asset() < unstake_cpu_quantity + unstake_net_quantity, "must unstake a positive amount");
@@ -556,12 +554,12 @@ namespace eosiosystem {
         // allow people to get their tokens earlier than the 3 day delay if the unstake happened immediately after many
         // consecutive missed blocks.
 
-        INLINE_ACTION_SENDER(eosio::token, transfer)(N(eosio.token), {N(eosio.stake), N(active)},
-                                                     {N(eosio.stake), req->owner, req->net_amount + req->cpu_amount,
+        INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {N(celes.stake), N(active)},
+                                                     {N(celes.stake), req->owner, req->net_amount + req->cpu_amount,
                                                       std::string("unstake")});
 
         refunds_tbl.erase(req);
     }
 
 
-} //namespace eosiosystem
+} //namespace celesossystem
