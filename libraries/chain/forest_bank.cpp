@@ -69,7 +69,7 @@ uint32_t forest_bank::forest_period_number()
 {
   uint32_t result_value = 24 * 60 * 21 * 6;
 #ifdef DEBUG
-  result_value = 60 * 60 * 2 * 4;
+  result_value = 60 * 21 * 6;
 #endif
   return result_value;
 }
@@ -78,7 +78,7 @@ uint32_t forest_bank::cache_period_number()
 {
    uint32_t result_value = 24 * 60 * 21 * 6 * 3;
 #ifdef DEBUG
-   result_value = 60 * 60 * 2 * 4 * 3;
+   result_value = 60 * 21 * 6 * 2;
 #endif
    return result_value;
 }
@@ -87,7 +87,7 @@ uint32_t forest_bank::forest_space_number()
 {
   uint32_t result_value = 21 * 6 * 10;
 #ifdef DEBUG
-  result_value = 60 * 60 * 2;
+  result_value = 21 * 6;
 #endif
   return result_value;
 }
