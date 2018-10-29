@@ -65,6 +65,7 @@ public:
 
   bool verify_wood(uint32_t block_number, const eosio::chain::account_name &account, const char *wood);
   uint32_t forest_period_number();
+  uint32_t cache_period_number();
   uint32_t forest_space_number();
 
 private:
