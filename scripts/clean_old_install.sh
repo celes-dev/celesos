@@ -1,7 +1,7 @@
 #! /bin/bash
 
-if [ -d "/usr/local/include/eosio" ]; then
-   printf "\n\tOld eosio install needs to be removed.\n\n"
+if [ -d "/usr/local/include/celesos" ]; then
+   printf "\n\tOld celesos install needs to be removed.\n\n"
    printf "\tDo you wish to remove this install? (requires sudo)\n"
    select yn in "Yes" "No"; do
       case $yn in
@@ -13,11 +13,11 @@ if [ -d "/usr/local/include/eosio" ]; then
             pushd /usr/local &> /dev/null
 
             pushd include &> /dev/null
-            rm -rf appbase chainbase eosio celesos.system eosiolib fc libc++ musl &> /dev/null
+            rm -rf appbase chainbase celesos celesos.system eosiolib fc libc++ musl &> /dev/null
             popd &> /dev/null
 
             pushd bin &> /dev/null
-            rm cleos celes-abigen eosio-applesdemo celes-launcher eosio-s2wasm eosio-wast2wasm eosiocpp keosd nodeos &> /dev/null
+            rm clceles celes-abigen eosio-applesdemo celes-launcher eosio-s2wasm eosio-wast2wasm eosiocpp kcelesd nodceles &> /dev/null
             popd &> /dev/null
 
             libraries=(libeosio_testing
@@ -41,23 +41,23 @@ if [ -d "/usr/local/include/eosio" ]; then
             popd &> /dev/null
 
             pushd etc &> /dev/null
-            rm eosio &> /dev/null
+            rm celesos &> /dev/null
             popd &> /dev/null
 
             pushd share &> /dev/null
-            rm eosio &> /dev/null
+            rm celesos &> /dev/null
             popd &> /dev/null
 
             pushd usr/share &> /dev/null
-            rm eosio &> /dev/null
+            rm celesos &> /dev/null
             popd &> /dev/null
 
             pushd var/lib &> /dev/null
-            rm eosio &> /dev/null
+            rm celesos &> /dev/null
             popd &> /dev/null
 
             pushd var/log &> /dev/null
-            rm eosio &> /dev/null
+            rm celesos &> /dev/null
             popd &> /dev/null
 
             popd &> /dev/null
