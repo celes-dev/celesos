@@ -201,14 +201,10 @@ endif()
 message( STATUS "Using '${CORE_SYMBOL_NAME}' as CORE symbol name" )
 
 if ("${CELESOS_ROOT_KEY}" STREQUAL "")
-   set(CELESOS_ROOT_KEY "CELES6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV")
+   set(CELESOS_ROOT_KEY "EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV")
 endif()
 
-<<<<<<< Updated upstream
-message( STATUS "Using '${CELESOS_ROOT_KEY}' as public key for 'celesos' account" )
-=======
-message( STATUS "Using '${EOSIO_ROOT_KEY}' as public key for 'celes' account" )
->>>>>>> Stashed changes
+message( STATUS "Using '${CELESOS_ROOT_KEY}' as public key for 'celes' account" )
 
 include(wasm)
 
@@ -229,13 +225,8 @@ install_directory_permissions(DIRECTORY ${CMAKE_INSTALL_FULL_SYSCONFDIR}/celesos
 install_directory_permissions(DIRECTORY ${CMAKE_INSTALL_FULL_SYSCONFDIR}/celesos/launcher)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/testnet.template ${CMAKE_CURRENT_BINARY_DIR}/etc/celesos/launcher/testnet.template COPYONLY)
 
-<<<<<<< Updated upstream
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/celesos.version.in ${CMAKE_CURRENT_BINARY_DIR}/celesos.version.hpp)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/celesos.version.hpp DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR})
-=======
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/celes.version.in ${CMAKE_CURRENT_BINARY_DIR}/celes.version.hpp)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/celes.version.hpp DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR})
->>>>>>> Stashed changes
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/EosioTester.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/EosioTester.cmake @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/EosioTesterBuild.cmake.in ${CMAKE_BINARY_DIR}/lib/cmake/EosioTester.cmake @ONLY)
