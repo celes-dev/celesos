@@ -18,8 +18,8 @@
 
 #include <eosiolib/forest_bank.h>
 
-#define REWARD_HALF_TIME (21*pow(10,8)/2)
-
+// 21*100000000*60% 总量21亿的百分之六十用于此奖励
+#define REWARD_HALF_TIME  1260000000
 
 #ifdef DEBUG
 
@@ -27,9 +27,9 @@
 // number of bp,BP个数
 #define BP_COUNT 2
 // when the bp count is ok cycle for this number,the active the network(主网启动条件，BP个数达标轮数）
-#define ACTIVE_NETWORK_CYCLE 5
+#define ACTIVE_NETWORK_CYCLE 2
 // origin reward number (初始出块奖励，折半衰减）
-#define ORIGIN_REWARD_NUMBER 20000
+#define ORIGIN_REWARD_NUMBER 10000
 // reward get min（if smaller than this number，you can't get the reward）最小奖励领取数，低于此数字将领取失败
 #define REWARD_GET_MIN 100
 // get reward time sep(奖励领取间隔时间，单位：秒）
@@ -46,7 +46,7 @@
 // when the bp count is ok cycle for this number,the active the network(主网启动条件，BP个数达标轮数）
 #define ACTIVE_NETWORK_CYCLE 24
 // origin reward number (初始出块奖励，折半衰减）
-#define ORIGIN_REWARD_NUMBER 20000
+#define ORIGIN_REWARD_NUMBER 10000
 // reward get min（if smaller than this number，you can't get the reward）最小奖励领取数，低于此数字将领取失败
 #define REWARD_GET_MIN 100
 // get reward time sep(奖励领取间隔时间，单位：秒）
@@ -87,7 +87,7 @@ namespace celesossystem {
         int64_t total_ram_stake = 0;
 
         uint32_t last_producer_schedule_block;
-        uint32_t total_unpaid_fee = 0; /// all blocks which have been produced but not paid
+        uint64_t total_unpaid_fee = 0; /// all blocks which have been produced but not paid
         int64_t total_activated_stake = 0;
         uint64_t thresh_activated_stake_time = 0;
         uint16_t last_producer_schedule_size = 0;
@@ -114,7 +114,7 @@ namespace celesossystem {
         eosio::public_key producer_key; /// a packed public key object
         bool is_active = true;
         std::string url;
-        uint32_t unpaid_fee = 0;
+        uint64_t unpaid_fee = 0;
         uint64_t last_claim_time = 0;
         uint16_t location = 0;
 
