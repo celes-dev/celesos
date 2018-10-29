@@ -51,7 +51,7 @@ EOF
 
 ### Launch producer
 ```bash
-$ ./nodceles -d ~/celes.data/producer_node --config-dir ~/celes.data/producer_node -l ~/celes.data/logging.json --http-server-address "" -p eosio -e
+$ ./nodceles -d ~/celes.data/producer_node --config-dir ~/celes.data/producer_node -l ~/celes.data/logging.json --http-server-address "" -p celesos -e
 ```
 
 ### Launch non-producer that will generate transactions
