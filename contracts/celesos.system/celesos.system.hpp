@@ -39,7 +39,7 @@
 
 #else
 
-#define TARGET_WOOD_NUMBER 500
+#define TARGET_WOOD_NUMBER 80
 
 // number of bp,BP个数
 #define BP_COUNT 21
