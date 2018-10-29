@@ -45,10 +45,10 @@ forest_bank::forest_bank(controller &control) : chain(control)
   first_cache_pair = std::make_shared<cache_pair_type>(temp_cache);
   second_cache_pair = std::make_shared<cache_pair_type>(std::move(temp_cache));
 
-  if (chain.head_block_num() > forest_period_number())
+  if (chain.head_block_num() > cache_period_number())
   {
     forest_bank::update_cache_with_block_number(chain.head_block_num() -
-                                                forest_period_number());
+                                                cache_period_number());
   }
 
   forest_bank::update_cache_with_block_number(chain.head_block_num());
@@ -69,16 +69,25 @@ uint32_t forest_bank::forest_period_number()
 {
   uint32_t result_value = 24 * 60 * 21 * 6;
 #ifdef DEBUG
-  result_value = 60 * 60 * 2 * 4;
+  result_value = 60 * 21 * 6;
 #endif
   return result_value;
+}
+
+uint32_t forest_bank::cache_period_number()
+{
+   uint32_t result_value = 24 * 60 * 21 * 6 * 3;
+#ifdef DEBUG
+   result_value = 60 * 21 * 6 * 2;
+#endif
+   return result_value;
 }
 
 uint32_t forest_bank::forest_space_number()
 {
   uint32_t result_value = 21 * 6 * 10;
 #ifdef DEBUG
-  result_value = 60 * 60 * 2;
+  result_value = 21 * 6;
 #endif
   return result_value;
 }
@@ -247,7 +256,7 @@ bool forest_bank::verify_wood(uint32_t block_number,
 
     // prepare parameter for ethash
     uint32_t cache_number =
-        (block_number - 1) / forest_period_number() * forest_period_number() +
+        (block_number - 1) / cache_period_number() * cache_period_number() +
         1;
     std::vector<celesos::ethash::node> *cache_data_ptr = &(first_cache_pair->second);
     if (cache_number == first_cache_pair->first)
@@ -331,7 +340,7 @@ void forest_bank::update_cache_with_block_number(uint32_t current_blck_number)
 
   uint32_t block_number = current_blck_number - 2;
   uint32_t current_cache_number =
-      block_number / forest_period_number() * forest_period_number() + 1;
+      block_number / cache_period_number() * cache_period_number() + 1;
 
   if (!(first_cache_pair->second.empty()) &&
       first_cache_pair->first == current_cache_number)
