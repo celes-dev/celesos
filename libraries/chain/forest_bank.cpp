@@ -15,14 +15,20 @@ namespace forest
 
 uint32_t dataset_count()
 {
-             return 1024*1024*1024/64;
-  // return 512 * 16;
+  #ifdef DEBUG
+    return 512 * 16;
+  #else
+    return 1024*1024*1024/64;
+  #endif
 }
 
 uint32_t cache_count()
 {
-             return 1024*1024*16/64;
-  // return 512;
+  #ifdef DEBUG
+    return 512;
+  #else
+    return 1024*1024*16/64;
+  #endif
 }
 
 static forest_bank *instance = nullptr;
