@@ -25,9 +25,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install openssl 
 COPY --from=builder /usr/local/lib/* /usr/local/lib/
 COPY --from=builder /tmp/build/bin /opt/celesos/bin
 COPY --from=builder /tmp/build/contracts /contracts
-COPY --from=builder /celes/Docker/config.ini /
+COPY --from=builder /celes/Docker-Celesos/config.ini /
 COPY --from=builder /etc/celesos-version /etc
-COPY --from=builder /celes/Docker/nodcelesd.sh /opt/celesos/bin/nodcelesd.sh
+COPY --from=builder /celes/Docker-Celesos/nodcelesd.sh /opt/celesos/bin/nodcelesd.sh
 ENV CELESOS_ROOT=/opt/celesos
 RUN chmod +x /opt/celesos/bin/nodcelesd.sh
 ENV LD_LIBRARY_PATH /usr/local/lib
