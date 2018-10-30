@@ -632,7 +632,7 @@
                 },
                 {
                     "name": "unpaid_fee",
-                    "type": "uint64_t"
+                    "type": "uint64"
                 },
                 {
                     "name": "last_claim_time",
