@@ -37,6 +37,7 @@ namespace celesossystem {
 
         if (head_block_number % (uint32_t) forest_space_number() == 1) {
             set_difficulty(calc_diff(head_block_number));
+            clean_diff_stat_history(head_block_number);
         }
 
         // 即将开始唱票，提前清理数据
@@ -44,7 +45,6 @@ namespace celesossystem {
         if (_gstate.last_producer_schedule_block + SINGING_TICKER_SEP <= head_block_number + 30 - 1) {
             uint32_t guess_modify_block = _gstate.last_producer_schedule_block + SINGING_TICKER_SEP;
             if (head_block_number > guess_modify_block) guess_modify_block = head_block_number; // Next singing blocktime
-            clean_diff_stat_history(guess_modify_block);
             clean_dirty_stat_producers(guess_modify_block, 5);
         }
 
@@ -97,8 +97,8 @@ namespace celesossystem {
         });
 
         if (rewards > 0) {
-            INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {N(), N(active)},
-                                                         {N(), owner, asset(static_cast<int64_t>(rewards)),
+            INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {N(celes.bpay), N(active)},
+                                                         {N(celes.bpay), owner, asset(static_cast<int64_t>(rewards)),
                                                           std::string("producer block pay")});
         }
     }

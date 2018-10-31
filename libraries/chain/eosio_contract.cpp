@@ -44,7 +44,7 @@ void validate_authority_precondition( const apply_context& context, const author
       if( a.permission.permission == config::owner_name || a.permission.permission == config::active_name )
          continue; // account was already checked to exist, so its owner and active permissions should exist
 
-      if( a.permission.permission == config::eosio_code_name ) // virtual celes.code permission does not really exist but is allowed
+      if( a.permission.permission == config::celes_code_name ) // virtual celes.code permission does not really exist but is allowed
          continue;
 
       try {
@@ -311,7 +311,7 @@ void apply_celes_linkauth(apply_context& context) {
       const auto *code = db.find<account_object, by_name>(requirement.code);
       EOS_ASSERT(code != nullptr, account_query_exception,
                  "Failed to retrieve code for account: ${account}", ("account", requirement.code));
-      if( requirement.requirement != config::eosio_any_name ) {
+      if( requirement.requirement != config::celes_any_name ) {
          const auto *permission = db.find<permission_object, by_name>(requirement.requirement);
          EOS_ASSERT(permission != nullptr, permission_query_exception,
                     "Failed to retrieve permission: ${permission}", ("permission", requirement.requirement));
