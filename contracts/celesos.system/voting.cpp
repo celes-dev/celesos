@@ -27,7 +27,6 @@ namespace celesossystem
 using eosio::bytes;
 using eosio::const_mem_fun;
 using eosio::indexed_by;
-using eosio::print;
 using eosio::singleton;
 using eosio::transaction;
 
@@ -203,29 +202,14 @@ bool system_contract::verify(const std::string wood,
                              const uint32_t block_number,
                              const account_name wood_owner_name)
 {
-
-    eosio::print(current_time2(), "update...verify ....1\r\n");
-
     auto woodkey = wood_burn_info::woodkey(wood);
     auto idx = _burninfos.get_index<N(wood)>();
-
-    eosio::print(current_time2(), "update...verify ....1.1\r\n");
 
     auto itl = idx.lower_bound(woodkey);
     auto itu = idx.upper_bound(woodkey);
 
-    eosio::print(current_time2(), "update...verify ....2\r\n");
-
     while (itl != itu)
     {
-
-        eosio::print(current_time2(), "update...verify ....2.1\r\n");
-
-        eosio::print("wood1:", wood, "block:", block_number,
-                     "voter:", wood_owner_name);
-        eosio::print("wood2:", itl->wood, "block:", itl->block_number,
-                     "voter:", itl->voter);
-
         if (itl->wood == wood && itl->block_number == block_number &&
             itl->voter == wood_owner_name)
         {
@@ -233,11 +217,7 @@ bool system_contract::verify(const std::string wood,
         }
 
         itl++;
-
-        eosio::print(current_time2(), "update...verify ....2.2\r\n");
     }
-
-    eosio::print(current_time2(), "update...verify ....3\r\n");
 
     return verify_wood(block_number, wood_owner_name, wood.c_str());
 }
@@ -248,10 +228,6 @@ void system_contract::update_vote(const account_name voter_name,
                                   const uint32_t block_number,
                                   const account_name producer_name)
 {
-
-    eosio::print(current_time2(), "update...vote ....1\r\n");
-    eosio::print(current_time2(), "block_number:", block_number, "wood:", wood, "producer_name:", producer_name, "voter_name:", voter_name, "wood_owner_name:", wood_owner_name, "\r\n");
-
     // validate input
     eosio_assert(producer_name > 0, "cannot vote with no producer");
     eosio_assert(wood.length() > 0, "invalid wood 2");
@@ -267,23 +243,14 @@ void system_contract::update_vote(const account_name voter_name,
                      "voter is not a proxy");
     }
 
-    eosio::print(current_time2(), "update...vote ....2\r\n");
-
     auto &owner = wood_owner_name ? wood_owner_name : voter_name;
-
-    eosio::print(current_time2(), "update...vote ....21\r\n");
-
     eosio_assert(system_contract::verify(wood, block_number, owner),
                  "invalid wood 3");
-
-    eosio::print(current_time2(), "update...vote ....221\r\n");
 
     // 更新producer总投票计数
     auto &pitr =
         _producers.get(producer_name, "producer not found"); // data corruption
     eosio_assert(pitr.is_active, "producer is not active");
-
-    eosio::print(current_time2(), "update...vote ....222\r\n");
 
     _producers.modify(pitr, 0, [&](auto &p) {
         p.total_votes++;
@@ -291,22 +258,13 @@ void system_contract::update_vote(const account_name voter_name,
 
     _gstate.total_producer_vote_weight++;
 
-    eosio::print(current_time2(), "update...vote ....3\r\n");
-
     // 增加投票明细记录
     _burninfos.emplace(N(celes), [&](auto &burn) {
-        eosio::print(current_time2(), "update...vote ....3.1\r\n");
         burn.rowid = _burninfos.available_primary_key();
-        eosio::print(current_time2(), "update...vote ....3.2\r\n");
         burn.voter = owner;
         burn.wood = wood;
         burn.block_number = block_number;
-        eosio::print(current_time2(), "update...vote ....3.3\r\n");
     });
-
-    eosio::print(current_time2(), "update...vote ....3.3\r\n");
-
-    eosio::print(current_time2(), "update...vote ....4\r\n");
 
     // producer 统计
     auto indexofproducer = _burnproducerstatinfos.get_index<N(producerblock)>();
@@ -316,8 +274,6 @@ void system_contract::update_vote(const account_name voter_name,
 
     auto itl = indexofproducer.lower_bound(bpblockkey);
     auto itu = indexofproducer.upper_bound(bpblockkey);
-
-    eosio::print(current_time2(), "update...vote ....5\r\n");
 
     if (itl != itu)
     {
@@ -332,8 +288,6 @@ void system_contract::update_vote(const account_name voter_name,
             p.stat = 1;
         });
     }
-
-    eosio::print(current_time2(), "update...vote ....6\r\n");
 
     {
         auto temp = _burnblockstatinfos.find(block_number);
@@ -352,8 +306,6 @@ void system_contract::update_vote(const account_name voter_name,
         }
     }
 
-    eosio::print(current_time2(), "update...vote ....7\r\n");
-
     // 记录总计投票数
     _gstate.total_activated_stake++;
 
@@ -368,8 +320,6 @@ void system_contract::update_vote(const account_name voter_name,
             clean_dirty_wood_history(head_block_number, remain);
         }
     }
-
-    eosio::print(current_time2(), "update...vote ....10\r\n");
 }
 
 /**

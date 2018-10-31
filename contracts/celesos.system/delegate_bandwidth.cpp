@@ -23,7 +23,6 @@ namespace celesossystem {
     using eosio::indexed_by;
     using eosio::const_mem_fun;
     using eosio::bytes;
-    using eosio::print;
     using eosio::permission_level;
     using std::map;
     using std::pair;
