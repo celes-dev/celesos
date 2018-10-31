@@ -33,7 +33,7 @@
 // reward get min（if smaller than this number，you can't get the reward）最小奖励领取数，低于此数字将领取失败
 #define REWARD_GET_MIN 100
 // get reward time sep(奖励领取间隔时间，单位：秒）
-#define REWARD_TIME_SEP 5*60
+#define REWARD_TIME_SEP 5*60*uint64_t(1000000)
 // singing ticker sep（唱票间隔期，每隔固定时间进行唱票）
 #define SINGING_TICKER_SEP 5*2*6*10
 
@@ -50,7 +50,7 @@
 // reward get min（if smaller than this number，you can't get the reward）最小奖励领取数，低于此数字将领取失败
 #define REWARD_GET_MIN 100
 // get reward time sep(奖励领取间隔时间，单位：秒）
-#define REWARD_TIME_SEP 24*60*60
+#define REWARD_TIME_SEP 24*60*60*uint64_t(1000000)
 // singing ticker sep（唱票间隔期，每隔固定时间进行唱票）
 #define SINGING_TICKER_SEP BP_COUNT*6*60
 
