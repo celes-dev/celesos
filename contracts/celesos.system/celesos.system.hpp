@@ -31,7 +31,7 @@
 // origin reward number (初始出块奖励，折半衰减）
 #define ORIGIN_REWARD_NUMBER 10000
 // reward get min（if smaller than this number，you can't get the reward）最小奖励领取数，低于此数字将领取失败
-#define REWARD_GET_MIN 100
+#define REWARD_GET_MIN 1000000
 // get reward time sep(奖励领取间隔时间，单位：秒）
 #define REWARD_TIME_SEP 5*60*uint64_t(1000000)
 // singing ticker sep（唱票间隔期，每隔固定时间进行唱票）
@@ -48,7 +48,7 @@
 // origin reward number (初始出块奖励，折半衰减）
 #define ORIGIN_REWARD_NUMBER 10000
 // reward get min（if smaller than this number，you can't get the reward）最小奖励领取数，低于此数字将领取失败
-#define REWARD_GET_MIN 100
+#define REWARD_GET_MIN 1000000
 // get reward time sep(奖励领取间隔时间，单位：秒）
 #define REWARD_TIME_SEP 24*60*60*uint64_t(1000000)
 // singing ticker sep（唱票间隔期，每隔固定时间进行唱票）
