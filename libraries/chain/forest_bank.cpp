@@ -138,7 +138,7 @@ void forest_bank::loadBlockCacheInfo()
   auto itr = idx.cbegin();
   while (itr != idx.cend())
   {
-    ilog("load block cache block "
+    dlog("load block cache block "
          "number:${block_number},block_id:${block_id},diff:${diff}",
          ("block_number", itr->block_number)("block_id",
                                              itr->block_id)("diff", itr->diff));
@@ -193,7 +193,7 @@ void forest_bank::cleanBlockCache(const uint32_t block_number)
 
   for (auto iter = cachevector.cbegin(); iter != cachevector.cend(); iter++)
   {
-    ilog("block_cache:erase for key:${key}", ("key", *iter));
+    dlog("block_cache:erase for key:${key}", ("key", *iter));
     block_cache.erase(*iter);
   }
 
@@ -219,7 +219,7 @@ void forest_bank::cleanBlockCache(const uint32_t block_number)
 
   for (auto iter = dbvector.cbegin(); iter != dbvector.cend(); iter++)
   {
-    ilog("db_block_cache:erase for key:${key}", ("key", *iter));
+    dlog("db_block_cache:erase for key:${key}", ("key", *iter));
     auto obj = idx.find(*iter);
     mutable_idx.remove(*obj);
   }
@@ -295,7 +295,7 @@ bool forest_bank::verify_wood(uint32_t block_number,
     auto block_id_tmp =
         forest_bank::getBlockIdFromCache(first_cache_pair->first).str();
     block_id_type seed = fc::sha256::hash(block_id_tmp);
-    ilog("calc seed with "
+    dlog("calc seed with "
          "\n\t\tblock_num: ${block_num}"
          "\n\t\tblock_id: ${block_id}"
          "\n\t\tseed: ${seed}",
@@ -429,7 +429,7 @@ void forest_bank::update_forest_with_block_number(const uint32_t current_block_n
     forest_data.next_block_num = current_forest_number + forest_space_number();
     forest_data.target = value;
 
-    ilog("calc seed with"
+    dlog("calc seed with"
          "\n\t\tseed: ${seed} "
          "\n\t\tblock_num_1: ${block_num_1} "
          "\n\t\tblock_num_2: ${block_num_2} "
@@ -451,7 +451,7 @@ void forest_bank::update_forest_with_block_number(const uint32_t current_block_n
       forest_bank::cacheBlockInfo(current_forest_number, result_value, diff);
     }
 
-    ilog("update forest with "
+    dlog("update forest with "
          "\n\t\tnumber: ${current_forest_number} "
          "\n\t\tresult_value: ${result_value} "
          "\n\t\tdiff: ${diff} "
