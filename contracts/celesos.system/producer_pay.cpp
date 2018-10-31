@@ -97,7 +97,7 @@ namespace celesossystem {
         });
 
         if (rewards > 0) {
-            INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {N(eosio.bpay), N(active)},
+            INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {N(celes.bpay), N(active)},
                                                          {N(celes.bpay), owner, asset(static_cast<int64_t>(rewards)),
                                                           std::string("producer block pay")});
         }
