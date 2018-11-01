@@ -43,10 +43,10 @@ void *celesos::miner::worker::thread_run(void *arg) {
             fc_dlog(logger,
                     "\n\tsuccess to compute valid wood with "
                     "\n\t\twood: ${wood} "
-                    "\n\t\tseed:${seed} "
+                    "\n\t\tseed: ${seed} "
                     "\n\t\tforest: ${forest} "
-                    "\n\t\ttarget:${target} "
-                    "\n\t\tdataset_count:${dataset_count} ",
+                    "\n\t\ttarget: ${target} "
+                    "\n\t\tdataset_count: ${dataset_count} ",
                     ("wood", wood_opt->str(0, std::ios_base::hex).c_str())
                             ("seed", seed.c_str())
                             ("forest", forest.c_str())
