@@ -1103,6 +1103,11 @@
             "ricardian_contract": ""
         },
         {
+            "name": "setproxy",
+            "type": "setproxy",
+            "ricardian_contract": ""
+        },
+        {
             "name": "voteproducer",
             "type": "voteproducer",
             "ricardian_contract": ""
