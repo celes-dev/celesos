@@ -763,6 +763,20 @@
             ]
         },
         {
+            "name": "setproxy",
+            "base": "",
+            "fields": [
+                {
+                    "name": "voter_name",
+                    "type": "account_name"
+                },
+                {
+                    "name": "proxy_name",
+                    "type": "account_name"
+                }
+            ]
+        },
+        {
             "name": "voteproducer",
             "base": "",
             "fields": [
