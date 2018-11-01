@@ -12,6 +12,7 @@
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <fc/log/logger.hpp>
 #include <eosio/testing/tester.hpp>
 #include <celesos/pow/ethash.hpp>
 #include <celesos/miner_plugin/worker.hpp>
@@ -97,7 +98,7 @@ BOOST_AUTO_TEST_SUITE(miner_suite)
         std::condition_variable stop_signal{};
         auto bank = forest::forest_bank::getInstance(controller_ref);
 
-        miner::miner miner{app().get_io_service(), 1};
+        miner::miner miner{fc::logger::get(), app().get_io_service(), 1};
         miner.connect([&stop_signal, bank](bool is_success, chain::block_num_type block_num,
                                            const boost::optional<uint256_t> &wood_opt) {
             BOOST_CHECK_EQUAL(is_success, true);

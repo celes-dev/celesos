@@ -16,11 +16,12 @@ using boost::multiprecision::uint256_t;
 void *celesos::miner::worker::thread_run(void *arg) {
     auto worker_ptr = static_cast<miner::worker *>(arg);
 
+    auto &logger = worker_ptr->_ctx.logger;
+
     std::stringstream buffer{};
     buffer << std::this_thread::get_id();
     auto thread_id = buffer.str();
-
-    ilog("begin run() on thread: ${t_id}", ("t_id", thread_id));
+    fc_ilog(logger, "begin run() on thread: ${t_id}", ("t_id", thread_id));
 
     const auto &target = *worker_ptr->_ctx.target_ptr;
     const auto &dataset = *worker_ptr->_ctx.dataset_ptr;
@@ -39,7 +40,7 @@ void *celesos::miner::worker::thread_run(void *arg) {
 
         if (ethash::hash_full(forest, nonce_current, dataset_count, dataset) <= target) {
             wood_opt = nonce_current;
-            ilog(
+            fc_dlog(logger,
                     "success to compute valid wood with \n\t\twood: ${wood} \n\t\tseed:${seed} \n\t\tforest: ${forest} \n\t\ttarget:${target} \n\t\tdataset_count:${dataset_count}",
                     ("wood", wood_opt->str(0, std::ios_base::hex).c_str())
                             ("seed", seed.c_str())
@@ -56,7 +57,7 @@ void *celesos::miner::worker::thread_run(void *arg) {
         ++nonce_current;
     } while (--retry_count > 0);
 
-    ilog("end run() on thread: ${t_id}", ("t_id", thread_id));
+    fc_ilog(logger, "end run() on thread: ${t_id}", ("t_id", thread_id));
     pthread_exit(nullptr);
 }
 
@@ -76,7 +77,8 @@ void celesos::miner::worker::start() {
 //        this->_alive_thread_opt.emplace(std::bind(&worker::run, this));
 //        auto native_handle = this->_alive_thread_opt->native_handle();
 
-        ilog("begin create thread for mine");
+        auto &logger = _ctx.logger;
+        fc_ilog(logger, "begin create thread for mine");
         this->_alive_thread_opt.emplace();
         pthread_attr_t attr{};
         sched_param param{};
@@ -92,7 +94,7 @@ void celesos::miner::worker::start() {
         auto thread_ptr = this->_alive_thread_opt.get_ptr();
 
         pthread_create(thread_ptr, &attr, miner::worker::thread_run, this);
-        ilog("end create thread for mine");
+        fc_ilog(logger, "end create thread for mine");
         this->_alive_thread_opt.emplace(std::move(*thread_ptr));
     }
     lock.unlock();

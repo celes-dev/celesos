@@ -21,6 +21,7 @@ namespace celesos {
             using dataset_ptr_type = std::shared_ptr<std::vector<celesos::ethash::node>>;
             using hash_ptr_type = std::shared_ptr<boost::multiprecision::uint256_t>;
 
+            fc::logger logger;
             const dataset_ptr_type dataset_ptr;
             const std::shared_ptr<std::string> seed_ptr;
             const std::shared_ptr<std::string> forest_ptr;

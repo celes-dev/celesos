@@ -8,6 +8,7 @@
 #include <vector>
 #include <boost/signals2.hpp>
 #include <boost/asio/io_service.hpp>
+#include <fc/log/logger.hpp>
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/forest_bank.hpp>
 #include <celesos/miner_plugin/types.hpp>
@@ -23,6 +24,7 @@ namespace celesos {
                 stopped,
             };
 
+            fc::logger _logger;
             std::vector<std::shared_ptr<celesos::miner::worker>> _alive_worker_ptrs;
             std::vector<boost::signals2::connection> _connections;
             celesos::miner::mine_signal_ptr_type _signal_ptr;
@@ -53,7 +55,7 @@ namespace celesos {
 
             static void gen_random_uint256(boost::multiprecision::uint256_t &dst);
 
-            miner(boost::asio::io_service &main_io_service, unsigned int worker_count = 1);
+            miner(const fc::logger &logger, boost::asio::io_service &main_io_service, unsigned int worker_count = 1);
 
             miner() = delete;
 

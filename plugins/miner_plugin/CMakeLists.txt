@@ -14,4 +14,8 @@ target_link_libraries(miner_plugin
 target_include_directories(miner_plugin
         PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
+IF (CMAKE_BUILD_TYPE STREQUAL Debug)
+    ADD_DEFINITIONS(-DDEBUG)
+ENDIF()
+
 add_subdirectory(test)

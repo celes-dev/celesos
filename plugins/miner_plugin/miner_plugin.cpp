@@ -9,6 +9,8 @@
 #include <fc/exception/exception.hpp>
 #include <fc/filesystem.hpp>
 #include <fc/io/json.hpp>
+#include <fc/log/appender.hpp>
+#include <fc/log/logger.hpp>
 #include <eosio/chain/exceptions.hpp>
 #include <celesos/pow/ethash.hpp>
 #include <eosio/chain/transaction.hpp>
@@ -25,6 +27,10 @@ using boost::multiprecision::uint256_t;
 
 static appbase::abstract_plugin &_miner_plugin = app().register_plugin<miner_plugin>();
 
+namespace fc {
+    extern std::unordered_map<std::string, logger> &get_logger_map();
+}
+
 class celesos::miner_plugin_impl {
 public:
     using miner_type = celesos::miner::miner;
@@ -37,6 +43,7 @@ public:
     unsigned int _worker_count;
     std::map<chain::public_key_type, signature_provider_type> _signature_providers;
     fc::microseconds _kcelesd_provider_timeout_us;
+    fc::logger _logger;
 
     miner_plugin_impl() {
     };
@@ -62,8 +69,8 @@ public:
     }
 
     static signature_provider_type make_kcelesd_signature_provider(const std::shared_ptr<miner_plugin_impl> &impl,
-                                                                 const string &url_str,
-                                                                 const public_key_type pubkey) {
+                                                                   const string &url_str,
+                                                                   const public_key_type pubkey) {
         auto kcelesd_url = fc::url(url_str);
         std::weak_ptr<miner_plugin_impl> weak_impl = impl;
 
@@ -73,8 +80,8 @@ public:
                 fc::variant params;
                 fc::to_variant(std::make_pair(digest, pubkey), params);
                 auto deadline = impl->_kcelesd_provider_timeout_us.count() >= 0 ? fc::time_point::now() +
-                                                                                impl->_kcelesd_provider_timeout_us
-                                                                              : fc::time_point::maximum();
+                                                                                  impl->_kcelesd_provider_timeout_us
+                                                                                : fc::time_point::maximum();
                 return app().get_plugin<eosio::http_client_plugin>().get_client().post_sync(kcelesd_url, params,
                                                                                             deadline).as<chain::signature_type>();
             } else {
@@ -194,18 +201,35 @@ void celesos::miner_plugin::plugin_initialize(const variables_map &options) {
 
 void celesos::miner_plugin::plugin_startup() {
     try {
+        auto &logger_map = fc::get_logger_map();
+        auto &logger = this->my->_logger;
+        if (logger_map.find("miner_plugin") != logger_map.end()) {
+            logger = fc::logger::get("miner_plugin");
+        } else {
+            for(const auto &appender : fc::logger::get().get_appenders()) {
+                logger.add_appender(appender);
+            }
+#ifdef DEBUG
+            logger.set_log_level(fc::log_level::debug);
+            dlog("set log level to debug");
+#else
+            logger.set_log_level(fc::log_level::warn);
+            dlog("set log level to warn");
+#endif
+        }
+
         ilog("plugin_startup() begin");
-        this->my->_miner_opt.emplace(app().get_io_service(), this->my->_worker_count);
+        this->my->_miner_opt.emplace(logger, app().get_io_service(), this->my->_worker_count);
         auto &the_chain_plugin = app().get_plugin<chain_plugin>();
         this->my->_miner_opt->start(this->my->_voter_name, the_chain_plugin.chain());
 
         auto launch_time = fc::time_point::now();
         this->my->_miner_opt->connect(
-                [this, &the_chain_plugin, launch_time](auto is_success,
+                [this, &the_chain_plugin, launch_time, &logger](auto is_success,
                                                        auto block_num,
                                                        const auto &wood_opt) {
-                    dlog("Receive mine callback with is_success: ${is_success} block_num: ${block_num}",
-                         ("is_success", is_success)("block_num", block_num));
+                    fc_dlog(logger, "Receive mine callback with is_success: ${is_success} block_num: ${block_num}",
+                            ("is_success", is_success)("block_num", block_num));
 
                     //TODO 考虑系统合约未安装的情况
                     if (!is_success) {
@@ -214,12 +238,13 @@ void celesos::miner_plugin::plugin_startup() {
                     }
 
                     if (fc::time_point::now() - launch_time <= fc::seconds(10)) {
-                        ilog({ "not ready, ignore miner event" });
+                        fc_ilog(logger, "not ready, ignore miner event");
                         return;
                     }
 
                     try {
-                        dlog("begin prepare transaction about voteproducer");
+                        fc_dlog(logger, "begin prepare transaction about voteproducer");
+
                         auto &cc = the_chain_plugin.chain();
                         const auto &chain_id = cc.get_chain_id();
                         const auto &voter_name = this->my->_voter_name;
@@ -227,11 +252,12 @@ void celesos::miner_plugin::plugin_startup() {
                         std::string wood_hex{};
                         ethash::uint256_to_hex(wood_hex, wood_opt.get());
                         auto bank = forest::forest_bank::getInstance(the_chain_plugin.chain());
-                        dlog("wood should pass varify with \n\t\tis_pass: ${is_pass} \n\t\tblock_num: ${block_num} \n\t\tvoter: ${voter} \n\t\twood: ${wood}",
-                             ("is_pass", bank->verify_wood(block_num, voter_name, wood_hex.c_str()))
-                                     ("block_num", block_num)
-                                     ("voter", voter_name)
-                                     ("wood", wood_hex.c_str()));
+                        fc_dlog(logger,
+                                "wood should pass varify with \n\t\tis_pass: ${is_pass} \n\t\tblock_num: ${block_num} \n\t\tvoter: ${voter} \n\t\twood: ${wood}",
+                                ("is_pass", bank->verify_wood(block_num, voter_name, wood_hex.c_str()))
+                                        ("block_num", block_num)
+                                        ("voter", voter_name)
+                                        ("wood", wood_hex.c_str()));
 
                         chain::signed_transaction tx{};
                         vector<chain::permission_level> auth{{voter_name, "active"}};
@@ -258,18 +284,18 @@ void celesos::miner_plugin::plugin_startup() {
                             tx.signatures.push_back(signature);
                         }
                         auto packed_tx_ptr = std::make_shared<chain::packed_transaction>(chain::packed_transaction{tx});
-                        dlog("end prepare transaction about voteproducer");
+                        fc_dlog(logger, "end prepare transaction about voteproducer");
                         using method_type = chain::plugin_interface::incoming::methods::transaction_async;
                         using handler_param_type = fc::static_variant<fc::exception_ptr, chain::transaction_trace_ptr>;
-                        dlog("start to push transation about voteproducer");
-                        auto handler = [](const handler_param_type &param) {
+                        fc_dlog(logger, "start to push transation about voteproducer");
+                        auto handler = [&logger](const handler_param_type &param) {
                             if (param.contains<fc::exception_ptr>()) {
                                 auto exp_ptr = param.get<fc::exception_ptr>();
-                                dlog("fail to push transaction about voteproducer with error: \n${error}",
-                                     ("error", exp_ptr->to_detail_string().c_str()));
+                                fc_dlog(logger, "fail to push transaction about voteproducer with error: \n${error}",
+                                        ("error", exp_ptr->to_detail_string().c_str()));
                             } else {
                                 auto trace_ptr = param.get<chain::transaction_trace_ptr>();
-                                dlog("suceess to push transaction about voteproducer");
+                                fc_dlog(logger, "suceess to push transaction about voteproducer");
                             }
                         };
                         app().get_method<method_type>()(packed_tx_ptr, true, handler);

@@ -18,7 +18,10 @@ using celesos::miner::worker_ctx;
 using boost::multiprecision::uint256_t;
 using boost::signals2::connection;
 
-celesos::miner::miner::miner(boost::asio::io_service &main_io_service, unsigned int worker_count) :
+celesos::miner::miner::miner(const fc::logger &logger,
+                             boost::asio::io_service &main_io_service,
+                             unsigned int worker_count) :
+        _logger{logger},
         _alive_worker_ptrs{0, vector<shared_ptr<worker>>::allocator_type()},
         _signal_ptr{make_shared<celesos::miner::mine_signal_type>()},
         _main_io_service_ptr{&main_io_service},
@@ -38,11 +41,11 @@ celesos::miner::miner::~miner() {
 }
 
 void celesos::miner::miner::start(const chain::account_name &relative_account, chain::controller &cc) {
-    ilog("start() attempt");
+    fc_ilog(_logger, "start() attempt");
     if (this->_state == state::started) {
         return;
     }
-    ilog("start() begin");
+    fc_ilog(_logger, "start() begin");
     this->_state = state::started;
 
     auto slot = [this, &relative_account, &cc](const chain::block_state_ptr block_ptr) {
@@ -60,7 +63,7 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
             return;
         }
 
-        bool exception_occured = true;
+        bool exception_occurred = true;
         try {
             auto &bank = *forest::forest_bank::getInstance(cc);
             auto forest_info_ptr = std::make_shared<forest::forest_struct>();
@@ -71,30 +74,28 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
                                    ("account", relative_account));
             }
 
-//            ilog("update field \"next_block_number\" with value: ${block_num}",
-//                 ("block_num", forest_info_ptr->next_block_num));
-            ilog("success to get latest forest_info with "
-                 "\n\t\tseed: ${seed} "
-                 "\n\t\tforest: ${forest} "
-                 "\n\t\tblock_num: ${block_num}"
-                 "\n\t\tnext_block_num: ${next_block_num}"
-                 "\n\t\ttarget: ${target}",
-                 ("seed", forest_info_ptr->seed.str())
-                         ("forest", forest_info_ptr->forest.str())
-                         ("block_num", forest_info_ptr->block_number)
-                         ("next_block_num", forest_info_ptr->next_block_num)
-                         ("target", forest_info_ptr->target.str(0, std::ios_base::hex)));
+            fc_dlog(_logger, "success to get latest forest_info with "
+                             "\n\t\tseed: ${seed} "
+                             "\n\t\tforest: ${forest} "
+                             "\n\t\tblock_num: ${block_num}"
+                             "\n\t\tnext_block_num: ${next_block_num}"
+                             "\n\t\ttarget: ${target}",
+                    ("seed", forest_info_ptr->seed.str())
+                            ("forest", forest_info_ptr->forest.str())
+                            ("block_num", forest_info_ptr->block_number)
+                            ("next_block_num", forest_info_ptr->next_block_num)
+                            ("target", forest_info_ptr->target.str(0, std::ios_base::hex)));
 
             this->_sub_io_service_ptr->post([this, forest_info_ptr, relative_account]() {
                 this->on_forest_updated(forest_info_ptr, relative_account);
             });
-            exception_occured = false;
+            exception_occurred = false;
         }
         FC_LOG_AND_DROP()
 
-        if (exception_occured) {
+        if (exception_occurred) {
             this->_last_failure_time_us = fc::time_point::now().time_since_epoch();
-            elog("Fail to handle \"on_forest_update\"");
+            fc_elog(_logger, "Fail to handle \"on_forest_update\"");
             return;
         }
 
@@ -103,7 +104,7 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
     };
     auto a_connection = cc.accepted_block_header.connect(slot);
     this->_connections.push_back(std::move(a_connection));
-    ilog("start() end");
+    fc_ilog(_logger, "start() end");
 }
 
 void celesos::miner::miner::stop_workers(bool wait) {
@@ -117,7 +118,7 @@ void celesos::miner::miner::stop_workers(bool wait) {
 }
 
 void celesos::miner::miner::stop(bool wait) {
-    ilog("stop(wait = ${wait}) begin", ("wait", wait));
+    fc_ilog(_logger, "stop(wait = ${wait}) begin", ("wait", wait));
     if (this->_state == state::stopped) {
         return;
     }
@@ -130,7 +131,7 @@ void celesos::miner::miner::stop(bool wait) {
 
     this->stop_workers(wait);
 
-    ilog("stop(wait = ${wait}) end", ("wait", wait));
+    fc_ilog(_logger, "stop(wait = ${wait}) end", ("wait", wait));
 }
 
 connection celesos::miner::miner::connect(const celesos::miner::mine_slot_type &slot) {
@@ -139,7 +140,7 @@ connection celesos::miner::miner::connect(const celesos::miner::mine_slot_type &
 
 void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::forest_struct> forest_info_ptr,
                                               const chain::account_name &relative_account) {
-    ilog("on forest updated");
+    fc_ilog(_logger, "on forest updated");
 
     auto forest_info = *forest_info_ptr;
 //    const auto target_ptr = make_shared<uint256_t>(
@@ -165,12 +166,12 @@ void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::fore
 
     shared_ptr<vector<ethash::node>> cache_ptr{};
     if (is_cache_changed) {
-        ilog("begin prepare cache with count: ${count}", ("count", new_cache_count));
+        fc_ilog(_logger, "begin prepare cache with count: ${count}", ("count", new_cache_count));
         cache_ptr = make_shared<vector<ethash::node>>(new_cache_count, vector<ethash::node>::allocator_type());
         ethash::calc_cache(*cache_ptr, new_cache_count, *seed_ptr);
-        ilog("end prepare cache with count: ${count}", ("count", new_cache_count));
+        fc_ilog(_logger, "end prepare cache with count: ${count}", ("count", new_cache_count));
     } else {
-        ilog("use cache generated");
+        fc_ilog(_logger, "use cache generated");
         cache_ptr = *this->_target_cache_ptr_opt;
     }
 
@@ -188,13 +189,13 @@ void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::fore
                                                             this->_target_dataset_count_opt, new_dataset_count);
     shared_ptr<vector<ethash::node>> dataset_ptr{};
     if (is_dataset_changed) {
-        ilog("begin prepare dataset with count: ${count}", ("count", new_dataset_count));
+        fc_ilog(_logger, "begin prepare dataset with count: ${count}", ("count", new_dataset_count));
         dataset_ptr = make_shared<vector<ethash::node>>(new_dataset_count,
                                                         vector<ethash::node>::allocator_type());
         ethash::calc_dataset(*dataset_ptr, new_dataset_count, *cache_ptr);
-        ilog("end prepare dataset with count: ${count}", ("count", new_dataset_count));
+        fc_ilog(_logger, "end prepare dataset with count: ${count}", ("count", new_dataset_count));
     } else {
-        ilog("use dataset generated");
+        fc_ilog(_logger, "use dataset generated");
         dataset_ptr = *this->_target_dataset_ptr_opt;
     }
 
@@ -208,9 +209,9 @@ void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::fore
 
     const auto is_work_changed = is_work_changed_func(is_dataset_changed, this->_target_forest_info_opt, forest_info);
     if (!is_work_changed) {
-        ilog("work not changed,no need to restart workers");
+        fc_ilog(_logger, "work not changed,no need to restart workers");
     } else {
-        ilog("restart workers to logging");
+        fc_ilog(_logger, "restart workers to logging");
         this->stop_workers(true);
 
         auto retry_count_ptr = make_shared<uint256_t>(-1);
@@ -223,6 +224,7 @@ void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::fore
         for (int i = 0; i < _worker_count; ++i) {
             auto nonce_start_ptr = make_shared<uint256_t>(nonce_init + (*retry_count_ptr) * i);
             worker_ctx ctx{
+                    .logger = _logger,
                     .dataset_ptr = dataset_ptr,
                     .seed_ptr = seed_ptr,
                     .forest_ptr = forest_ptr,

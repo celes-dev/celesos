@@ -96,6 +96,7 @@ private:
 
   std::map<uint32_t, std::pair<eosio::chain::block_id_type, double>> block_cache;
   boost::mutex forestLock;
+  fc::logger logger;
 };
 } // namespace forest
 } // namespace celesos
