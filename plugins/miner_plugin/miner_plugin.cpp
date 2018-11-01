@@ -253,7 +253,11 @@ void celesos::miner_plugin::plugin_startup() {
                         ethash::uint256_to_hex(wood_hex, wood_opt.get());
                         auto bank = forest::forest_bank::getInstance(the_chain_plugin.chain());
                         fc_dlog(logger,
-                                "wood should pass varify with \n\t\tis_pass: ${is_pass} \n\t\tblock_num: ${block_num} \n\t\tvoter: ${voter} \n\t\twood: ${wood}",
+                                "\n\twood should pass verify with "
+                                "\n\t\tis_pass: ${is_pass} "
+                                "\n\t\tblock_num: ${block_num} "
+                                "\n\t\tvoter: ${voter} "
+                                "\n\t\twood: ${wood} ",
                                 ("is_pass", bank->verify_wood(block_num, voter_name, wood_hex.c_str()))
                                         ("block_num", block_num)
                                         ("voter", voter_name)

@@ -41,7 +41,12 @@ void *celesos::miner::worker::thread_run(void *arg) {
         if (ethash::hash_full(forest, nonce_current, dataset_count, dataset) <= target) {
             wood_opt = nonce_current;
             fc_dlog(logger,
-                    "success to compute valid wood with \n\t\twood: ${wood} \n\t\tseed:${seed} \n\t\tforest: ${forest} \n\t\ttarget:${target} \n\t\tdataset_count:${dataset_count}",
+                    "\n\tsuccess to compute valid wood with "
+                    "\n\t\twood: ${wood} "
+                    "\n\t\tseed:${seed} "
+                    "\n\t\tforest: ${forest} "
+                    "\n\t\ttarget:${target} "
+                    "\n\t\tdataset_count:${dataset_count} ",
                     ("wood", wood_opt->str(0, std::ios_base::hex).c_str())
                             ("seed", seed.c_str())
                             ("forest", forest.c_str())

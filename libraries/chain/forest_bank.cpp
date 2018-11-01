@@ -219,13 +219,6 @@ namespace celesos {
 
         bool forest_bank::verify_wood(uint32_t block_number,
                                       const account_name &account, const char *wood) {
-            std::ostringstream oss;
-            oss << boost::this_thread::get_id();
-            std::string stid = oss.str();
-
-            fc_dlog(this->logger, "verify wood at threadid:${threadid}", ("threadid", stid));
-            fc_dlog(this->logger, "verify wood 1 at time: ${time}",
-                 ("time", fc::time_point::now().time_since_epoch().count()));
             uint32_t current_block_number = chain.head_block_num();
 
             if (block_number + forest_period_number() <= current_block_number ||
@@ -238,9 +231,6 @@ namespace celesos {
                 return false;
             } else {
                 // get forest target
-
-                fc_dlog(this->logger, "verify wood 2 at time: ${time}",
-                     ("time", fc::time_point::now().time_since_epoch().count()));
                 double double_target = forest_bank::getBlockDiffFromCache(block_number);
                 double temp_double_target = static_cast<double>(chain.origin_difficulty());
                 temp_double_target = temp_double_target / double_target;
@@ -262,50 +252,43 @@ namespace celesos {
 
                 std::vector<celesos::ethash::node> &cache_data = *cache_data_ptr;
 
-                fc_dlog(this->logger, "verify wood 3 at time: ${time}",
-                     ("time", fc::time_point::now().time_since_epoch().count()));
                 block_id_type block_id = forest_bank::getBlockIdFromCache(block_number);
-                fc_dlog(this->logger, "verify wood 4 at time: ${time}",
-                     ("time", fc::time_point::now().time_since_epoch().count()));
                 block_id_type wood_forest =
                         fc::sha256::hash(block_id.str() + account.to_string());
-                fc_dlog(this->logger, "verify wood 5 at time: ${time}",
-                     ("time", fc::time_point::now().time_since_epoch().count()));
                 uint32_t data_set_count = dataset_count();
 
                 auto block_id_tmp =
                         forest_bank::getBlockIdFromCache(first_cache_pair->first).str();
                 block_id_type seed = fc::sha256::hash(block_id_tmp);
-                fc_dlog(this->logger, "calc seed with "
+                fc_dlog(this->logger, "\n\tcalc seed with "
                      "\n\t\tblock_num: ${block_num}"
                      "\n\t\tblock_id: ${block_id}"
                      "\n\t\tseed: ${seed}",
                      ("block_num", first_cache_pair->first)("block_id", block_id_tmp)(
                              "seed", seed.str()));
-                fc_dlog(this->logger, "verify wood 6 at time: ${time}",
-                     ("time", fc::time_point::now().time_since_epoch().count()));
 
                 // call ethash verify wood
                 auto result_value = celesos::ethash::hash_light_hex(
                         wood_forest, string(wood), data_set_count, cache_data);
-                fc_dlog(this->logger, "verify wood 7 at time: ${time}",
-                     ("time", fc::time_point::now().time_since_epoch().count()));
 
-                fc_dlog(this->logger, "forest_bank::verify_wood block_value:${block_number}",
-                     ("block_number", block_number));
-                fc_dlog(this->logger, "forest_bank::verify_wood seed:${seed}", ("seed", seed.str()));
-                fc_dlog(this->logger, "forest_bank::verify_wood double_target:${double_target}",
-                     ("double_target", double_target));
-                fc_dlog(this->logger, "forest_bank::verify_wood temp_double_target:${temp_double_target}",
-                     ("temp_double_target", target.str(0, std::ios_base::hex)));
-                fc_dlog(this->logger, "forest_bank::verify_wood target_value:${target}",
-                     ("target", target.str(0, std::ios_base::hex)));
-                fc_dlog(this->logger, "forest_bank::verify_wood wood_forest:${wood_forest}",
-                     ("wood_forest", wood_forest));
-                fc_dlog(this->logger, "forest_bank::verify_wood wood:${wood}", ("wood", wood));
-                fc_dlog(this->logger, "forest_bank::verify_wood data_set_count:${data_set_count}",
-                     ("data_set_count", data_set_count));
-                fc_dlog(this->logger, "forest_bank::verify_wood result_value:${result_value}",
+                fc_dlog(this->logger, "\n\tverify_wood with "
+                                      "\n\t\tblock_value: ${block_number} "
+                                      "\n\t\tseed: ${seed} "
+                                      "\n\t\tdouble_target: ${double_target} "
+                                      "\n\t\ttemp_double_target: ${temp_double_target} "
+                                      "\n\t\ttarget_value: ${target} "
+                                      "\n\t\twood_forest: ${wood_forest} "
+                                      "\n\t\twood: ${wood} "
+                                      "\n\t\tdata_set_count: ${data_set_count}"
+                                      "\n\t\tresult_value: ${result_value}",
+                     ("block_number", block_number)
+                     ("seed", seed.str())
+                     ("double_target", double_target)
+                     ("temp_double_target", target.str(0, std::ios_base::hex))
+                     ("target", target.str(0, std::ios_base::hex))
+                     ("wood_forest", wood_forest)
+                     ("wood", wood)
+                     ("data_set_count", data_set_count)
                      ("result_value", result_value.str(0, std::ios_base::hex)));
 
                 return result_value <= target;
@@ -396,7 +379,7 @@ namespace celesos {
                 forest_data.next_block_num = current_forest_number + forest_space_number();
                 forest_data.target = value;
 
-                fc_dlog(this->logger, "calc seed with"
+                fc_dlog(this->logger, "\n\tcalc seed with "
                      "\n\t\tseed: ${seed} "
                      "\n\t\tblock_num_1: ${block_num_1} "
                      "\n\t\tblock_num_2: ${block_num_2} "
@@ -417,7 +400,7 @@ namespace celesos {
                     forest_bank::cacheBlockInfo(current_forest_number, result_value, diff);
                 }
 
-                fc_dlog(this->logger, "update forest with "
+                fc_dlog(this->logger, "\n\tupdate forest with "
                      "\n\t\tnumber: ${current_forest_number} "
                      "\n\t\tresult_value: ${result_value} "
                      "\n\t\tdiff: ${diff} "

@@ -702,9 +702,7 @@ void apply_context::add_ram_usage( account_name account, int64_t ram_delta ) {
 
 /// CELES code：hubery.zhang {@
 bool apply_context::verify_wood(uint32_t block_number, const account_name& account, const char* wood)const{
-   dlog("context_verify_wood 1 at time: ${time}", ("time", fc::time_point::now().time_since_epoch().count()));
    static celesos::forest::forest_bank* forest = celesos::forest::forest_bank::getInstance(apply_context::control);
-           dlog("context_verify_wood 2 at time: ${time}", ("time", fc::time_point::now().time_since_epoch().count()));
    return  forest->verify_wood(block_number, account, wood);
 }
 

@@ -74,7 +74,7 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
                                    ("account", relative_account));
             }
 
-            fc_dlog(_logger, "success to get latest forest_info with "
+            fc_dlog(_logger, "\n\tsuccess to get latest forest_info with "
                              "\n\t\tseed: ${seed} "
                              "\n\t\tforest: ${forest} "
                              "\n\t\tblock_num: ${block_num}"
