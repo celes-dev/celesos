@@ -145,6 +145,10 @@ void system_contract::setproxy(const account_name voter_name,
                                const account_name proxy_name)
 {
 
+#if DEBUG
+    eosio::print("voter_name:",voter_name,"proxy_name",proxy_name,"\r\n");
+#endif
+
     require_auth(voter_name);
     if (proxy_name)
     {
@@ -152,37 +156,36 @@ void system_contract::setproxy(const account_name voter_name,
     }
 
     auto voter = _voters.find(voter_name);
+    eosio_assert(voter != _voters.end(), "voter is not found");
 
     if (proxy_name)
     {
         auto new_proxy = _voters.find(proxy_name);
+
         eosio_assert(new_proxy != _voters.end(), "invalid proxy specified");
         eosio_assert(voter->proxy != proxy_name, "action has no effect");
         eosio_assert(new_proxy->is_proxy, "proxy not found");
+
+#if DEBUG
+    eosio::print("voter_name:",voter_name,"new_proxy",new_proxy,"\r\n");
+#endif
+
+        _voters.modify(voter, 0, [&](auto &av) { 
+            av.proxy = proxy_name; 
+            });
     }
     else
     {
+#if DEBUG
+    eosio::print("voter_name2:",voter_name,"\r\n");
+#endif
         eosio_assert(voter != _voters.end() && voter->proxy,
                      "user haven't set proxy");
-    }
 
-    if (voter == _voters.end() && proxy_name)
-    {
-        _voters.emplace(voter_name, [&](auto &p) {
-            p.owner = voter_name;
-            p.proxy = proxy_name;
-        });
-    }
-    else
-    {
-        if (proxy_name || voter->is_proxy)
-        {
-            _voters.modify(voter, 0, [&](auto &av) { av.proxy = proxy_name; });
-        }
-        else
-        {
-            _voters.erase(voter);
-        }
+        _voters.modify(voter, 0, [&](auto &av) { 
+            av.proxy = 0; 
+            });
+
     }
 }
 
