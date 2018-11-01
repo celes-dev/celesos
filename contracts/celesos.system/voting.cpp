@@ -146,47 +146,26 @@ void system_contract::setproxy(const account_name voter_name,
 {
 
 #if DEBUG
-    eosio::print("voter_name:",voter_name,"proxy_name",proxy_name,"\r\n");
+    eosio::print("voter_name:", voter_name, "proxy_name", proxy_name, "\r\n");
 #endif
 
     require_auth(voter_name);
     if (proxy_name)
     {
         require_recipient(proxy_name);
-    }
 
+        auto new_proxy = _voters.find(proxy_name);
+        eosio_assert(new_proxy != _voters.end(), "invalid proxy specified");
+        eosio_assert(new_proxy->is_proxy, "proxy not found");
+    }
+    
     auto voter = _voters.find(voter_name);
     eosio_assert(voter != _voters.end(), "voter is not found");
+    eosio_assert(voter->proxy != proxy_name, "action has no effect");
 
-    if (proxy_name)
-    {
-        auto new_proxy = _voters.find(proxy_name);
-
-        eosio_assert(new_proxy != _voters.end(), "invalid proxy specified");
-        eosio_assert(voter->proxy != proxy_name, "action has no effect");
-        eosio_assert(new_proxy->is_proxy, "proxy not found");
-
-#if DEBUG
-    eosio::print("voter_name:",voter_name,"new_proxy",new_proxy,"\r\n");
-#endif
-
-        _voters.modify(voter, 0, [&](auto &av) { 
-            av.proxy = proxy_name; 
-            });
-    }
-    else
-    {
-#if DEBUG
-    eosio::print("voter_name2:",voter_name,"\r\n");
-#endif
-        eosio_assert(voter != _voters.end() && voter->proxy,
-                     "user haven't set proxy");
-
-        _voters.modify(voter, 0, [&](auto &av) { 
-            av.proxy = 0; 
-            });
-
-    }
+    _voters.modify(voter, 0, [&](auto &av) {
+        av.proxy = proxy_name;
+    });
 }
 
 void system_contract::voteproducer(const account_name voter_name,
@@ -433,7 +412,7 @@ double system_contract::calc_diff(uint32_t block_number)
     // is:wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,Simplified to
     // (wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
     // 则建议难度值为wood1/M*diff1*4/7+wood1/M*diif2*2/7+wood1/M*diff3/7,简化为(wood1*diff1*4+wood2*diff2*2+wood3*diff3)/7/M
-    double targetdiff = (wood1 * diff1 * 4 + wood2 * diff2 * 2 +wood3 * diff3) / TARGET_WOOD_NUMBER / 7;
+    double targetdiff = (wood1 * diff1 * 4 + wood2 * diff2 * 2 + wood3 * diff3) / TARGET_WOOD_NUMBER / 7;
     if (targetdiff <= .0001)
     {
         targetdiff = 0.0001;
