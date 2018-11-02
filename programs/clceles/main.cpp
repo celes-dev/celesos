@@ -1314,7 +1314,7 @@ struct set_proxy_subcommand {
     set_proxy_subcommand(CLI::App *actionRoot) {
         auto set_proxy = actionRoot->add_subcommand("setproxy", localized("Burn your wood through a proxy"));
         set_proxy->add_option("voter", voter_str, localized("The voting account"))->required();
-        set_proxy->add_option("proxy", proxy_str, localized("The proxy account"))->required();
+        set_proxy->add_option("proxy", proxy_str, localized("The proxy account"));
         add_standard_transaction_options(set_proxy);
 
         set_proxy->set_callback([this] {
@@ -1581,19 +1581,17 @@ struct claimrewards_subcommand {
 
 struct regproxy_subcommand {
     string proxy;
-    bool isproxy = false;
 
     regproxy_subcommand(CLI::App *actionRoot) {
         auto register_proxy = actionRoot->add_subcommand("regproxy",
                                                          localized("Register an account as a proxy (for voting)"));
         register_proxy->add_option("proxy", proxy, localized("The proxy account to register"))->required();
-        register_proxy->add_option("isproxy", isproxy, localized("reg or unreg proxy"))->required();
         add_standard_transaction_options(register_proxy);
 
         register_proxy->set_callback([this] {
             fc::variant act_payload = fc::mutable_variant_object()
                     ("proxy", proxy)
-                    ("isproxy", isproxy);
+                    ("isproxy", true);
             send_actions({create_action({permission_level{proxy, config::active_name}}, config::system_account_name,
                                         N(regproxy), act_payload)});
         });

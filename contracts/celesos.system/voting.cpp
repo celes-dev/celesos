@@ -142,14 +142,12 @@ void system_contract::update_elected_producers(uint32_t head_block_number)
 }
 
 void system_contract::setproxy(const account_name voter_name,
-                               const account_name proxy_name)
+                                const account_name proxy_name)
 {
-
-#if DEBUG
-    eosio::print("voter_name:", voter_name, "proxy_name", proxy_name, "\r\n");
-#endif
-
     require_auth(voter_name);
+
+    eosio_assert(voter_name != proxy_name, "can not set proxy to self");
+
     if (proxy_name)
     {
         require_recipient(proxy_name);
@@ -158,7 +156,7 @@ void system_contract::setproxy(const account_name voter_name,
         eosio_assert(new_proxy != _voters.end(), "invalid proxy specified");
         eosio_assert(new_proxy->is_proxy, "proxy not found");
     }
-    
+
     auto voter = _voters.find(voter_name);
     eosio_assert(voter != _voters.end(), "voter is not found");
     eosio_assert(voter->proxy != proxy_name, "action has no effect");

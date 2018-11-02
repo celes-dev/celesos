@@ -213,7 +213,7 @@ EOSIO_ABI(celesossystem::system_contract,
                   // delegate_bandwidth.cpp
                   (buyrambytes)(buyram)(sellram)(delegatebw)(undelegatebw)(refund)
                   // voting.cpp
-                  (regproducer)(unregprod)(voteproducer)(regproxy)
+                  (regproducer)(unregprod)(voteproducer)(regproxy)(setproxy)
                   // producer_pay.cpp
                   (onblock)(claimrewards)
 )
