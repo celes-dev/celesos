@@ -427,7 +427,7 @@ double system_contract::calc_diff(uint32_t block_number)
     eosio::print("\t\t---------------targetdiff:",targetdiff,"\r\n");
 
     auto current = _burnblockstatinfos.find(block_number);
-    if (current == _burnblockstatinfos.end())
+    if (current == _burnblockstatinfos.end())   
     {
         // payer is the system account
         _burnblockstatinfos.emplace(N(celes), [&](auto &p) {
@@ -441,6 +441,9 @@ double system_contract::calc_diff(uint32_t block_number)
         _burnblockstatinfos.modify(current, 0,
                                    [&](auto &p) { p.diff = targetdiff; });
     }
+
+    auto temp =  _burnblockstatinfos.find(block_number);
+    eosio::print("hubery:---- block:",temp->block_number,"diff",temp->diff,"\r\n");
 
     return targetdiff;
 }
