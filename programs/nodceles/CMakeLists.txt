@@ -63,10 +63,15 @@ target_link_libraries( ${NODE_EXECUTABLE_NAME}
         PRIVATE -Wl,${whole_archive_flag} test_control_plugin        -Wl,${no_whole_archive_flag}
         PRIVATE -Wl,${whole_archive_flag} test_control_api_plugin    -Wl,${no_whole_archive_flag}
         PRIVATE -Wl,${whole_archive_flag} miner_plugin               -Wl,${no_whole_archive_flag}
-        PRIVATE -Wl,${whole_archive_flag} hashrate_metric_plugin     -Wl,${no_whole_archive_flag}
+
         PRIVATE -Wl,${build_id_flag}
         PRIVATE chain_plugin http_plugin producer_plugin http_client_plugin
         PRIVATE eosio_chain fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS})
+
+IF (CMAKE_BUILD_TYPE STREQUAL Debug)
+    target_link_libraries( ${NODE_EXECUTABLE_NAME}
+        PRIVATE -Wl,${whole_archive_flag} hashrate_metric_plugin     -Wl,${no_whole_archive_flag})
+ENDIF()
 
 if(BUILD_MONGO_DB_PLUGIN)
     target_link_libraries( ${NODE_EXECUTABLE_NAME} PRIVATE -Wl,${whole_archive_flag} mongo_db_plugin -Wl,${no_whole_archive_flag} )
