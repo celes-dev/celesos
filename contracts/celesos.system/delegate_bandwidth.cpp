@@ -279,6 +279,13 @@ namespace celesossystem {
 
         eosio::print("\t\tcuichao...ramattenuator2:ram_bytes1",ram_bytes,"\r\n");
 
+        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes11",pow(1-0.5f/100,(float)n),"\r\n");
+        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes12",ram_bytes*pow(1-0.5f/100,(float)n),"\r\n");
+        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes13",(1-(0.5f/100)*(m/1440.0f)),"\r\n");
+        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes14",ram_bytes*pow(1-0.5f/100,(float)n)*(1-(0.5f/100)*(m/1440.0f)),"\r\n");
+        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes15",(int64_t)(ram_bytes*pow(1-0.5f/100,(float)n)*(1-(0.5f/100)*(m/1440.0f))),"\r\n");
+
+
         ram_bytes = (int64_t)(ram_bytes*pow(1-0.5f/100,(float)n)*(1-(0.5f/100)*(m/1440.0f)));
 
         eosio::print("\t\tcuichao...ramattenuator2:ram_bytes2",ram_bytes,"\r\n");
