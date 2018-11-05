@@ -436,6 +436,8 @@ double system_contract::calc_diff(uint32_t block_number)
 
 void system_contract::clean_diff_stat_history(uint32_t block_number)
 {
+    eosio::print("clean_diff_stat_history---------------");
+
     auto itr = _burnblockstatinfos.begin();
 
     std::vector<wood_burn_block_stat> stat_vector;
@@ -444,6 +446,7 @@ void system_contract::clean_diff_stat_history(uint32_t block_number)
         if (itr->block_number + 3 * (uint32_t)forest_space_number() <
             block_number)
         {
+            eosio::print("clean_diff_stat_history---------------2");
             stat_vector.emplace_back(*itr);
             itr++;
         }
@@ -458,6 +461,7 @@ void system_contract::clean_diff_stat_history(uint32_t block_number)
         auto temp2 = _burnblockstatinfos.find(temp.block_number);
         if (temp2 != _burnblockstatinfos.end())
         {
+            eosio::print("clean_diff_stat_history---------------3");
             _burnblockstatinfos.erase(temp2);
         }
     }
