@@ -423,6 +423,9 @@ double system_contract::calc_diff(uint32_t block_number)
     {
         targetdiff = 0.0001;
     }
+
+    eosio::print("\t\t---------------targetdiff:",targetdiff,"\r\n");
+
     auto current = _burnblockstatinfos.find(block_number);
     if (current == _burnblockstatinfos.end())
     {
