@@ -403,6 +403,14 @@ double system_contract::calc_diff(uint32_t block_number)
     auto wood3 =
         ((last3 == _burnblockstatinfos.end()) ? TARGET_WOOD_NUMBER : last3->stat);
 
+    eosio::print("calc_diff---------------block:",block_number,"\r\n");
+    eosio::print("\t\t---------------diff1:",diff1,"\r\n");
+    eosio::print("\t\t---------------wood1:",wood1,"\r\n");
+    eosio::print("\t\t---------------diff2:",diff2,"\r\n");
+    eosio::print("\t\t---------------wood2:",wood2,"\r\n");
+    eosio::print("\t\t---------------diff3:",diff3,"\r\n");
+    eosio::print("\t\t---------------wood3:",wood3,"\r\n");
+
     // Suppose the last 3 cycle,the diff is diff1,diff2,diff2, and the answers
     // count is wood1,wood2,wood3
     // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
@@ -443,7 +451,7 @@ void system_contract::clean_diff_stat_history(uint32_t block_number)
     std::vector<wood_burn_block_stat> stat_vector;
 
     auto count = 0;
-    
+
     while (itr != _burnblockstatinfos.end())
     {
         if (itr->block_number + 3 * (uint32_t)forest_space_number() <
