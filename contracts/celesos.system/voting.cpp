@@ -441,14 +441,18 @@ void system_contract::clean_diff_stat_history(uint32_t block_number)
     auto itr = _burnblockstatinfos.begin();
 
     std::vector<wood_burn_block_stat> stat_vector;
+
+    auto count = 0;
+    
     while (itr != _burnblockstatinfos.end())
     {
         if (itr->block_number + 3 * (uint32_t)forest_space_number() <
-            block_number)
+            block_number && count < 5)
         {
             eosio::print("clean_diff_stat_history---------------2",itr->block_number,"\r\n");
             stat_vector.emplace_back(*itr);
             itr++;
+            count++;
         }
         else
         {
