@@ -273,6 +273,10 @@ namespace celesossystem {
             return;
         }
 
+        eosio::print("\t\tcuichao...ramattenuator2:last_p",last_p,"\r\n");
+        eosio::print("\t\tcuichao...ramattenuator2:n",n,"\r\n");
+        eosio::print("\t\tcuichao...ramattenuator2:m",m,"\r\n");
+
         eosio::print("\t\tcuichao...ramattenuator2:ram_bytes1",ram_bytes,"\r\n");
 
         ram_bytes = (int64_t)(ram_bytes*pow(1-0.5f/100,(float)n)*(1-(0.5f/100)*(m/1440.0f)));
