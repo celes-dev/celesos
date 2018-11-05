@@ -283,6 +283,8 @@ void system_contract::update_vote(const account_name voter_name,
                 p.stat = 1;
                 p.diff = 1;
             });
+
+            eosio::print("hubery2..using default value,block:",block_number,"\r\n");
         }
     }
 
