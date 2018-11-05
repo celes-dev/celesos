@@ -73,6 +73,8 @@ namespace celesossystem {
         }
 
         ramattenuator();
+
+        eosio::print("oblock...---------------F\r\n");
     }
 
     using namespace eosio;
