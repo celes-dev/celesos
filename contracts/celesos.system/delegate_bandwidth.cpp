@@ -223,8 +223,6 @@ namespace celesossystem {
      */
     void system_contract::ramattenuator(account_name account){
 
-        eosio::print("\t\tcuichao...ramattenuator1:",name{account},"\r\n");
-
         user_resources_table userres(_self,_self);
         auto item = userres.lower_bound(account);
 
@@ -254,8 +252,6 @@ namespace celesossystem {
             return;
         }
 
-        eosio::print("\t\tcuichao...ramattenuator2:\r\n");
-
         //当前区块位置
         uint32_t current_p =  get_chain_head_num();
 
@@ -273,31 +269,14 @@ namespace celesossystem {
             return;
         }
 
-        eosio::print("\t\tcuichao...ramattenuator2:last_p",last_p,"\r\n");
-        eosio::print("\t\tcuichao...ramattenuator2:n",n,"\r\n");
-        eosio::print("\t\tcuichao...ramattenuator2:m",m,"\r\n");
-
-        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes1",ram_bytes,"\r\n");
-
-        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes11",pow(1-0.5f/100,(float)n),"\r\n");
-        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes12",ram_bytes*pow(1-0.5f/100,(float)n),"\r\n");
-        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes13",(1-(0.5f/100)*(m/1440.0f)),"\r\n");
-        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes14",ram_bytes*pow(1-0.5f/100,(float)n)*(1-(0.5f/100)*(m/1440.0f)),"\r\n");
-        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes15",(int64_t)(ram_bytes*pow(1-0.5f/100,(float)n)*(1-(0.5f/100)*(m/1440.0f))),"\r\n");
-
-
         ram_bytes = (int64_t)(ram_bytes*pow(1-0.5f/100,(float)n)*(1-(0.5f/100)*(m/1440.0f)));
-
-        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes2",ram_bytes,"\r\n");
 
         //最小边界
         if(ram_bytes < 100){
             return;
         }
 
-        uint64_t bytes = item->ram_bytes - ram_bytes;
-
-        eosio::print("\t\tcuichao...ramattenuator2:bytes",bytes,"\r\n");
+        int64_t bytes = item->ram_bytes - ram_bytes;
 
         eosio::asset tokens_out;
         auto itr = _rammarket.find(S(4, RAMCORE));
@@ -310,9 +289,6 @@ namespace celesossystem {
             return;
         }
 
-        eosio::print("\t\tcuichao...ramattenuator3,tokens_out:",tokens_out.amount,"\r\n");
-
-
 //        eosio_assert(tokens_out.amount > 1, "token amount received from selling ram is too low");
 
         _gstate.total_ram_bytes_reserved -= static_cast<decltype(_gstate.total_ram_bytes_reserved)>(bytes); // bytes > 0 is asserted above
@@ -323,16 +299,11 @@ namespace celesossystem {
             res.last_position = current_p;
         });
 
-        eosio::print("\t\tcuichao...ramattenuator3,_gstate.total_ram_stake:",_gstate.total_ram_stake,"\r\n");
-
         //将收取的费用从celes.ram转入celes.ramfee账户
         INLINE_ACTION_SENDER(celes::token, transfer)(N(celes.token), {N(celes.ram), N(active)},
                                                      {N(celes.ram), N(celes.ramfee), tokens_out, std::string("ram fee")});
 
         set_resource_limits(item->owner, item->ram_bytes, item->net_weight.amount, item->cpu_weight.amount);
-
-
-        eosio::print("\t\tcuichao...ramattenuator3,finish\r\n");
     }
 
 

@@ -283,8 +283,6 @@ void system_contract::update_vote(const account_name voter_name,
                 p.stat = 1;
                 p.diff = 1;
             });
-
-            eosio::print("hubery2..using default value,block:",block_number,"\r\n");
         }
     }
 
@@ -405,14 +403,6 @@ double system_contract::calc_diff(uint32_t block_number)
     auto wood3 =
         ((last3 == _burnblockstatinfos.end()) ? TARGET_WOOD_NUMBER : last3->stat);
 
-    eosio::print("calc_diff---------------block:",block_number,"\r\n");
-    eosio::print("\t\t---------------diff1:",diff1,"\r\n");
-    eosio::print("\t\t---------------wood1:",wood1,"\r\n");
-    eosio::print("\t\t---------------diff2:",diff2,"\r\n");
-    eosio::print("\t\t---------------wood2:",wood2,"\r\n");
-    eosio::print("\t\t---------------diff3:",diff3,"\r\n");
-    eosio::print("\t\t---------------wood3:",wood3,"\r\n");
-
     // Suppose the last 3 cycle,the diff is diff1,diff2,diff2, and the answers
     // count is wood1,wood2,wood3
     // 假设历史三个周期难度分别为diff1,diff2,diff3,对应提交的答案数为wood1,wood2,wood3(1为距离当前时间最短的周期)
@@ -425,8 +415,6 @@ double system_contract::calc_diff(uint32_t block_number)
     {
         targetdiff = 0.0001;
     }
-
-    eosio::print("\t\t---------------targetdiff:",targetdiff,"\r\n");
 
     auto current = _burnblockstatinfos.find(block_number);
     if (current == _burnblockstatinfos.end())   
@@ -444,31 +432,22 @@ double system_contract::calc_diff(uint32_t block_number)
                                    [&](auto &p) { p.diff = targetdiff; });
     }
 
-    auto temp =  _burnblockstatinfos.find(block_number);
-    eosio::print("hubery:---- block:",temp->block_number,"diff",temp->diff,"\r\n");
-
     return targetdiff;
 }
 
 void system_contract::clean_diff_stat_history(uint32_t block_number)
 {
-    eosio::print("clean_diff_stat_history---------------");
-
     auto itr = _burnblockstatinfos.begin();
 
     std::vector<wood_burn_block_stat> stat_vector;
 
-    auto count = 0;
-
     while (itr != _burnblockstatinfos.end())
     {
         if (itr->block_number + 3 * (uint32_t)forest_space_number() <
-            block_number && count < 5)
+            block_number)
         {
-            eosio::print("clean_diff_stat_history---------------2",itr->block_number,"\r\n");
             stat_vector.emplace_back(*itr);
             itr++;
-            count++;
         }
         else
         {
@@ -481,7 +460,6 @@ void system_contract::clean_diff_stat_history(uint32_t block_number)
         auto temp2 = _burnblockstatinfos.find(temp.block_number);
         if (temp2 != _burnblockstatinfos.end())
         {
-            eosio::print("clean_diff_stat_history---------------3",temp.block_number,"\r\n");
             _burnblockstatinfos.erase(temp2);
         }
     }

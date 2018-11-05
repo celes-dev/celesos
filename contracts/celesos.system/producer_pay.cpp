@@ -36,7 +36,6 @@ namespace celesossystem {
         }
 
         if (head_block_number % (uint32_t) forest_space_number() == 1) {
-            eosio::print("calc_diff---------------");
             set_difficulty(calc_diff(head_block_number));
             clean_diff_stat_history(head_block_number);
         }
@@ -73,8 +72,6 @@ namespace celesossystem {
         }
 
         ramattenuator();
-
-        eosio::print("oblock...---------------F\r\n");
     }
 
     using namespace eosio;
