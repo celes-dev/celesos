@@ -2,6 +2,7 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
+#include <numeric>
 #include <celesos/hashrate_metric_plugin/hashrate_metric_plugin.hpp>
 #include <fc/exception/exception.hpp>
 #include <celesos/pow/ethash.hpp>
