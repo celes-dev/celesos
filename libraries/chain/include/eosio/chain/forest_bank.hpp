@@ -42,8 +42,7 @@ struct by_block_number;
 
 using forest_info_multi_index = chainbase::shared_multi_index_container<
     forest_info_cache_object,
-    indexed_by<
-        ordered_unique<tag<by_id>, member<forest_info_cache_object, forest_info_cache_object::id_type, &forest_info_cache_object::id>>,
+    indexed_by<ordered_unique<tag<by_id>, member<forest_info_cache_object, forest_info_cache_object::id_type, &forest_info_cache_object::id>>,
         ordered_unique<tag<by_block_number>, member<forest_info_cache_object, uint32_t, &forest_info_cache_object::block_number>>>>;
 } // namespace forest
 } // namespace celesos
