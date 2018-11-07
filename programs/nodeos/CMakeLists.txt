@@ -74,6 +74,7 @@ endif()
 
 include(additionalPlugins)
 
+copy_bin( ${NODE_EXECUTABLE_NAME} )
 install( TARGETS
         ${NODE_EXECUTABLE_NAME}
 
