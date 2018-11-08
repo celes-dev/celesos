@@ -38,8 +38,8 @@ int main(int argc, char** argv)
 {
    try {
       bfs::path home = determine_home_directory();
-      app().set_default_data_dir(home / "celes-wallet");
-      app().set_default_config_dir(home / "celes-wallet");
+      app().set_default_data_dir(home / "celesos-wallet");
+      app().set_default_config_dir(home / "celesos-wallet");
       http_plugin::set_defaults({
          .address_config_prefix = "",
          .default_unix_socket_path = keosd::config::key_store_executable_name + ".sock",
