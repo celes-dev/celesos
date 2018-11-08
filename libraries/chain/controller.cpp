@@ -2169,4 +2169,14 @@ const flat_set<account_name> &controller::get_resource_greylist() const {
    return  my->conf.resource_greylist;
 }
 
+int64_t controller::ram_attenuation(account_name name){
+   int64_t ram = 0;
+   int64_t cpu = 0;
+   int64_t net = 0;
+   uint32_t block_num = head_block_num();
+    account_name& name1 =name;
+   int64_t ram_attenuation = my->resource_limits.get_account_limits(name1,ram,cpu,net,block_num);
+   return ram_attenuation;
+}
+
 } } /// eosio::chain

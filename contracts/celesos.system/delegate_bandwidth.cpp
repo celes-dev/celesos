@@ -65,13 +65,10 @@ namespace celesossystem {
         eosio::asset cpu_weight;
         int64_t ram_bytes = 0;
 
-        uint32_t last_position = 0;
-
-
         uint64_t primary_key() const { return owner; }
 
         // explicit serialization macro is not necessary, used here only to improve compilation time
-        EOSLIB_SERIALIZE(user_resources, (owner)(net_weight)(cpu_weight)(ram_bytes)(last_position))
+        EOSLIB_SERIALIZE(user_resources, (owner)(net_weight)(cpu_weight)(ram_bytes))
     };
 
     /**
@@ -111,6 +108,7 @@ namespace celesossystem {
         ///CELES CODE  cuichao{@
         //买入ram前先进行结算
         ramattenuator(receiver);
+
         //@}
 
         auto fee = quant;
@@ -143,13 +141,12 @@ namespace celesossystem {
         _gstate.total_ram_bytes_reserved += uint64_t(bytes_out);
         _gstate.total_ram_stake += quant_after_fee.amount;
 
-        user_resources_table userres(_self,_self);
+        user_resources_table userres(_self, _self);
         auto res_itr = userres.find(receiver);
         if (res_itr == userres.end()) {
             res_itr = userres.emplace(receiver, [&](auto &res) {
                 res.owner = receiver;
                 res.ram_bytes = bytes_out;
-                res.last_position = get_chain_head_num();
             });
         } else {
             userres.modify(res_itr, receiver, [&](auto &res) {
@@ -171,12 +168,12 @@ namespace celesossystem {
         require_auth(account);
         eosio_assert(bytes > 0, "cannot sell negative byte");
 
-        ///CELES CODE  cuichao{@
+        ///CELES CODE  cuichao{@ram_bytes
         //卖出ram前先进行结算
         ramattenuator(account);
         //@}
 
-        user_resources_table userres(_self,_self);
+        user_resources_table userres(_self, _self);
         auto res_itr = userres.find(account);
         eosio_assert(res_itr != userres.end(), "no resource row");
         eosio_assert(res_itr->ram_bytes >= bytes, "insufficient quota");
@@ -221,62 +218,85 @@ namespace celesossystem {
      * @author cuichao
      * ram随时间衰减函数
      */
-    void system_contract::ramattenuator(account_name account){
-
-        user_resources_table userres(_self,_self);
+    void system_contract::ramattenuator(account_name account) {
+        user_resources_table userres(_self, _self);
         auto item = userres.lower_bound(account);
 
         //如果没有找到记录，取第一条  （表可能是空，或者已经是最后一条记录）
-        if(item == userres.end()){
+        if (item == userres.end()) {
             item = userres.begin();
         }
 
-        if(item == userres.end()){
+        if (item == userres.end()) {
             return;
         }
 
-        uint64_t  owner = item->owner;
+//        uint64_t  owner = item->owner;
 
-        //过滤系统账户
-        if( owner == N(celes)||
-            owner == N(celes.bpay)||
-            owner == N(celes.msig)||
-            owner == N(celes.names)||
-            owner == N(celes.ram)||
-            owner == N(celes.ramfee)||
-            owner == N(celes.saving)||
-            owner == N(celes.stake)||
-            owner == N(celes.token)||
-            owner == N(celes.vpay))
-        {
+//        //过滤系统账户
+//        if( owner == N(celes)||
+//            owner == N(celes.bpay)||
+//            owner == N(celes.msig)||
+//            owner == N(celes.names)||
+//            owner == N(celes.ram)||
+//            owner == N(celes.ramfee)||
+//            owner == N(celes.saving)||
+//            owner == N(celes.stake)||
+//            owner == N(celes.token)||
+//            owner == N(celes.vpay))
+//        {
+//            return;
+//        }
+//
+//        eosio::print("\t\tcuichao...ramattenuator2:\r\n");
+//
+//        //当前区块位置
+//        uint32_t current_p =  get_chain_head_num();
+//
+//
+//        //上次衰减过的位置
+//        uint32_t last_p = item->last_position;
+//
+//        uint32_t n = (current_p-last_p)/(1440);
+//        uint32_t m = (current_p-last_p)%(1440);
+//
+//        auto ram_bytes = item->ram_bytes;
+//
+//        //最小边界
+//        if(ram_bytes < 100){
+//            return;
+//        }
+//
+//
+//        ram_bytes = (int64_t)(ram_bytes*pow(1-0.5f/100,(float)n)*(1-(0.5f/100)*(m/1440.0f)));
+//
+//        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes2",ram_bytes,"\r\n");
+//
+//        //最小边界
+//        if(ram_bytes < 100){
+//            return;
+//        }
+//
+//        uint64_t bytes = item->ram_bytes - ram_bytes;
+        eosio::print("\t\tcuichao...ramattenuator2:account:", account, "\r\n");
+
+        int64_t bytes = ram_attenuation(account);
+
+        eosio::print("\t\tcuichao...ramattenuator2:bytes:",bytes,"\r\n");
+
+
+        if(bytes<=0){
             return;
         }
 
-        //当前区块位置
-        uint32_t current_p =  get_chain_head_num();
+        int64_t ram1 = item->ram_bytes;
+        int64_t ram_bytes = ram1-bytes;
 
+        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes:",ram_bytes,"\r\n");
 
-        //上次衰减过的位置
-        uint32_t last_p = item->last_position;
-
-        uint32_t n = (current_p-last_p)/(1440);
-        uint32_t m = (current_p-last_p)%(1440);
-
-        auto ram_bytes = item->ram_bytes;
-
-        //最小边界
-        if(ram_bytes < 100){
+        if(ram_bytes<=0){
             return;
         }
-
-        ram_bytes = (int64_t)(ram_bytes*pow(1-0.5f/100,(float)n)*(1-(0.5f/100)*(m/1440.0f)));
-
-        //最小边界
-        if(ram_bytes < 100){
-            return;
-        }
-
-        int64_t bytes = item->ram_bytes - ram_bytes;
 
         eosio::asset tokens_out;
         auto itr = _rammarket.find(S(4, RAMCORE));
@@ -289,14 +309,12 @@ namespace celesossystem {
             return;
         }
 
-//        eosio_assert(tokens_out.amount > 1, "token amount received from selling ram is too low");
-
         _gstate.total_ram_bytes_reserved -= static_cast<decltype(_gstate.total_ram_bytes_reserved)>(bytes); // bytes > 0 is asserted above
         _gstate.total_ram_stake -= tokens_out.amount;
 
+
         userres.modify(item, item->owner, [&](auto &res) {
             res.ram_bytes = ram_bytes;
-            res.last_position = current_p;
         });
 
         //将收取的费用从celes.ram转入celes.ramfee账户
@@ -304,6 +322,9 @@ namespace celesossystem {
                                                      {N(celes.ram), N(celes.ramfee), tokens_out, std::string("ram fee")});
 
         set_resource_limits(item->owner, item->ram_bytes, item->net_weight.amount, item->cpu_weight.amount);
+
+
+        eosio::print("\t\tcuichao...ramattenuator3,finish\r\n");
     }
 
 
@@ -312,31 +333,33 @@ namespace celesossystem {
      * @author cuichao
      * ram随时间衰减函数
      */
-    void system_contract::ramattenuator(){
-
+    void system_contract::ramattenuator() {
         uint64_t last = _gstate.last_account;
-        user_resources_table userres(_self,_self);
+
+        user_resources_table userres(_self, _self);
         auto item = userres.lower_bound(last);
 
         //如果没有找到记录，取第一条  （表可能是空，或者已经是最后一条记录）
-        if(item == userres.end()){
+        if (item == userres.end()) {
             item = userres.begin();
         }
 
-        if(item == userres.end()){
+        if (item == userres.end()) {
             return;
         }
+
         //TODO 考虑系统账户
         ramattenuator(last);
 
-        if(item!= userres.end()){
-            item++;
+        item++;
+        if (item == userres.end()) {
+            item = userres.begin();
         }
 
         _gstate.last_account = item->owner;
+
+        eosio::print("\t\tcuichao...ramattenuator,item->owner:", item->owner, "\r\n");
     }
-
-
 
 
     void validate_b1_vesting(int64_t stake) {
@@ -348,7 +371,8 @@ namespace celesossystem {
     }
 
     void system_contract::changebw(account_name from, account_name receiver,
-                                   const eosio::asset stake_net_delta, const eosio::asset stake_cpu_delta, bool transfer) {
+                                   const eosio::asset stake_net_delta, const eosio::asset stake_cpu_delta,
+                                   bool transfer) {
         require_auth(from);
         eosio_assert(stake_net_delta != asset(0) || stake_cpu_delta != asset(0), "should stake non-zero amount");
         eosio_assert(std::abs((stake_net_delta + stake_cpu_delta).amount)
