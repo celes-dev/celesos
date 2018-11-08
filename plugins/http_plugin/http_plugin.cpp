@@ -12,6 +12,7 @@
 #include <fc/io/json.hpp>
 #include <fc/crypto/openssl.hpp>
 
+#include <boost/filesystem/operations.hpp>
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
 
@@ -435,6 +436,9 @@ namespace eosio {
             boost::filesystem::path sock_path = options.at(my->unix_socket_path_option_name).as<string>();
             if (sock_path.is_relative())
                sock_path = app().data_dir() / sock_path;
+            if(sock_path.has_parent_path()) {
+               boost::filesystem::create_directories(sock_path.parent_path());
+            }
             my->unix_endpoint = asio::local::stream_protocol::endpoint(sock_path.string());
          }
 
