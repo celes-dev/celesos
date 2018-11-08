@@ -71,7 +71,7 @@ namespace celesossystem {
             }
         }
 
-        // ramattenuator();
+        ramattenuator();
     }
 
     using namespace eosio;
