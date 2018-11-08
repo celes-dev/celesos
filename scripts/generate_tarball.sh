@@ -1,21 +1,21 @@
 #! /bin/bash
 
 NAME=$1
-EOS_PREFIX=${PREFIX}/${SUBPREFIX}
+CELES_PREFIX=${PREFIX}/${SUBPREFIX}
 mkdir -p ${PREFIX}/bin/
 #mkdir -p ${PREFIX}/lib/cmake/${PROJECT}
-mkdir -p ${EOS_PREFIX}/bin 
-mkdir -p ${EOS_PREFIX}/licenses/eosio
+mkdir -p ${CELES_PREFIX}/bin
+mkdir -p ${CELES_PREFIX}/licenses/eosio
 #mkdir -p ${EOS_PREFIX}/include
 #mkdir -p ${EOS_PREFIX}/lib/cmake/${PROJECT}
 #mkdir -p ${EOS_PREFIX}/cmake
 #mkdir -p ${EOS_PREFIX}/scripts
 
 # install binaries 
-cp -R ${BUILD_DIR}/bin/* ${EOS_PREFIX}/bin 
+cp -R ${BUILD_DIR}/bin/* ${CELES_PREFIX}/bin
 
 # install licenses
-cp -R ${BUILD_DIR}/licenses/eosio/* ${EOS_PREFIX}/licenses
+cp -R ${BUILD_DIR}/licenses/eosio/* ${CELES_PREFIX}/licenses
 
 # install libraries
 #cp -R ${BUILD_DIR}/lib/* ${EOS_PREFIX}/lib
