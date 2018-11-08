@@ -38,12 +38,12 @@ int main(int argc, char** argv)
 {
    try {
       bfs::path home = determine_home_directory();
-      app().set_default_data_dir(home / "celesos-wallet");
-      app().set_default_config_dir(home / "celesos-wallet");
+      app().set_default_data_dir(home / "celes-wallet");
+      app().set_default_config_dir(home / "celes-wallet");
       http_plugin::set_defaults({
          .address_config_prefix = "",
          .default_unix_socket_path = keosd::config::key_store_executable_name + ".sock",
-         .default_http_port = 8900
+         .default_http_port = 0
       });
       app().register_plugin<wallet_api_plugin>();
       if(!app().initialize<wallet_plugin, wallet_api_plugin, http_plugin>(argc, argv))
