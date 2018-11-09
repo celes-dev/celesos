@@ -1,7 +1,7 @@
 #!/bin/bash
 ##########################################################################
 # This is the CELESOS automated install script for Linux and Mac OS.
-# This file was downloaded from https://github.com/EOSIO/eos
+# This file was downloaded from https://github.com/CELESOS/celes
 #
 # Copyright (c) 2017, Respective Authors all rights reserved.
 #
@@ -27,7 +27,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# https://github.com/EOSIO/eos/blob/master/LICENSE
+# https://github.com/CELESOS/celes/blob/master/LICENSE
 ##########################################################################
 
    SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -120,8 +120,8 @@
 
    if [ ! -d "${SOURCE_DIR}/.git" ]; then
       printf "\\n\\tThis build script only works with sources cloned from git\\n"
-#      printf "\\tPlease clone a new eos directory with 'git clone https://github.com/EOSIO/eos --recursive'\\n"
-#      printf "\\tSee the wiki for instructions: https://github.com/EOSIO/eos/wiki\\n"
+      printf "\\tPlease clone a new celes directory with 'git clone https://github.com/CELESOS/celes --recursive'\\n"
+      printf "\\tSee the wiki for instructions: https://github.com/CELESOS/celes/wiki\\n"
       exit 1
    fi
 
@@ -285,14 +285,6 @@
 
    TIME_END=$(( $(date -u +%s) - ${TIME_BEGIN} ))
 
-#   printf "\n\n${bldred}\t _______  _______  _______ _________ _______\n"
-#   printf '\t(  ____ \(  ___  )(  ____ \\\\__   __/(  ___  )\n'
-#   printf "\t| (    \/| (   ) || (    \/   ) (   | (   ) |\n"
-#   printf "\t| (__    | |   | || (_____    | |   | |   | |\n"
-#   printf "\t|  __)   | |   | |(_____  )   | |   | |   | |\n"
-#   printf "\t| (      | |   | |      ) |   | |   | |   | |\n"
-#   printf "\t| (____/\| (___) |/\____) |___) (___| (___) |\n"
-#   printf "\t(_______/(_______)\_______)\_______/(_______)\n${txtrst}"
    printf "\n\n${bldred}"
    printf "\t #####  ####### #       #######  #####  #######  #####\n"
    printf "\t#     # #       #       #       #     # #     # #     #\n"
@@ -309,8 +301,6 @@
    print_instructions
 
    printf "\\tFor more information:\\n"
-   printf "\\tEOSIO website: https://eos.io\\n"
-   printf "\\tEOSIO Telegram channel @ https://t.me/EOSProject\\n"
-   printf "\\tEOSIO resources: https://eos.io/resources/\\n"
-   printf "\\tEOSIO Stack Exchange: https://eosio.stackexchange.com\\n"
-   printf "\\tEOSIO wiki: https://github.com/EOSIO/eos/wiki\\n\\n\\n"
+   printf "\\tCELESOS website: https://celes.os\\n"
+   printf "\\tCELESOS resources: https://celes.os/resources/\\n"
+   printf "\\tCELESOS wiki: https://github.com/CELESOS/celes/wiki\\n\\n\\n"

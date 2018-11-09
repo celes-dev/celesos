@@ -1,7 +1,7 @@
 #!/bin/bash
 ##########################################################################
 # This is the CELESOS automated install script for Linux and Mac OS.
-# This file was downloaded from https://github.com/EOSIO/eos
+# This file was downloaded from https://github.com/CELESOS/celes
 #
 # Copyright (c) 2017, Respective Authors all rights reserved.
 #
@@ -27,7 +27,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# https://github.com/EOSIO/eos/blob/master/LICENSE.txt
+# https://github.com/CELESOS/celes/blob/master/LICENSE.txt
 ##########################################################################
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -60,7 +60,7 @@ fi
    create_cmake_symlink() {
       mkdir -p /usr/local/lib/cmake/celesos
       pushd /usr/local/lib/cmake/celesos &> /dev/null
-      ln -sf ../../../eosio/lib/cmake/celesos/$1 $1
+      ln -sf ../../../celesos/lib/cmake/celesos/$1 $1
       popd &> /dev/null
    }
 
@@ -103,18 +103,17 @@ fi
    install_symlinks
    create_cmake_symlink "celesos-config.cmake"
 
-   printf "\n\n${bldred}\t _______  _______  _______ _________ _______\n"
-   printf '\t(  ____ \(  ___  )(  ____ \\\\__   __/(  ___  )\n'
-   printf "\t| (    \/| (   ) || (    \/   ) (   | (   ) |\n"
-   printf "\t| (__    | |   | || (_____    | |   | |   | |\n"
-   printf "\t|  __)   | |   | |(_____  )   | |   | |   | |\n"
-   printf "\t| (      | |   | |      ) |   | |   | |   | |\n"
-   printf "\t| (____/\| (___) |/\____) |___) (___| (___) |\n"
-   printf "\t(_______/(_______)\_______)\_______/(_______)\n${txtrst}"
+   printf "\n\n${bldred}"
+   printf "\t #####  ####### #       #######  #####  #######  #####\n"
+   printf "\t#     # #       #       #       #     # #     # #     #\n"
+   printf "\t#       #       #       #       #       #     # #\n"
+   printf "\t#       #####   #       #####    #####  #     #  #####\n"
+   printf "\t#       #       #       #             # #     #       #\n"
+   printf "\t#     # #       #       #       #     # #     # #     #\n"
+   printf "\t #####  ####### ####### #######  #####  #######  #####\n"
+   printf "${txtrst}"
 
    printf "\\tFor more information:\\n"
-   printf "\\tEOSIO website: https://eos.io\\n"
-   printf "\\tEOSIO Telegram channel @ https://t.me/EOSProject\\n"
-   printf "\\tEOSIO resources: https://eos.io/resources/\\n"
-   printf "\\tEOSIO Stack Exchange: https://eosio.stackexchange.com\\n"
-   printf "\\tEOSIO wiki: https://github.com/EOSIO/eos/wiki\\n\\n\\n"
+   printf "\\tCELESOS website: https://celes.os\\n"
+   printf "\\tCELESOS resources: https://celes.os/resources/\\n"
+   printf "\\tCELESOS wiki: https://github.com/CELESOS/celes/wiki\\n\\n\\n"
