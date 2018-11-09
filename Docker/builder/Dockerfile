@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 LABEL author="xiaobo <peterwillcn@gmail.com>" maintainer="Xiaobo <peterwillcn@gmail.com> Huang-Ming Huang <huangh@objectcomputing.com>" version="0.1.1" \
-  description="This is a base image for building eosio/eos"
+  description="This is a base image for building celesos/celes"
 
 RUN echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
   && echo 'APT::Install-Suggests 0;' >> /etc/apt/apt.conf.d/01norecommends \
@@ -43,6 +43,9 @@ RUN wget https://github.com/mongodb/mongo-c-driver/releases/download/1.10.2/mong
     && make install \
     && cd ../../ && rm -rf mongo-c-driver-1.10.2
 
+RUN git config --global http.proxy ${http_proxy} \
+    && git config --global https.proxy ${https_proxy}}
+
 RUN git clone --depth 1 --single-branch --branch release_40 https://github.com/llvm-mirror/llvm.git \
     && git clone --depth 1 --single-branch --branch release_40 https://github.com/llvm-mirror/clang.git llvm/tools/clang \
     && cd llvm \
@@ -56,3 +59,7 @@ RUN git clone --depth 1 -b releases/v3.3 https://github.com/mongodb/mongo-cxx-dr
     && make -j$(nproc) \
     && make install \
     && cd ../../ && rm -rf mongo-cxx-driver
+
+RUN git config --global --unset http.proxy \
+    && git config --global --unset https.proxy 
+  

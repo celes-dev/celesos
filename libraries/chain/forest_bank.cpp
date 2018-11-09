@@ -75,7 +75,8 @@ namespace celesos {
 
             forest_bank::update_cache_with_block_number(chain.head_block_num());
 
-            chain.db().add_index<forest_info_multi_index>();
+            chainbase::database& db = const_cast<chainbase::database&>( chain.db() );
+            db.add_index<forest_info_multi_index>();
             forest_bank::loadBlockCacheInfo();
 
             // set accepted_block signal function
@@ -159,13 +160,15 @@ namespace celesos {
                                          const double diff) {
             const auto &idx =
                     chain.db().get_index<forest_info_multi_index, by_block_number>();
-            auto &mutable_idx = chain.db().get_mutable_index<forest_info_multi_index>();
+            
+            chainbase::database& db = const_cast<chainbase::database&>( chain.db() );
+            auto &mutable_idx = db.get_mutable_index<forest_info_multi_index>();
             auto obj = idx.lower_bound(block_number);
             if (obj != idx.cend()) {
                 mutable_idx.remove(*obj);
             }
 
-            chain.db().create<forest_info_cache_object>(
+            db.create<forest_info_cache_object>(
                     [&](forest_info_cache_object &obj) {
                         obj.block_number = block_number;
                         obj.block_id = block_id;
@@ -208,7 +211,8 @@ namespace celesos {
                 }
             }
 
-            auto &mutable_idx = chain.db().get_mutable_index<forest_info_multi_index>();
+            chainbase::database& db = const_cast<chainbase::database&>( chain.db() );
+            auto &mutable_idx = db.get_mutable_index<forest_info_multi_index>();
 
             for (auto iter = dbvector.cbegin(); iter != dbvector.cend(); iter++) {
                 fc_dlog(this->logger, "db_block_cache:erase for key:${key}", ("key", *iter));

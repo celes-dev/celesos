@@ -4,10 +4,18 @@
 #include <eosio/chain/transaction_metadata.hpp>
 #include <eosio/chain/transaction.hpp>
 #include <boost/tuple/tuple_io.hpp>
+#include <eosio/chain/database_utils.hpp>
 #include <algorithm>
 
 
 namespace eosio { namespace chain { namespace resource_limits {
+
+using resource_index_set = index_set<
+   resource_limits_index,
+   resource_usage_index,
+   resource_limits_state_index,
+   resource_limits_config_index
+>;
 
 static_assert( config::rate_limiting_precision > 0, "config::rate_limiting_precision must be positive" );
 
@@ -40,10 +48,7 @@ void resource_limits_state_object::update_virtual_net_limit( const resource_limi
    virtual_net_limit = update_elastic_limit(virtual_net_limit, average_block_net_usage.average(), cfg.net_limit_parameters);
 }
 void resource_limits_manager::add_indices() {
-   _db.add_index<resource_limits_index>();
-   _db.add_index<resource_usage_index>();
-   _db.add_index<resource_limits_state_index>();
-   _db.add_index<resource_limits_config_index>();
+   resource_index_set::add_indices(_db);
 }
 
 void resource_limits_manager::initialize_database() {
@@ -57,6 +62,37 @@ void resource_limits_manager::initialize_database() {
       // start the chain off in a way that it is "congested" aka slow-start
       state.virtual_cpu_limit = config.cpu_limit_parameters.max;
       state.virtual_net_limit = config.net_limit_parameters.max;
+   });
+}
+
+void resource_limits_manager::calculate_integrity_hash( fc::sha256::encoder& enc ) const {
+   resource_index_set::walk_indices([this, &enc]( auto utils ){
+      decltype(utils)::walk(_db, [&enc]( const auto &row ) {
+         fc::raw::pack(enc, row);
+      });
+   });
+}
+
+void resource_limits_manager::add_to_snapshot( const snapshot_writer_ptr& snapshot ) const {
+   resource_index_set::walk_indices([this, &snapshot]( auto utils ){
+      snapshot->write_section<typename decltype(utils)::index_t::value_type>([this]( auto& section ){
+         decltype(utils)::walk(_db, [this, &section]( const auto &row ) {
+            section.add_row(row, _db);
+         });
+      });
+   });
+}
+
+void resource_limits_manager::read_from_snapshot( const snapshot_reader_ptr& snapshot ) {
+   resource_index_set::walk_indices([this, &snapshot]( auto utils ){
+      snapshot->read_section<typename decltype(utils)::index_t::value_type>([this]( auto& section ) {
+         bool more = !section.empty();
+         while(more) {
+            decltype(utils)::create(_db, [this, &section, &more]( auto &row ) {
+               more = section.read_row(row, _db);
+            });
+         }
+      });
    });
 }
 
@@ -253,11 +289,11 @@ bool resource_limits_manager::set_account_limits( const account_name& account, i
 }
 
 void resource_limits_manager::get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight ) const {
-   get_account_limits(account,ram_bytes,net_weight,cpu_weight,-1);
+   get_account_limits(account,ram_bytes,net_weight,cpu_weight,0);
 }
 
-void resource_limits_manager::get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight,int64_t block_num) const {
-   const auto* pending_buo = _db.find<resource_limits_object,by_owner>( boost::make_tuple(true, account) );
+int64_t resource_limits_manager::get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight,uint32_t block_num) const {
+    const auto* pending_buo = _db.find<resource_limits_object,by_owner>( boost::make_tuple(true, account) );
    int64_t last_position = 0;
    if (pending_buo) {
       ram_bytes  = pending_buo->ram_bytes;
@@ -273,8 +309,8 @@ void resource_limits_manager::get_account_limits( const account_name& account, i
       last_position = buo.last_position;
    }
 
-   if(block_num<0){
-      return;
+   if(block_num<=0){
+      return 0;
    }
 
    ///CELES CODE  cuichao{@
@@ -290,16 +326,19 @@ void resource_limits_manager::get_account_limits( const account_name& account, i
         account == N(celes.token)||
         account == N(celes.vpay))
    {
-      return;
+      return 0;
    }
+
+   int64_t _ram = ram_bytes;
 
    float n = (block_num-last_position)/(1440);
    float m = (block_num-last_position)%(1440);
 
    ram_bytes = ram_bytes*pow(1-0.5/100,n)*(1-(0.5/100)*(m/1440));
+
    //最小边界
    if(ram_bytes < 100){
-      return;
+      return 0;
    }
 
    const auto& usage  = _db.get<resource_usage_object,by_owner>( account );
@@ -307,7 +346,10 @@ void resource_limits_manager::get_account_limits( const account_name& account, i
     if(usage.ram_usage>ram_bytes){
 
        ram_bytes = usage.ram_usage;
+       return 0;
     }
+
+   return _ram - ram_bytes;
 
    //@}
 }

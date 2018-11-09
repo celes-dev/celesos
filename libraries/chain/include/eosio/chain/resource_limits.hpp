@@ -1,6 +1,7 @@
 #pragma once
 #include <eosio/chain/exceptions.hpp>
 #include <eosio/chain/types.hpp>
+#include <eosio/chain/snapshot.hpp>
 #include <chainbase/chainbase.hpp>
 #include <set>
 #include <eosio/chain/controller.hpp>
@@ -45,6 +46,10 @@ namespace eosio { namespace chain { namespace resource_limits {
 
          void add_indices();
          void initialize_database();
+         void calculate_integrity_hash( fc::sha256::encoder& enc ) const;
+         void add_to_snapshot( const snapshot_writer_ptr& snapshot ) const;
+         void read_from_snapshot( const snapshot_reader_ptr& snapshot );
+
          void initialize_account( const account_name& account );
          void set_block_parameters( const elastic_limit_parameters& cpu_limit_parameters, const elastic_limit_parameters& net_limit_parameters );
 
@@ -59,7 +64,7 @@ namespace eosio { namespace chain { namespace resource_limits {
          bool set_account_limits( const account_name& account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight,int64_t block_num);
 
          void get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight) const;
-         void get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight,int64_t block_num) const;
+         int64_t get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight,uint32_t block_num) const;
 
          void process_account_limit_updates();
          void process_block_usage( uint32_t block_num );
@@ -78,6 +83,8 @@ namespace eosio { namespace chain { namespace resource_limits {
          account_resource_limit get_account_net_limit_ex( const account_name& name, bool elastic = true) const;
 
          int64_t get_account_ram_usage( const account_name& name ) const;
+
+         int64_t ram_attenuation(account_name name);
       private:
          chainbase::database& _db;
 
@@ -85,3 +92,5 @@ namespace eosio { namespace chain { namespace resource_limits {
 } } } /// eosio::chain
 
 FC_REFLECT( eosio::chain::resource_limits::account_resource_limit, (used)(available)(max) )
+FC_REFLECT( eosio::chain::resource_limits::ratio, (numerator)(denominator))
+FC_REFLECT( eosio::chain::resource_limits::elastic_limit_parameters, (target)(max)(periods)(max_multiplier)(contract_rate)(expand_rate))

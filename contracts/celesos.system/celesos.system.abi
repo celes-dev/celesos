@@ -603,7 +603,11 @@
                 {
                     "name": "active_touch_count",
                     "type": "uint16"
-                }
+                },
+                 {
+                     "name": "last_account",
+                     "type": "uint64"
+                 }
             ]
         },
         {

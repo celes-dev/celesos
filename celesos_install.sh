@@ -57,6 +57,13 @@ fi
       popd &> /dev/null
    }
 
+   create_cmake_symlink() {
+      mkdir -p /usr/local/lib/cmake/celesos
+      pushd /usr/local/lib/cmake/celesos &> /dev/null
+      ln -sf ../../../eosio/lib/cmake/celesos/$1 $1
+      popd &> /dev/null
+   }
+
    install_symlinks() {
       printf "\\n\\tInstalling CELESOS Binary Symlinks\\n\\n"
       create_symlink "clceles"
@@ -93,7 +100,8 @@ fi
    fi
    popd &> /dev/null 
 
-   install_symlinks   
+   install_symlinks
+   create_cmake_symlink "celesos-config.cmake"
 
    printf "\n\n${bldred}\t _______  _______  _______ _________ _______\n"
    printf '\t(  ____ \(  ___  )(  ____ \\\\__   __/(  ___  )\n'

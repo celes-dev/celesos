@@ -105,7 +105,7 @@ namespace celesossystem {
                                          (last_producer_schedule_block)
                                          (total_unpaid_fee)(total_activated_stake)(
                                          thresh_activated_stake_time)
-                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(is_network_active)(active_touch_count))
+                                         (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(is_network_active)(active_touch_count)(last_account))
     };
 
     struct producer_info {
