@@ -150,7 +150,8 @@ class privileged_api : public context_aware_api {
          EOS_ASSERT(ram_bytes >= -1, wasm_execution_error, "invalid value for ram resource limit expected [-1,INT64_MAX]");
          EOS_ASSERT(net_weight >= -1, wasm_execution_error, "invalid value for net resource weight expected [-1,INT64_MAX]");
          EOS_ASSERT(cpu_weight >= -1, wasm_execution_error, "invalid value for cpu resource weight expected [-1,INT64_MAX]");
-         if( context.control.get_mutable_resource_limits_manager().set_account_limits(account, ram_bytes, net_weight, cpu_weight) ) {
+         uint32_t  block_num = context.control.head_block_num();
+         if( context.control.get_mutable_resource_limits_manager().set_account_limits(account, ram_bytes, net_weight, cpu_weight,block_num) ) {
             context.trx_context.validate_ram_usage.insert( account );
          }
       }
@@ -158,6 +159,10 @@ class privileged_api : public context_aware_api {
       void get_resource_limits( account_name account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight ) {
          uint32_t  block_num = context.control.head_block_num();
          context.control.get_resource_limits_manager().get_account_limits( account, ram_bytes, net_weight, cpu_weight,block_num);
+      }
+
+      int64_t ram_attenuation(account_name name){
+         return context.control.ram_attenuation(name);
       }
 
       int64_t set_proposed_producers( array_ptr<char> packed_producer_schedule, size_t datalen) {
@@ -1745,6 +1750,7 @@ REGISTER_INTRINSICS(privileged_api,
    (set_blockchain_parameters_packed, void(int,int)                         )
    (is_privileged,                    int(int64_t)                          )
    (set_privileged,                   void(int64_t, int)                    )
+   (ram_attenuation,                   int64_t(int64_t)                    )
 );
 
 REGISTER_INJECTED_INTRINSICS(transaction_context,

@@ -64,7 +64,7 @@ namespace eosio { namespace chain { namespace resource_limits {
          bool set_account_limits( const account_name& account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight,int64_t block_num);
 
          void get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight) const;
-         void get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight,int64_t block_num) const;
+         int64_t get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight,uint32_t block_num) const;
 
          void process_account_limit_updates();
          void process_block_usage( uint32_t block_num );
@@ -83,6 +83,8 @@ namespace eosio { namespace chain { namespace resource_limits {
          account_resource_limit get_account_net_limit_ex( const account_name& name, bool elastic = true) const;
 
          int64_t get_account_ram_usage( const account_name& name ) const;
+
+         int64_t ram_attenuation(account_name name);
       private:
          chainbase::database& _db;
 

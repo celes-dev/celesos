@@ -99,6 +99,8 @@ namespace eosio { namespace chain {
 
          void abort_block();
 
+         int64_t ram_attenuation(account_name name);
+
          /**
           *  These transactions were previously pushed by have since been unapplied, recalling push_transaction
           *  with the transaction_metadata_ptr will remove them from the source of this data IFF it succeeds.

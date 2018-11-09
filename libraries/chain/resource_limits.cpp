@@ -289,11 +289,11 @@ bool resource_limits_manager::set_account_limits( const account_name& account, i
 }
 
 void resource_limits_manager::get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight ) const {
-   get_account_limits(account,ram_bytes,net_weight,cpu_weight,-1);
+   get_account_limits(account,ram_bytes,net_weight,cpu_weight,0);
 }
 
-void resource_limits_manager::get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight,int64_t block_num) const {
-   const auto* pending_buo = _db.find<resource_limits_object,by_owner>( boost::make_tuple(true, account) );
+int64_t resource_limits_manager::get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight,uint32_t block_num) const {
+    const auto* pending_buo = _db.find<resource_limits_object,by_owner>( boost::make_tuple(true, account) );
    int64_t last_position = 0;
    if (pending_buo) {
       ram_bytes  = pending_buo->ram_bytes;
@@ -309,8 +309,8 @@ void resource_limits_manager::get_account_limits( const account_name& account, i
       last_position = buo.last_position;
    }
 
-   if(block_num<0){
-      return;
+   if(block_num<=0){
+      return 0;
    }
 
    ///CELES CODE  cuichao{@
@@ -326,16 +326,19 @@ void resource_limits_manager::get_account_limits( const account_name& account, i
         account == N(celes.token)||
         account == N(celes.vpay))
    {
-      return;
+      return 0;
    }
+
+   int64_t _ram = ram_bytes;
 
    float n = (block_num-last_position)/(1440);
    float m = (block_num-last_position)%(1440);
 
    ram_bytes = ram_bytes*pow(1-0.5/100,n)*(1-(0.5/100)*(m/1440));
+
    //最小边界
    if(ram_bytes < 100){
-      return;
+      return 0;
    }
 
    const auto& usage  = _db.get<resource_usage_object,by_owner>( account );
@@ -343,7 +346,10 @@ void resource_limits_manager::get_account_limits( const account_name& account, i
     if(usage.ram_usage>ram_bytes){
 
        ram_bytes = usage.ram_usage;
+       return 0;
     }
+
+   return _ram - ram_bytes;
 
    //@}
 }
