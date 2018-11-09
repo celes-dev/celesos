@@ -231,59 +231,7 @@ namespace celesossystem {
             return;
         }
 
-//        uint64_t  owner = item->owner;
-
-//        //过滤系统账户
-//        if( owner == N(celes)||
-//            owner == N(celes.bpay)||
-//            owner == N(celes.msig)||
-//            owner == N(celes.names)||
-//            owner == N(celes.ram)||
-//            owner == N(celes.ramfee)||
-//            owner == N(celes.saving)||
-//            owner == N(celes.stake)||
-//            owner == N(celes.token)||
-//            owner == N(celes.vpay))
-//        {
-//            return;
-//        }
-//
-//        eosio::print("\t\tcuichao...ramattenuator2:\r\n");
-//
-//        //当前区块位置
-//        uint32_t current_p =  get_chain_head_num();
-//
-//
-//        //上次衰减过的位置
-//        uint32_t last_p = item->last_position;
-//
-//        uint32_t n = (current_p-last_p)/(1440);
-//        uint32_t m = (current_p-last_p)%(1440);
-//
-//        auto ram_bytes = item->ram_bytes;
-//
-//        //最小边界
-//        if(ram_bytes < 100){
-//            return;
-//        }
-//
-//
-//        ram_bytes = (int64_t)(ram_bytes*pow(1-0.5f/100,(float)n)*(1-(0.5f/100)*(m/1440.0f)));
-//
-//        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes2",ram_bytes,"\r\n");
-//
-//        //最小边界
-//        if(ram_bytes < 100){
-//            return;
-//        }
-//
-//        uint64_t bytes = item->ram_bytes - ram_bytes;
-        eosio::print("\t\tcuichao...ramattenuator2:account:", account, "\r\n");
-
         int64_t bytes = ram_attenuation(account);
-
-        eosio::print("\t\tcuichao...ramattenuator2:bytes:",bytes,"\r\n");
-
 
         if(bytes<=0){
             return;
@@ -291,8 +239,6 @@ namespace celesossystem {
 
         int64_t ram1 = item->ram_bytes;
         int64_t ram_bytes = ram1-bytes;
-
-        eosio::print("\t\tcuichao...ramattenuator2:ram_bytes:",ram_bytes,"\r\n");
 
         if(ram_bytes<=0){
             return;
@@ -322,9 +268,6 @@ namespace celesossystem {
                                                      {N(celes.ram), N(celes.ramfee), tokens_out, std::string("ram fee")});
 
         set_resource_limits(item->owner, item->ram_bytes, item->net_weight.amount, item->cpu_weight.amount);
-
-
-        eosio::print("\t\tcuichao...ramattenuator3,finish\r\n");
     }
 
 
@@ -357,8 +300,6 @@ namespace celesossystem {
         }
 
         _gstate.last_account = item->owner;
-
-        eosio::print("\t\tcuichao...ramattenuator,item->owner:", item->owner, "\r\n");
     }
 
 
