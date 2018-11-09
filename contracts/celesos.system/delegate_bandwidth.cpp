@@ -292,7 +292,7 @@ namespace celesossystem {
         }
 
         //TODO 考虑系统账户
-        ramattenuator(item->account);
+        ramattenuator(item->owner);
 
         item++;
         if (item == userres.end()) {
