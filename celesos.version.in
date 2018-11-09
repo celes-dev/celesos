@@ -8,3 +8,11 @@ namespace eosio {
       PATCH @VERSION_PATCH@
    };
 }
+
+namespace celesos {
+   enum version {
+      MAJOR @VERSION_MAJOR@,
+      MINOR @VERSION_MINOR@,
+      PATCH @VERSION_PATCH@
+   };
+}
