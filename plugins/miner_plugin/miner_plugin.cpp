@@ -46,8 +46,11 @@ public:
     fc::logger _logger;
     bool _auto_vote;
 
-    miner_plugin_impl() : _auto_vote{true} {
+    miner_plugin_impl() : _worker_count{1}, _auto_vote{true} {
     };
+
+    ~miner_plugin_impl() {
+    }
 
     static chain::action create_action(const chain_plugin &the_plugin,
                                        vector<chain::permission_level> &&auth,
@@ -96,6 +99,7 @@ celesos::miner_plugin::miner_plugin() {
 }
 
 celesos::miner_plugin::~miner_plugin() {
+    elog("release");
 }
 
 void celesos::miner_plugin::set_program_options(options_description &, options_description &cfg) {
@@ -148,7 +152,7 @@ void celesos::miner_plugin::plugin_initialize(const variables_map &options) {
 
         if (options.count("miner-producer-name")) {
             this->my->_producer_name = account_name{options["miner-producer-name"].as<string>()};
-        } else if(this->my->_auto_vote) {
+        } else if (this->my->_auto_vote) {
             elog("Option \"miner-producer-name\" must be provide");
         }
 
@@ -339,7 +343,7 @@ void celesos::miner_plugin::plugin_startup() {
 void celesos::miner_plugin::plugin_shutdown() {
     try {
         ilog("plugin_shutdown() begin");
-        this->my->_miner_opt->stop(false);
+        this->my->_miner_opt->stop(true);
         this->my->_miner_opt.reset();
         ilog("plugin_shutdown() end");
     } FC_LOG_AND_RETHROW()

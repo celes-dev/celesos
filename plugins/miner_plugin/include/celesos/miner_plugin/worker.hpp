@@ -29,7 +29,7 @@ namespace celesos {
             const hash_ptr_type retry_count_ptr;
             const hash_ptr_type target_ptr;
             const eosio::chain::block_num_type block_num;
-            const std::shared_ptr<boost::asio::io_service> io_service_ptr;
+            boost::asio::io_service &io_service_ref;
             const celesos::miner::mine_signal_ptr_type signal_ptr;
         };
 

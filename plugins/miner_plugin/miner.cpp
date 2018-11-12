@@ -24,7 +24,7 @@ celesos::miner::miner::miner(const fc::logger &logger,
         _logger{logger},
         _alive_worker_ptrs{0, vector<shared_ptr<worker>>::allocator_type()},
         _signal_ptr{make_shared<celesos::miner::mine_signal_type>()},
-        _main_io_service_ptr{&main_io_service},
+        _main_io_service_ref{main_io_service},
         _io_thread{&celesos::miner::miner::run, this},
         _state{state::initialized},
         _worker_count{worker_count},
@@ -32,11 +32,20 @@ celesos::miner::miner::miner(const fc::logger &logger,
 }
 
 celesos::miner::miner::~miner() {
-    this->_io_work_ptr.reset();
-    this->_signal_ptr->disconnect_all_slots();
+    if(this->_io_work_ptr) {
+        this->_io_work_ptr.reset();
+    }
+    if(this->_signal_ptr) {
+        this->_signal_ptr->disconnect_all_slots();
+        this->_signal_ptr.reset();
+    }
     this->stop();
+    if (this->_sub_io_service_ptr) {
+        this->_sub_io_service_ptr->stop();
+        this->_sub_io_service_ptr.reset();
+    }
     if (this->_io_thread.joinable()) {
-        this->_io_thread.detach();
+        this->_io_thread.join();
     }
 }
 
@@ -232,7 +241,7 @@ void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::fore
                     .retry_count_ptr = retry_count_ptr,
                     .target_ptr = target_ptr,
                     .block_num = forest_info.block_number,
-                    .io_service_ptr = this->_main_io_service_ptr,
+                    .io_service_ref = this->_main_io_service_ref,
                     .signal_ptr = this->_signal_ptr,
             };
             this->_alive_worker_ptrs[i] = make_shared<worker>(std::move(ctx));

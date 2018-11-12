@@ -29,7 +29,7 @@ namespace celesos {
             std::vector<boost::signals2::connection> _connections;
             celesos::miner::mine_signal_ptr_type _signal_ptr;
             std::shared_ptr<boost::asio::io_service::work> _io_work_ptr;
-            std::shared_ptr<boost::asio::io_service> _main_io_service_ptr;
+            boost::asio::io_service &_main_io_service_ref;
             std::shared_ptr<boost::asio::io_service> _sub_io_service_ptr;
             std::thread _io_thread;
             state _state;

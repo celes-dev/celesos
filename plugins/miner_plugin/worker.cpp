@@ -53,7 +53,7 @@ void *celesos::miner::worker::thread_run(void *arg) {
                             ("target", target.str(0, std::ios_base::hex).c_str())
                             ("dataset_count", dataset_count)
             );
-            worker_ptr->_ctx.io_service_ptr->post(
+            worker_ptr->_ctx.io_service_ref.post(
                     [signal = worker_ptr->_ctx.signal_ptr, block_num = worker_ptr->_ctx.block_num, wood_opt = wood_opt]() {
                         auto is_success = !!wood_opt;
                         (*signal)(std::move(is_success), block_num, wood_opt);
