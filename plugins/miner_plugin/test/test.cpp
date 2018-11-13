@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_SUITE(worker_suite)
                 .retry_count_ptr = retry_count_ptr,
                 .target_ptr = target_ptr,
                 .block_num = 1024,
-                .io_service_ptr = io_service_ptr,
+                .io_service_ref = *io_service_ptr,
                 .signal_ptr = signal_ptr,
         };
         miner::worker worker{std::move(ctx)};
