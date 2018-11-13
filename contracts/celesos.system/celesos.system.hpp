@@ -25,9 +25,9 @@
 
 #define TARGET_WOOD_NUMBER 120
 // number of bp,BP个数
-#define BP_COUNT 9
+#define BP_COUNT 2
 // when the bp count is ok cycle for this number,the active the network(主网启动条件，BP个数达标轮数）
-#define ACTIVE_NETWORK_CYCLE 10
+#define ACTIVE_NETWORK_CYCLE 3
 // origin reward number (初始出块奖励，折半衰减）
 #define ORIGIN_REWARD_NUMBER 10000
 // reward get min（if smaller than this number，you can't get the reward）最小奖励领取数，低于此数字将领取失败
