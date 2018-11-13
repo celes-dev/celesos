@@ -99,7 +99,6 @@ celesos::miner_plugin::miner_plugin() {
 }
 
 celesos::miner_plugin::~miner_plugin() {
-    elog("release");
 }
 
 void celesos::miner_plugin::set_program_options(options_description &, options_description &cfg) {
