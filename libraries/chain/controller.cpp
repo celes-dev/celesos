@@ -155,7 +155,7 @@ struct controller_impl {
       }
 
       if ( read_mode == db_read_mode::SPECULATIVE ) {
-         EOS_ASSERT( head->block && head->block->transactions.size() == head->trxs.size(), block_validate_exception, "attempting to pop a block that was sparsely loaded from a snapshot");
+         EOS_ASSERT( head->block, block_validate_exception, "attempting to pop a block that was sparsely loaded from a snapshot");
          for( const auto& t : head->trxs )
             unapplied_transactions[t->signed_id] = t;
       }
@@ -245,7 +245,7 @@ struct controller_impl {
       bool append_to_blog = false;
       if (!log_head) {
          if (s->block) {
-            EOS_ASSERT(s->block_num == blog.first_block_num(), block_log_exception, "block log has no blocks and is appending the wrong first block.  Expected ${expecgted}, but received: ${actual}",
+            EOS_ASSERT(s->block_num == blog.first_block_num(), block_log_exception, "block log has no blocks and is appending the wrong first block.  Expected ${expected}, but received: ${actual}",
                       ("expected", blog.first_block_num())("actual", s->block_num));
             append_to_blog = true;
          } else {
@@ -389,7 +389,10 @@ struct controller_impl {
 
       celesos::forest::forest_bank::getInstance(self);
       
-      ilog( "database initialized with hash: ${hash}", ("hash", calculate_integrity_hash()));
+      if( snapshot ) {
+         const auto hash = calculate_integrity_hash();
+         ilog( "database initialized with hash: ${hash}", ("hash", hash) );
+      }
 
    }
 
@@ -419,23 +422,6 @@ struct controller_impl {
                    "Chainbase revision does not match head block num",
                    ("rev", db.revision())("head_block", self.head_block_num()));
                    */
-      });
-   }
-
-   void calculate_contract_tables_integrity_hash( sha256::encoder& enc ) const {
-      index_utils<table_id_multi_index>::walk(db, [this, &enc]( const table_id_object& table_row ){
-         fc::raw::pack(enc, table_row);
-
-         contract_database_index_set::walk_indices([this, &enc, &table_row]( auto utils ) {
-            using value_t = typename decltype(utils)::index_t::value_type;
-            using by_table_id = object_to_table_id_tag_t<value_t>;
-
-            auto tid_key = boost::make_tuple(table_row.id);
-            auto next_tid_key = boost::make_tuple(table_id_object::id_type(table_row.id._id + 1));
-            decltype(utils)::template walk_range<by_table_id>(db, tid_key, next_tid_key, [&enc](const auto& row){
-               fc::raw::pack(enc, row);
-            });
-         });
       });
    }
 
@@ -492,28 +478,6 @@ struct controller_impl {
             });
          }
       });
-   }
-
-   sha256 calculate_integrity_hash() const {
-      sha256::encoder enc;
-      controller_index_set::walk_indices([this, &enc]( auto utils ){
-         using value_t = typename decltype(utils)::index_t::value_type;
-
-         // skip the table_id_object as its inlined with contract tables section
-         if (std::is_same<value_t, table_id_object>::value) {
-            return;
-         }
-
-         decltype(utils)::walk(db, [&enc]( const auto &row ) {
-            fc::raw::pack(enc, row);
-         });
-      });
-
-      calculate_contract_tables_integrity_hash(enc);
-
-      authorization.calculate_integrity_hash(enc);
-      resource_limits.calculate_integrity_hash(enc);
-      return enc.result();
    }
 
    void add_to_snapshot( const snapshot_writer_ptr& snapshot ) const {
@@ -595,6 +559,16 @@ struct controller_impl {
 
       db.set_revision( head->block_num );
    }
+
+   sha256 calculate_integrity_hash() const {
+      sha256::encoder enc;
+      auto hash_writer = std::make_shared<integrity_hash_snapshot_writer>(enc);
+      add_to_snapshot(hash_writer);
+      hash_writer->finalize();
+
+      return enc.result();
+   }
+
 
    /**
     *  Sets fork database head to the genesis state.
