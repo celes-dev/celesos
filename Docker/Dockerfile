@@ -1,4 +1,4 @@
-FROM 172.12.0.11:5000/celesos/builder:v1.4.2 as builder
+FROM 172.12.0.12:5000/celesos/builder:v1.4.2 as builder
 ARG branch=master
 ARG symbol=CCHN
 ARG http_proxy=""
