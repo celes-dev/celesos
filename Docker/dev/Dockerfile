@@ -1,4 +1,4 @@
-FROM celesos/builder
+FROM 172.12.0.12:5000/celesos/builder:v1.4.2
 ARG branch=master
 ARG symbol=SYS
 ARG http_proxy=""
