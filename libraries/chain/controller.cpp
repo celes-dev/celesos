@@ -2148,9 +2148,14 @@ int64_t controller::ram_attenuation(account_name name){
    int64_t cpu = 0;
    int64_t net = 0;
    uint32_t block_num = head_block_num();
-    account_name& name1 =name;
+   account_name& name1 =name;
    int64_t ram_attenuation = my->resource_limits.get_account_limits(name1,ram,cpu,net,block_num);
    return ram_attenuation;
+}
+
+uint64_t controller::get_need_attenuation_account(){
+   uint64_t result = my->resource_limits.get_need_attenuation_account();
+   return result;
 }
 
 } } /// eosio::chain

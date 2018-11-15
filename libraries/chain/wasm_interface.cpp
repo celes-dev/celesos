@@ -165,6 +165,10 @@ class privileged_api : public context_aware_api {
          return context.control.ram_attenuation(name);
       }
 
+      uint64_t get_need_attenuation_account(){
+          return context.control.get_need_attenuation_account();
+      }
+
       int64_t set_proposed_producers( array_ptr<char> packed_producer_schedule, size_t datalen) {
          datastream<const char*> ds( packed_producer_schedule, datalen );
          vector<producer_key> producers;
@@ -1750,7 +1754,8 @@ REGISTER_INTRINSICS(privileged_api,
    (set_blockchain_parameters_packed, void(int,int)                         )
    (is_privileged,                    int(int64_t)                          )
    (set_privileged,                   void(int64_t, int)                    )
-   (ram_attenuation,                   int64_t(int64_t)                    )
+   (ram_attenuation,                  int64_t(int64_t)                      )
+   (get_need_attenuation_account,     int64_t()                             )
 );
 
 REGISTER_INJECTED_INTRINSICS(transaction_context,
@@ -1803,6 +1808,7 @@ REGISTER_INTRINSICS( database_api,
    DB_SECONDARY_INDEX_METHODS_ARRAY(idx256)
    DB_SECONDARY_INDEX_METHODS_SIMPLE(idx_double)
    DB_SECONDARY_INDEX_METHODS_SIMPLE(idx_long_double)
+
 );
 
 REGISTER_INTRINSICS(crypto_api,

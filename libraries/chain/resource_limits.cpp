@@ -197,6 +197,14 @@ void resource_limits_manager::add_pending_ram_usage( const account_name account,
    EOS_ASSERT(ram_delta >= 0 || usage.ram_usage >= (uint64_t)(-ram_delta), transaction_exception,
               "Ram usage delta would underflow UINT64_MAX");
 
+    ///CELES CODE  cuichao{@
+   if(ram_delta<0){
+     _db.create<resource_verify_ram_object>([&](resource_verify_ram_object& object){
+         object.owner = account;
+     });
+   }
+   //}@
+
    _db.modify( usage, [&]( auto& u ) {
      u.ram_usage += ram_delta;
    });
@@ -223,7 +231,7 @@ bool resource_limits_manager::set_account_limits( const account_name& account, i
 }
 
 
-bool resource_limits_manager::set_account_limits( const account_name& account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight,int64_t block_num) {
+bool resource_limits_manager::set_account_limits( const account_name& account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight,uint32_t block_num) {
    //const auto& usage = _db.get<resource_usage_object,by_owner>( account );
    /*
     * Since we need to delay these until the next resource limiting boundary, these are created in a "pending"
@@ -284,9 +292,56 @@ void resource_limits_manager::get_account_limits( const account_name& account, i
    get_account_limits(account,ram_bytes,net_weight,cpu_weight,0);
 }
 
+///CELES CODE  cuichao{@
+void resource_limits_manager::init_ram_table() const{
+   _db.add_index<resource_verify_ram_index>();
+};
+/*
+ * 返回需要优先做RAM衰减的账号
+ */
+uint64_t resource_limits_manager::get_need_attenuation_account () const{
+
+
+   const auto &idx=_db.get_index<resource_verify_ram_index,by_owner>();
+    auto itr = idx.begin();
+
+   while(itr!=idx.cend()){
+      account_name  name = itr->owner;
+
+      if(!is_system_account(name)){
+         auto &table= _db.get_mutable_index<resource_verify_ram_index>();
+         auto obj =idx.find(name);
+         table.remove(*obj);
+         return name.value;
+      }
+      itr++;
+   }
+   return 0;
+
+}
+
+bool resource_limits_manager::is_system_account( account_name account)const{
+   if( account == N(celes)||
+       account == N(celes.bpay)||
+       account == N(celes.msig)||
+       account == N(celes.names)||
+       account == N(celes.ram)||
+       account == N(celes.ramfee)||
+       account == N(celes.saving)||
+       account == N(celes.stake)||
+       account == N(celes.token)||
+       account == N(celes.vpay))
+   {
+      return true;
+   }
+   return false;
+}
+
+//@}
+
 int64_t resource_limits_manager::get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight,uint32_t block_num) const {
     const auto* pending_buo = _db.find<resource_limits_object,by_owner>( boost::make_tuple(true, account) );
-   int64_t last_position = 0;
+   uint32_t last_position = 0;
    if (pending_buo) {
       ram_bytes  = pending_buo->ram_bytes;
       net_weight = pending_buo->net_weight;
@@ -304,29 +359,28 @@ int64_t resource_limits_manager::get_account_limits( const account_name& account
    if(block_num<=0){
       return 0;
    }
+   account_name name =account;
+
 
    ///CELES CODE  cuichao{@
    //过滤系统账户
-   if( account == N(celes)||
-        account == N(celes.bpay)||
-        account == N(celes.msig)||
-        account == N(celes.names)||
-        account == N(celes.ram)||
-        account == N(celes.ramfee)||
-        account == N(celes.saving)||
-        account == N(celes.stake)||
-        account == N(celes.token)||
-        account == N(celes.vpay))
-   {
+
+   if(is_system_account(account)){
       return 0;
    }
 
    int64_t _ram = ram_bytes;
 
-   float n = (block_num-last_position)/(1440);
-   float m = (block_num-last_position)%(1440);
+   //9.98年衰减到原来的1%
+   float total=0.5*2*60*60*24*365*9.98;
 
-   ram_bytes = ram_bytes*pow(1-0.5/100,n)*(1-(0.5/100)*(m/1440));
+   float n = block_num-last_position;
+
+   //每个块的衰减率
+   float m =1 - pow(0.01,1.0/total);
+
+   //衰减后
+   ram_bytes = ram_bytes*pow(1-m,n);
 
    //最小边界
    if(ram_bytes < 100){
@@ -380,7 +434,7 @@ void resource_limits_manager::process_account_limit_updates() {
             update_state_and_value(rso.total_ram_bytes,  rlo.ram_bytes,  itr->ram_bytes, "ram_bytes");
             update_state_and_value(rso.total_cpu_weight, rlo.cpu_weight, itr->cpu_weight, "cpu_weight");
             update_state_and_value(rso.total_net_weight, rlo.net_weight, itr->net_weight, "net_weight");
-            update_state_and_value(last_position, rlo.last_position, itr->last_position, "ram_last_position");
+            update_state_and_value(last_position, rlo.last_position,itr->last_position, "ram_last_position");
          });
 
          multi_index.remove(*itr);

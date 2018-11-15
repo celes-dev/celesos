@@ -102,6 +102,8 @@ extern "C" {
 
    int64_t ram_attenuation(account_name name);
 
+   uint64_t get_need_attenuation_account();
+
    ///@ } privilegedcapi
 #ifdef __cplusplus
 }

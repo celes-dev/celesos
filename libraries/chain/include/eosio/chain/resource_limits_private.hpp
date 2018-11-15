@@ -171,6 +171,7 @@ namespace eosio { namespace chain { namespace resource_limits {
       uint64_t                 ram_usage = 0;
    };
 
+
    using resource_usage_index = chainbase::shared_multi_index_container<
       resource_usage_object,
       indexed_by<
@@ -178,6 +179,21 @@ namespace eosio { namespace chain { namespace resource_limits {
          ordered_unique<tag<by_owner>, member<resource_usage_object, account_name, &resource_usage_object::owner> >
       >
    >;
+
+    struct resource_verify_ram_object : public chainbase::object<resource_verify_ram_object_type, resource_verify_ram_object> {
+        OBJECT_CTOR(resource_verify_ram_object)
+        id_type id;
+        account_name owner;
+    };
+
+    using resource_verify_ram_index = chainbase::shared_multi_index_container<
+            resource_verify_ram_object,
+            indexed_by<
+                    ordered_unique<tag<by_id>, member<resource_verify_ram_object, resource_verify_ram_object::id_type, &resource_verify_ram_object::id>>,
+                    ordered_unique<tag<by_owner>, member<resource_verify_ram_object, account_name, &resource_verify_ram_object::owner> >
+            >
+    >;
+
 
    class resource_limits_config_object : public chainbase::object<resource_limits_config_object_type, resource_limits_config_object> {
       OBJECT_CTOR(resource_limits_config_object);
@@ -266,9 +282,13 @@ CHAINBASE_SET_INDEX_TYPE(eosio::chain::resource_limits::resource_usage_object,  
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::resource_limits::resource_limits_config_object, eosio::chain::resource_limits::resource_limits_config_index)
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::resource_limits::resource_limits_state_object,  eosio::chain::resource_limits::resource_limits_state_index)
 
+CHAINBASE_SET_INDEX_TYPE(eosio::chain::resource_limits::resource_verify_ram_object,         eosio::chain::resource_limits::resource_verify_ram_index)
+
 FC_REFLECT(eosio::chain::resource_limits::usage_accumulator, (last_ordinal)(value_ex)(consumed))
 
 FC_REFLECT(eosio::chain::resource_limits::resource_limits_object, (owner)(net_weight)(cpu_weight)(ram_bytes))
 FC_REFLECT(eosio::chain::resource_limits::resource_usage_object,  (owner)(net_usage)(cpu_usage)(ram_usage))
 FC_REFLECT(eosio::chain::resource_limits::resource_limits_config_object, (cpu_limit_parameters)(net_limit_parameters)(account_cpu_usage_average_window)(account_net_usage_average_window))
 FC_REFLECT(eosio::chain::resource_limits::resource_limits_state_object, (average_block_net_usage)(average_block_cpu_usage)(pending_net_usage)(pending_cpu_usage)(total_net_weight)(total_cpu_weight)(total_ram_bytes)(virtual_net_limit)(virtual_cpu_limit))
+
+FC_REFLECT(eosio::chain::resource_limits::resource_verify_ram_object,  (owner))

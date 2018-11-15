@@ -41,7 +41,7 @@ namespace eosio { namespace chain { namespace resource_limits {
          explicit resource_limits_manager(chainbase::database& db)
          :_db(db)
          {
-
+             init_ram_table();
          }
 
          void add_indices();
@@ -60,7 +60,7 @@ namespace eosio { namespace chain { namespace resource_limits {
 
          /// set_account_limits returns true if new ram_bytes limit is more restrictive than the previously set one
          bool set_account_limits( const account_name& account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight);
-         bool set_account_limits( const account_name& account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight,int64_t block_num);
+         bool set_account_limits( const account_name& account, int64_t ram_bytes, int64_t net_weight, int64_t cpu_weight,uint32_t block_num);
 
          void get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight) const;
          int64_t get_account_limits( const account_name& account, int64_t& ram_bytes, int64_t& net_weight, int64_t& cpu_weight,uint32_t block_num) const;
@@ -84,6 +84,11 @@ namespace eosio { namespace chain { namespace resource_limits {
          int64_t get_account_ram_usage( const account_name& name ) const;
 
          int64_t ram_attenuation(account_name name);
+
+         uint64_t get_need_attenuation_account()const;
+
+         bool is_system_account(account_name account) const;
+         void init_ram_table() const;
       private:
          chainbase::database& _db;
 

@@ -279,6 +279,13 @@ namespace celesossystem {
     void system_contract::ramattenuator() {
         uint64_t last = _gstate.last_account;
 
+        uint64_t temp = get_need_attenuation_account();
+
+
+        if(temp > 0){
+            last = temp;
+        }
+        eosio::print("ramattenuator account=",last);
         user_resources_table userres(_self, _self);
         auto item = userres.lower_bound(last);
 

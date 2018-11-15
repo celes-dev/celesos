@@ -100,6 +100,7 @@ namespace eosio { namespace chain {
          void abort_block();
 
          int64_t ram_attenuation(account_name name);
+         uint64_t get_need_attenuation_account();
 
          /**
           *  These transactions were previously pushed by have since been unapplied, recalling push_transaction
