@@ -635,7 +635,7 @@ authority parse_json_authority(const std::string& authorityJsonOrFile) {
 }
 
 authority parse_json_authority_or_key(const std::string& authorityJsonOrFile) {
-   if (boost::istarts_with(authorityJsonOrFile, "EOS") || boost::istarts_with(authorityJsonOrFile, "PUB_R1")) {
+   if (boost::istarts_with(authorityJsonOrFile, "CELES") || boost::istarts_with(authorityJsonOrFile, "PUB_R1")) {
       try {
          return authority(public_key_type(authorityJsonOrFile));
       } EOS_RETHROW_EXCEPTIONS(public_key_type_exception, "Invalid public key: ${public_key}", ("public_key", authorityJsonOrFile))
@@ -832,13 +832,13 @@ void ensure_kcelesd_running(CLI::App* app) {
         pargs.push_back("--unix-socket-path");
         pargs.push_back(string(key_store_executable_name) + ".sock");
 
-        ::boost::process::child keos(binPath, pargs,
+        ::boost::process::child kceles(binPath, pargs,
                                      bp::std_in.close(),
                                      bp::std_out > bp::null,
                                      bp::std_err > bp::null);
-        if (keos.running()) {
+        if (kceles.running()) {
             std::cerr << binPath << " launched" << std::endl;
-            keos.detach();
+           kceles.detach();
             try_local_port(2000);
         } else {
             std::cerr << "No wallet service listening on " << wallet_url << ". Failed to launch " << binPath << std::endl;
@@ -893,7 +893,7 @@ struct create_account_subcommand {
    string stake_cpu;
    uint32_t buy_ram_bytes_in_kbytes = 0;
    uint32_t buy_ram_bytes = 0;
-   string buy_ram_eos;
+   string buy_ram_cchn;
    bool transfer;
    bool simple;
 
@@ -917,8 +917,8 @@ struct create_account_subcommand {
                                    (localized("The amount of RAM bytes to purchase for the new account in kibibytes (KiB)")));
          createAccount->add_option("--buy-ram-bytes", buy_ram_bytes,
                                    (localized("The amount of RAM bytes to purchase for the new account in bytes")));
-         createAccount->add_option("--buy-ram", buy_ram_eos,
-                                   (localized("The amount of RAM bytes to purchase for the new account in EOS")));
+         createAccount->add_option("--buy-ram", buy_ram_cchn,
+                                   (localized("The amount of RAM bytes to purchase for the new account in CCHN")));
          createAccount->add_flag("--transfer", transfer,
                                  (localized("Transfer voting power and right to unstake CCHN to receiver")));
       }
@@ -937,9 +937,9 @@ struct create_account_subcommand {
             } EOS_RETHROW_EXCEPTIONS(public_key_type_exception, "Invalid active public key: ${public_key}", ("public_key", active_key_str));
             auto create = create_newaccount(creator, account_name, owner_key, active_key);
             if (!simple) {
-               EOSC_ASSERT( buy_ram_eos.size() || buy_ram_bytes_in_kbytes || buy_ram_bytes, "ERROR: One of --buy-ram, --buy-ram-kbytes or --buy-ram-bytes should have non-zero value" );
+               EOSC_ASSERT( buy_ram_cchn.size() || buy_ram_bytes_in_kbytes || buy_ram_bytes, "ERROR: One of --buy-ram, --buy-ram-kbytes or --buy-ram-bytes should have non-zero value" );
                EOSC_ASSERT( !buy_ram_bytes_in_kbytes || !buy_ram_bytes, "ERROR: --buy-ram-kbytes and --buy-ram-bytes cannot be set at the same time" );
-               action buyram = !buy_ram_eos.empty() ? create_buyram(creator, account_name, to_asset(buy_ram_eos))
+               action buyram = !buy_ram_cchn.empty() ? create_buyram(creator, account_name, to_asset(buy_ram_cchn))
                   : create_buyrambytes(creator, account_name, (buy_ram_bytes_in_kbytes) ? (buy_ram_bytes_in_kbytes * 1024) : buy_ram_bytes);
                auto net = to_asset(stake_net);
                auto cpu = to_asset(stake_cpu);
@@ -1342,7 +1342,7 @@ struct bidname_info_subcommand {
       list_producers->add_option("newname", newname_str, localized("The bidding name"))->required();
       list_producers->set_callback([this] {
          auto rawResult = call(get_table_func, fc::mutable_variant_object("json", true)
-                               ("code", "eosio")("scope", "eosio")("table", "namebids")
+                               ("code", "celes")("scope", "celes")("table", "namebids")
                                ("lower_bound", eosio::chain::string_to_name(newname_str.c_str()))("limit", 1));
          if ( print_json ) {
             std::cout << fc::json::to_pretty_string(rawResult) << std::endl;
@@ -1803,7 +1803,7 @@ int main( int argc, char** argv ) {
    context = eosio::client::http::create_http_context();
    wallet_url = default_wallet_url;
 
-   CLI::App app{"Command Line Interface to EOSIO Client"};
+   CLI::App app{"Command Line Interface to CELESOS Client"};
    app.require_subcommand();
    app.add_option( "-H,--host", obsoleted_option_host_port, localized("the host where nodceles is running") )->group("hidden");
    app.add_option( "-p,--port", obsoleted_option_host_port, localized("the port where nodceles is running") )->group("hidden");
@@ -2532,8 +2532,8 @@ int main( int argc, char** argv ) {
    string memo;
    bool pay_ram = false;
    auto transfer = app.add_subcommand("transfer", localized("Transfer CCHN from account to account"), false);
-   transfer->add_option("sender", sender, localized("The account sending EOS"))->required();
-   transfer->add_option("recipient", recipient, localized("The account receiving EOS"))->required();
+   transfer->add_option("sender", sender, localized("The account sending CCHN"))->required();
+   transfer->add_option("recipient", recipient, localized("The account receiving CCHN"))->required();
    transfer->add_option("amount", amount, localized("The amount of CCHN to send"))->required();
    transfer->add_option("memo", memo, localized("The memo for the transfer"));
    transfer->add_option("--contract,-c", con, localized("The contract which controls the token"));
@@ -2738,8 +2738,8 @@ int main( int argc, char** argv ) {
       std::cout << fc::json::to_pretty_string(v) << std::endl;
    });
 
-   auto stopKeosd = wallet->add_subcommand("stop", localized("Stop kcelesd (doesn't work with nodceles)."), false);
-   stopKeosd->set_callback([] {
+   auto stopKcelsd = wallet->add_subcommand("stop", localized("Stop kcelesd (doesn't work with nodceles)."), false);
+    stopKcelsd->set_callback([] {
       const auto& v = call(wallet_url, kcelesd_stop);
       if ( !v.is_object() || v.get_object().size() != 0 ) { //on success kcelesd responds with empty object
          std::cerr << fc::json::to_pretty_string(v) << std::endl;
