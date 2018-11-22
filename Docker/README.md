@@ -15,15 +15,25 @@ Simple and fast setup of CELES.OS on Docker is also available.
 ## Build celes image
 
 ```bash
+<<<<<<< HEAD
 git clone https://github.com/CELESOS/celes.git --recursive  --depth 1
 cd celes/Docker
 docker build . -t celesos/celes
+=======
+git clone https://github.com/EOS-Mainnet/eos.git --recursive  --depth 1
+cd eos/Docker
+docker build . -t eosio/eos
+>>>>>>> eos/tags/v1.4.3
 ```
 
-The above will build off the most recent commit to the master branch by default. If you would like to target a specific branch/tag, you may use a build argument. For example, if you wished to generate a docker image based off of the v1.4.2 tag, you could do the following:
+The above will build off the most recent commit to the master branch by default. If you would like to target a specific branch/tag, you may use a build argument. For example, if you wished to generate a docker image based off of the v1.4.3 tag, you could do the following:
 
 ```bash
+<<<<<<< HEAD
 docker build -t celesos/celes:v1.4.2 --build-arg branch=v1.4.2 .
+=======
+docker build -t eosio/eos:v1.4.3 --build-arg branch=v1.4.3 .
+>>>>>>> eos/tags/v1.4.3
 ```
 
 By default, the symbol in celesos.system is set to SYS. You can override this using the symbol argument while building the docker image.
