@@ -48,6 +48,12 @@ namespace eosio { namespace chain {
     auto prokey                                            = get_scheduled_producer(when);
     result.block_signing_key                               = prokey.block_signing_key;
     result.header.producer                                 = prokey.producer_name;
+
+    /// CELES code：hubery.zhang {@
+   //  result.header.next_random_hash                         = fc::sha256::hash(null);
+    result.header.my_random                                = 0;
+    result.header.block_random                             = 0;
+   ///@}
                                                            
     result.pending_schedule_lib_num                        = pending_schedule_lib_num;
     result.pending_schedule_hash                           = pending_schedule_hash;
@@ -175,7 +181,17 @@ namespace eosio { namespace chain {
     result.header.action_mroot       = h.action_mroot;
     result.header.transaction_mroot  = h.transaction_mroot;
     result.header.producer_signature = h.producer_signature;
+
+   /// CELES code：hubery.zhang {@
+    result.header.next_random_hash   = h.next_random_hash;
+    result.header.my_random          = h.my_random;
+    result.header.block_random       = h.block_random;
+   /// @}
+
+
     result.id                        = result.header.id();
+
+    
 
     // ASSUMPTION FROM controller_impl::apply_block = all untrusted blocks will have their signatures pre-validated here
     if( !trust ) {

@@ -140,7 +140,7 @@ struct controller_impl {
    map< account_name, map<handler_key, apply_handler> >   apply_handlers;
 
    /// CELES code：hubery.zhang {@
-      uint32_t current_random;
+      uint32_t current_random = 0;
    ///@}
 
    /**
@@ -298,6 +298,7 @@ struct controller_impl {
             fork_db.mark_in_current_chain(head, true);
             fork_db.set_validity(head, true);
          }
+
          emit(self.irreversible_block, s);
       }
    }
@@ -1183,7 +1184,6 @@ struct controller_impl {
          EOS_ASSERT( b->block_extensions.size() == 0, block_validate_exception, "no supported extensions" );
          auto producer_block_id = b->id();
          start_block( b->timestamp, b->confirmed, s , producer_block_id);
-
          transaction_trace_ptr trace;
 
          for( const auto& receipt : b->transactions ) {
@@ -1204,11 +1204,6 @@ struct controller_impl {
                edump((*trace));
                throw *trace->except;
             }
-            
-/// CELES code：hubery.zhang {@
-            bool check_result = check_random(b->my_random);
-            EOS_ASSERT(check_result, block_validate_exception, "check random is failed");
-///@}
 
             EOS_ASSERT( pending->_pending_block_state->block->transactions.size() > 0,
                         block_validate_exception, "expected a receipt",
@@ -1223,6 +1218,16 @@ struct controller_impl {
                         block_validate_exception, "receipt does not match",
                         ("producer_receipt", receipt)("validator_receipt", pending->_pending_block_state->block->transactions.back()) );
          }
+
+
+         /// CELES code：hubery.zhang {@
+            pending->_pending_block_state->header.my_random = b->my_random;
+            pending->_pending_block_state->header.next_random_hash = b->next_random_hash;
+            pending->_pending_block_state->header.block_random = b->block_random;
+
+            bool check_result = check_random(b->my_random);
+            EOS_ASSERT(check_result, block_validate_exception, "check random is failed");
+         ///@}
 
          finalize_block();
 
@@ -1253,7 +1258,6 @@ struct controller_impl {
 
    void push_block( const signed_block_ptr& b, controller::block_status s ) {
       EOS_ASSERT(!pending, block_validate_exception, "it is not valid to push a block when there is a pending block");
-
       auto reset_prod_light_validation = fc::make_scoped_exit([old_value=trusted_producer_light_validation, this]() {
          trusted_producer_light_validation = old_value;
       });
@@ -1394,16 +1398,19 @@ struct controller_impl {
       //calculate random
       std::random_device seed_gen;
       std::default_random_engine engine(seed_gen());
-      std::uniform_int_distribution<uint32_t> dis(0,RAND_MAX);
+      std::uniform_int_distribution<uint32_t> dis(1,RAND_MAX);
       uint32_t random_value = dis(engine);
       current_random = random_value;
       block_id_type result_hash = fc::sha256::hash(p->header.previous.str() + random_value);
       p->header.next_random_hash = move(result_hash);
+
+      ilog("set_next_random_hash:${result_hash},random_value: ${random_value}",("result_hash",result_hash)("random_value",random_value));
+      ilog("set_next_random_hash pending number:${number}",("number",p->header.block_num()));
    }
 //my random in this block
    void set_my_random(uint32_t random){
-      auto p = pending->_pending_block_state;
-      p->header.my_random = random;
+      pending->_pending_block_state->header.my_random = random;
+      ilog("set_my_random:${random}",("random",random));
    }
 //the result random for all
    void set_block_random(){
@@ -1416,9 +1423,10 @@ struct controller_impl {
             ilog( "block numer < length_num 252");
             return;
          }
-         auto blk_state = fork_db.get_block_in_current_chain_by_num( block_number );
-         if( blk_state->block ) {
-            all_random += blk_state->block->my_random;
+
+         auto blk_state = self.fetch_block_by_number(block_number);
+         if( blk_state != nullptr) {
+            all_random += blk_state->my_random;
             count++;
          }
       }
@@ -1426,8 +1434,9 @@ struct controller_impl {
       auto p = pending->_pending_block_state;
       if(count > 17){
          p->header.block_random = all_random;
+         ilog("set_block_random:${all_random}",("all_random",all_random));
       }else{
-         ilog( "random count is too little", ("n",count) );
+         ilog( "random count is too little:${n}", ("n",count) );
       }
    }
    
@@ -1435,26 +1444,34 @@ struct controller_impl {
       auto p = pending->_pending_block_state;
       uint32_t current_num = head->block_num;
       uint32_t length_num = 252;
+      if(current_num < length_num){
+         ilog( "block numer < length_num 252");
+         return true;
+      }
       uint64_t all_random = 0;
       bool  is_random_correct = false;
       for(uint32_t block_number = current_num; block_number > 0; block_number--){
          if(block_number <= 0){
-            ilog( "block numer < length_num 252");
+            ilog( "block_number <= 0");
             return true;
          }
-         auto blk_state = fork_db.get_block_in_current_chain_by_num( block_number );
-         if( blk_state->block && block_number > current_num -  length_num) {
-            all_random += blk_state->block->my_random;
+
+
+         // auto blk_state = self.fetch_block_by_number(block_number);
+         auto blk_state = self.fetch_block_by_number( block_number );
+         if( blk_state && block_number > current_num -  length_num) {
+            all_random += blk_state->my_random;
          }
 
-         if(blk_state->block->producer == p->header.producer && block_number < current_num){
-            block_id_type result_hash = fc::sha256::hash(blk_state->header.previous.str() + random);
-            if(blk_state->block->next_random_hash == result_hash){
+         if(blk_state->producer == p->header.producer && block_number < current_num){
+            block_id_type result_hash = fc::sha256::hash(blk_state->previous.str() + random);
+            if(blk_state->next_random_hash == result_hash){
                is_random_correct = true;
             }
          }
 
          if(is_random_correct && block_number <= current_num -  length_num){
+            ilog( "is_random_correct && block_number <= current_num -  length_num");
             break;
          }
       }
@@ -1462,6 +1479,10 @@ struct controller_impl {
       bool result_value = false;
       if(p->header.block_random == all_random){
          result_value = true;
+      }
+      if(p->active_schedule.producers.size() == 1){
+         // one BP not have random
+         return true;
       }
       return (result_value && is_random_correct);
    }
@@ -1502,16 +1523,19 @@ struct controller_impl {
       set_trx_merkle();
 
       auto p = pending->_pending_block_state;
-      p->id = p->header.id();
-
       /// CELES code：hubery.zhang {@
-      auto prev = fork_db.get_block( head->header.previous );
-      if(prev->header.producer != p->header.producer){
-         set_my_random(current_random);
-         set_next_random_hash();
-         set_block_random();
+      if(head){
+         auto prev = fork_db.get_block( head->header.previous );
+          if(prev != nullptr && prev->header.producer != p->header.producer)
+         {
+            set_my_random(current_random);
+            set_next_random_hash();
+            set_block_random();
+         }
       }
       ///@}
+
+      p->id = p->header.id();
 
       create_block_summary(p->id);
 

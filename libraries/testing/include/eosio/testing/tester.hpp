@@ -406,7 +406,10 @@ namespace eosio { namespace testing {
                hbh.timestamp == vn_hbh.timestamp &&
                hbh.transaction_mroot == vn_hbh.transaction_mroot &&
                hbh.action_mroot == vn_hbh.action_mroot &&
-               hbh.producer == vn_hbh.producer;
+               hbh.producer == vn_hbh.producer &&
+               hbh.next_random_hash == vn_hbh.next_random_hash &&
+               hbh.my_random == vn_hbh.my_random &&
+               hbh.block_random == vn_hbh.block_random;
 
         validating_node.reset();
         validating_node = std::make_unique<controller>(vcfg);

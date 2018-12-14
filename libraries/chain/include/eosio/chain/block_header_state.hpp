@@ -51,6 +51,10 @@ struct block_header_state {
     digest_type          sig_digest()const;
     void                 sign( const std::function<signature_type(const digest_type&)>& signer );
     public_key_type      signee()const;
+
+    void set_Id(){
+
+    }  
 };
 
 
