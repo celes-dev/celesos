@@ -253,7 +253,7 @@ class privileged_api : public context_aware_api {
          return context.forest_space_number();
       }
 
-      bool regdbp(const account_name n) const {
+      bool cregdbp(const account_name n) const {
          auto* dbp =  context.db.find<dbp_object, by_name>( n );
          if(dbp != nullptr)
          {
@@ -270,7 +270,7 @@ class privileged_api : public context_aware_api {
          }
       }
 
-      void unregdbp(const account_name n) const {
+      void cunregdbp(const account_name n) const {
          auto& dbp =  context.db.get<dbp_object, by_name>( n );
          const auto &gpo = context.control.get_dynamic_global_properties();
          context.db.modify(gpo, [&](auto &gp) {
