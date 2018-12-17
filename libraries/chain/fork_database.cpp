@@ -128,14 +128,11 @@ namespace eosio { namespace chain {
       EOS_ASSERT( inserted.second, fork_database_exception, "duplicate block added?" );
 
       my->head = *my->index.get<by_lib_block_num>().begin();
-
       auto lib    = my->head->dpos_irreversible_blocknum;
       auto oldest = *my->index.get<by_block_num>().begin();
-
       if( oldest->block_num < lib ) {
          prune( oldest );
       }
-
       return n;
    }
 
@@ -152,6 +149,7 @@ namespace eosio { namespace chain {
 
       auto result = std::make_shared<block_state>( **prior, move(b), trust );
       EOS_ASSERT( result, fork_database_exception , "fail to add new block state" );
+
       return add(result);
    }
 

@@ -222,6 +222,7 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
          new_block_header.previous = bsp->id;
          auto new_bs = bsp->generate_next(new_block_header.timestamp);
 
+
          // for newly installed producers we can set their watermarks to the block they became active
          if (new_bs.maybe_promote_pending() && bsp->active_schedule.version != new_bs.active_schedule.version) {
             flat_set<account_name> new_producers;
@@ -285,8 +286,7 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
       };
 
       void on_incoming_block(const signed_block_ptr& block) {
-         fc_dlog(_log, "received incoming block ${id}", ("id", block->id()));
-
+         fc_dlog(_log, "received incoming block");
          EOS_ASSERT( block->timestamp < (fc::time_point::now() + fc::seconds(7)), block_from_the_future, "received a block from the future, ignoring it" );
 
 
@@ -335,6 +335,7 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
                  ("p",block->producer)("id",fc::variant(block->id()).as_string().substr(8,16))
                  ("n",block_header::num_from_id(block->id()))("t",block->timestamp)
                  ("count",block->transactions.size())("lib",chain.last_irreversible_block_num())("confs", block->confirmed)("latency", (fc::time_point::now() - block->timestamp).count()/1000 ) );
+
          }
       }
 
@@ -1488,7 +1489,6 @@ void producer_plugin_impl::produce_block() {
         ("p",new_bs->header.producer)("id",fc::variant(new_bs->id).as_string().substr(0,16))
         ("n",new_bs->block_num)("t",new_bs->header.timestamp)
         ("count",new_bs->block->transactions.size())("lib",chain.last_irreversible_block_num())("confs", new_bs->header.confirmed));
-
 }
 
 } // namespace eosio

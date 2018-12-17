@@ -55,9 +55,15 @@ namespace celesossystem {
       uint32_t                                  schedule_version = 0;
       eosio::optional<eosio::producer_schedule> new_producers;
 
+/// CELES code：hubery.zhang {@
+      checksum256                      next_random_hash;
+      uint32_t                         my_random;
+      uint64_t                         block_random;
+///@}
+
       // explicit serialization macro is not necessary, used here only to improve compilation time
       EOSLIB_SERIALIZE(block_header, (timestamp)(producer)(confirmed)(previous)(transaction_mroot)(action_mroot)
-                                     (schedule_version)(new_producers))
+                                     (schedule_version)(new_producers)(next_random_hash)(my_random)(block_random))
    };
 
 

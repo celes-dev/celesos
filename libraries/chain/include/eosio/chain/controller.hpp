@@ -309,7 +309,6 @@ namespace eosio { namespace chain {
          chainbase::database& mutable_db()const;
 
          std::unique_ptr<controller_impl> my;
-
    };
 
 } }  /// eosio::chain
