@@ -1439,7 +1439,7 @@ struct controller_impl {
       }
 
       auto p = pending->_pending_block_state;
-      if(count > 17){
+      if(count > p->active_schedule.producers.size()* 2/3){
          p->header.block_random = all_random;
          ilog("set_block_random:${all_random}",("all_random",all_random));
       }else{
