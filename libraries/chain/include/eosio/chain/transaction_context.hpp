@@ -56,6 +56,8 @@ namespace eosio { namespace chain {
 
          std::tuple<int64_t, int64_t, bool, bool> max_bandwidth_billed_accounts_can_pay( bool force_elastic_limits = false )const;
 
+         int64_t total_ram_usage();
+
       private:
 
          friend struct controller_impl;
@@ -71,6 +73,8 @@ namespace eosio { namespace chain {
          void record_transaction( const transaction_id_type& id, fc::time_point_sec expire );
 
          void validate_cpu_usage_to_bill( int64_t u, bool check_minimum = true )const;
+
+         void record_dbp_resouresweight(const account_name account, int64_t cpu_usage, int64_t net_usage, int64_t ram_usage);
 
       /// Fields:
       public:
@@ -112,6 +116,8 @@ namespace eosio { namespace chain {
          uint64_t                      eager_net_limit = 0;
          uint64_t&                     net_usage; /// reference to trace->net_usage
 
+         int64_t                      ram_usage = 0;
+
          bool                          cpu_limit_due_to_greylist = false;
 
          fc::microseconds              initial_objective_duration_limit;
@@ -124,6 +130,8 @@ namespace eosio { namespace chain {
          fc::microseconds              billing_timer_duration_limit;
 
          deadline_timer                _deadline_timer;
+
+         account_name                  first_action_account;
    };
 
 } }

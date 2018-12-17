@@ -6,6 +6,7 @@
 #include <eosio/chain/generated_transaction_object.hpp>
 #include <eosio/chain/transaction_object.hpp>
 #include <eosio/chain/global_property_object.hpp>
+#include <eosio/chain/dbp_object.hpp>
 
 #pragma push_macro("N")
 #undef N
@@ -402,6 +403,8 @@ namespace bacc = boost::accumulators;
 
       rl.add_transaction_usage( bill_to_accounts, static_cast<uint64_t>(billed_cpu_time_us), net_usage,
                                 block_timestamp_type(control.pending_block_time()).slot ); // Should never fail
+
+      record_dbp_resouresweight(first_action_account, billed_cpu_time_us, net_usage, ram_usage);
    }
 
    void transaction_context::squash() {
@@ -529,6 +532,8 @@ namespace bacc = boost::accumulators;
       if( ram_delta > 0 ) {
          validate_ram_usage.insert( account );
       }
+
+      ram_usage = ram_usage + ram_delta;
    }
 
    uint32_t transaction_context::update_billed_cpu_time( fc::time_point now ) {
@@ -573,6 +578,11 @@ namespace bacc = boost::accumulators;
       acontext.receiver     = receiver;
 
       acontext.exec( trace );
+
+      if(bool(first_action_account))
+      {
+         first_action_account = a.account; 
+      }
    }
 
    void transaction_context::schedule_transaction() {
@@ -613,7 +623,22 @@ namespace bacc = boost::accumulators;
           EOS_ASSERT( false, tx_duplicate,
                      "duplicate transaction ${id}", ("id", id ) );
       }
-   } /// record_transaction
-
+   } 
+   
+   void transaction_context::record_dbp_resouresweight(const account_name account, int64_t cpu_usage, int64_t net_usage, int64_t ram_usage) {
+      auto *dbp = control.db().find<dbp_object, by_name>(account);
+      if (nullptr != dbp) {
+         int64_t weight = cpu_usage * 5 + net_usage + ram_usage;
+         const auto &gpo = control.get_dynamic_global_properties();
+         control.mutable_db().modify(gpo, [&](auto &gp) {
+            gp.total_dbp_resouresweight = gp.total_dbp_resouresweight + weight;
+         });
+         control.mutable_db().modify<dbp_object>(*dbp, [&](auto &da) {
+            da.unpaid_resouresweight = da.unpaid_resouresweight + weight;
+            da.total_resouresweight = da.total_resouresweight + weight;
+         });
+      }
+   }
+   /// record_transaction
 
 } } /// eosio::chain

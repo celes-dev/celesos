@@ -174,11 +174,13 @@ namespace eosio { namespace chain {
       action_history_object_type,               ///< Defined by history_plugin
       forest_info_cache_object_type,
       reversible_block_object_type,
+      dbp_object_type,
       OBJECT_TYPE_COUNT ///< Sentry value which contains the number of different object types
    };
 
    class account_object;
    class producer_object;
+   class dbp_object;
 
    using block_id_type       = fc::sha256;
    using checksum_type       = fc::sha256;

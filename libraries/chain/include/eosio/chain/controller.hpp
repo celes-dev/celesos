@@ -232,7 +232,7 @@ namespace eosio { namespace chain {
 
          bool is_known_unexpired_transaction( const transaction_id_type& id) const;
 
-         int64_t set_proposed_producers( vector<producer_key> producers );
+         int64_t set_proposed_producers( vector<producer_key> producers, vector<account_name> dbps);
 
          bool light_validation_allowed(bool replay_opts_disabled_by_policy) const;
          /// CELES code: fengdong.ning {@

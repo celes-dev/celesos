@@ -561,6 +561,12 @@ fc::variant regproducer_variant(const account_name& producer, const public_key_t
             ;
 }
 
+fc::variant regdbp_variant(const account_name& dbpname) {
+   return fc::mutable_variant_object()
+            ("dbpname", dbpname)
+            ;
+}
+
 chain::action create_open(const string& contract, const name& owner, symbol sym, const name& ram_payer) {
    auto open_ = fc::mutable_variant_object
       ("owner", owner)
@@ -884,6 +890,21 @@ struct register_producer_subcommand {
    }
 };
 
+struct register_dbp_subcommand {
+   string dbp_str;
+   uint16_t loc = 0;
+
+   register_dbp_subcommand(CLI::App* actionRoot) {
+      auto register_dbp = actionRoot->add_subcommand("regdbp", localized("Register a dbp"));
+      register_dbp->add_option("account", dbp_str, localized("The account to register as a producer"))->required();
+      add_standard_transaction_options(register_dbp);
+      register_dbp->set_callback([this] {
+         auto regdbp_var = regdbp_variant(dbp_str);
+         send_actions({create_action({permission_level{"celes.dbp",config::active_name}}, config::system_account_name, N(regdbp), regdbp_var)});
+      });
+   }
+};
+
 struct create_account_subcommand {
    string creator;
    string account_name;
@@ -969,6 +990,23 @@ struct unregister_producer_subcommand {
                   ("producer", producer_str);
 
          send_actions({create_action({permission_level{producer_str,config::active_name}}, config::system_account_name, N(unregprod), act_payload)});
+      });
+   }
+};
+
+struct unregister_dbp_subcommand {
+   string dbp_str;
+
+   unregister_dbp_subcommand(CLI::App* actionRoot) {
+      auto unregister_dbp = actionRoot->add_subcommand("unregdbp", localized("Unregister an existing dbp"));
+      unregister_dbp->add_option("account", dbp_str, localized("The account to unregister as a abp"))->required();
+      add_standard_transaction_options(unregister_dbp);
+
+      unregister_dbp->set_callback([this] {
+         fc::variant act_payload = fc::mutable_variant_object()
+                  ("dbpname", dbp_str);
+
+         send_actions({create_action({permission_level{dbp_str,config::active_name}}, config::system_account_name, N(unregdbp), act_payload)});
       });
    }
 };
@@ -3159,6 +3197,9 @@ int main( int argc, char** argv ) {
    auto createAccountSystem = create_account_subcommand( system, false /*simple*/ );
    auto registerProducer = register_producer_subcommand(system);
    auto unregisterProducer = unregister_producer_subcommand(system);
+
+   auto registerDbp = register_dbp_subcommand(system);
+   auto unregisterDbp = unregister_dbp_subcommand(system);
 
 //    auto voteProducer = system->add_subcommand("voteproducer", localized("Vote for a producer"));
 //    voteProducer->require_subcommand();

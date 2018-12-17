@@ -6,6 +6,7 @@
 #include <eosio/chain/exceptions.hpp>
 
 #include <eosio/chain/account_object.hpp>
+#include <eosio/chain/dbp_object.hpp>
 #include <eosio/chain/block_summary_object.hpp>
 #include <eosio/chain/global_property_object.hpp>
 #include <eosio/chain/contract_table_objects.hpp>
@@ -32,6 +33,7 @@ using resource_limits::resource_limits_manager;
 
 using controller_index_set = index_set<
    account_index,
+   dbp_index,
    account_sequence_index,
    global_property_multi_index,
    dynamic_global_property_multi_index,
@@ -663,6 +665,10 @@ struct controller_impl {
                                                                              majority_permission.id,
                                                                              active_producers_authority,
                                                                              conf.genesis.initial_timestamp );
+
+      auto active_dbps_authority = authority(1, {}, {});
+      active_dbps_authority.accounts.push_back({{config::system_account_name, config::active_name}, 1});
+      create_native_account( config::dbp_account_name, empty_authority, active_dbps_authority );                                                   
    }
 
 
@@ -1157,6 +1163,7 @@ struct controller_impl {
 
          clear_expired_input_transactions();
          update_producers_authority();
+         update_dbps_authority();
       }
 
       guard_pending.cancel();
@@ -1452,6 +1459,32 @@ struct controller_impl {
                          calculate_threshold( 1, 3 ) /* more than one-third */                       );
 
       //TODO: Add tests
+   }
+
+   void update_dbps_authority() {
+      const auto& dbps = pending->_pending_block_state->active_schedule.dbps;
+
+      auto update_permission = [&]( auto& permission, auto threshold ) {
+         auto auth = authority( threshold, {}, {});
+         for( auto& d : dbps ) {
+            auth.accounts.push_back({{d, config::active_name}, 1});
+         }
+
+         if( static_cast<authority>(permission.auth) != auth ) { // TODO: use a more efficient way to check that authority has not changed
+            db.modify(permission, [&]( auto& po ) {
+               po.auth = auth;
+            });
+         }
+      };
+
+      uint32_t num_dbps = dbps.size();
+      auto calculate_threshold = [=]( uint32_t numerator, uint32_t denominator ) {
+         return ( (num_dbps * numerator) / denominator ) + 1;
+      };
+
+      update_permission( authorization.get_permission({config::dbp_account_name,
+                                                       config::active_name}),
+                         calculate_threshold( 1, 2 ) /* more than one-half */                      );
    }
 
    void create_block_summary(const block_id_type& id) {
@@ -1782,7 +1815,7 @@ block_id_type controller::last_irreversible_block_id() const {
 }
 
 double controller::get_forest_diff() const {
-   const auto &gpo = get_global_properties();
+   const auto &gpo = get_dynamic_global_properties();
    return gpo.diff;
 }
 
@@ -1847,7 +1880,7 @@ void controller::pop_block() {
    my->pop_block();
 }
 
-int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
+int64_t controller::set_proposed_producers( vector<producer_key> producers, vector<account_name> dbps) {
    const auto& gpo = get_global_properties();
    auto cur_block_num = head_block_num() + 1;
 
@@ -1856,7 +1889,9 @@ int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
          return -1; // there is already a proposed schedule set in a previous block, wait for it to become pending
 
       if( std::equal( producers.begin(), producers.end(),
-                      gpo.proposed_schedule.producers.begin(), gpo.proposed_schedule.producers.end() ) )
+                      gpo.proposed_schedule.producers.begin(), gpo.proposed_schedule.producers.end() )
+          && std::equal( dbps.begin(), dbps.end(),
+                      gpo.proposed_schedule.dbps.begin(), gpo.proposed_schedule.dbps.end() ) )
          return -1; // the proposed producer schedule does not change
    }
 
@@ -1865,22 +1900,31 @@ int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
    decltype(sch.producers.cend()) end;
    decltype(end)                  begin;
 
+   decltype(sch.dbps.cend()) dend;
+   decltype(dend)                  dbegin;
+
    if( my->pending->_pending_block_state->pending_schedule.producers.size() == 0 ) {
       const auto& active_sch = my->pending->_pending_block_state->active_schedule;
       begin = active_sch.producers.begin();
       end   = active_sch.producers.end();
+      dbegin = active_sch.dbps.begin();
+      dend   = active_sch.dbps.end();
       sch.version = active_sch.version + 1;
    } else {
       const auto& pending_sch = my->pending->_pending_block_state->pending_schedule;
       begin = pending_sch.producers.begin();
       end   = pending_sch.producers.end();
+      dbegin = pending_sch.dbps.begin();
+      dend   = pending_sch.dbps.end();
       sch.version = pending_sch.version + 1;
    }
 
-   if( std::equal( producers.begin(), producers.end(), begin, end ) )
+   if( std::equal( producers.begin(), producers.end(), begin, end ) 
+       && std::equal( dbps.begin(), dbps.end(), dbegin, dend ) )
       return -1; // the producer schedule would not change
 
    sch.producers = std::move(producers);
+   sch.dbps = std::move(dbps);
 
    int64_t version = sch.version;
 
@@ -1893,7 +1937,7 @@ int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
 
 /// CELES code: fengdong.ning {@
 bool controller::set_difficulty(double difficulty) {
-   const auto &gpo = get_global_properties();
+   const auto &gpo = get_dynamic_global_properties();
    my->db.modify(gpo, [&](auto &gp) {
       gp.diff = difficulty;
    });

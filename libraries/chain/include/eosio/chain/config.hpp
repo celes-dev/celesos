@@ -27,6 +27,7 @@ const static auto default_state_guard_size      =    128*1024*1024ll;
 const static uint64_t system_account_name    = N(celes);
 const static uint64_t null_account_name      = N(celes.null);
 const static uint64_t producers_account_name = N(celes.prods);
+const static uint64_t dbp_account_name = N(celes.dbps);
 
 // Active permission of producers account requires greater than 2/3 of the producers to authorize
 const static uint64_t majority_producers_permission_name = N(prod.major); // greater than 1/2 of producers needed to authorize
@@ -103,6 +104,8 @@ const static uint32_t   default_abi_serializer_max_time_ms = 15*1000; ///< defau
  */
 const static int producer_repetitions = 12;
 const static int max_producers = 125;
+const static int max_dbps = 60;
+const static int suggest_dbps = 51;
 
 const static size_t maximum_tracked_dpos_confirmations = 1024;     ///<
 static_assert(maximum_tracked_dpos_confirmations >= ((max_producers * 2 / 3) + 1) * producer_repetitions, "Settings never allow for DPOS irreversibility" );

@@ -12,6 +12,7 @@
 #include <eosio/chain/wasm_eosio_injection.hpp>
 #include <eosio/chain/global_property_object.hpp>
 #include <eosio/chain/account_object.hpp>
+#include <eosio/chain/dbp_object.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/sha1.hpp>
@@ -169,20 +170,31 @@ class privileged_api : public context_aware_api {
           return context.control.get_need_attenuation_account();
       }
 
-      int64_t set_proposed_producers( array_ptr<char> packed_producer_schedule, size_t datalen) {
-         datastream<const char*> ds( packed_producer_schedule, datalen );
+      int64_t set_proposed_producers(array_ptr<char> packed_producer_schedule, size_t producerdatalen)
+      {
+         datastream<const char *> ds(packed_producer_schedule, producerdatalen);
          vector<producer_key> producers;
          fc::raw::unpack(ds, producers);
          EOS_ASSERT(producers.size() <= config::max_producers, wasm_execution_error, "Producer schedule exceeds the maximum producer count for this chain");
          // check that producers are unique
          std::set<account_name> unique_producers;
-         for (const auto& p: producers) {
-            EOS_ASSERT( context.is_account(p.producer_name), wasm_execution_error, "producer schedule includes a nonexisting account" );
-            EOS_ASSERT( p.block_signing_key.valid(), wasm_execution_error, "producer schedule includes an invalid key" );
+         for (const auto &p : producers)
+         {
+            EOS_ASSERT(context.is_account(p.producer_name), wasm_execution_error, "producer schedule includes a nonexisting account");
+            EOS_ASSERT(p.block_signing_key.valid(), wasm_execution_error, "producer schedule includes an invalid key");
             unique_producers.insert(p.producer_name);
          }
-         EOS_ASSERT( producers.size() == unique_producers.size(), wasm_execution_error, "duplicate producer name in producer schedule" );
-         return context.control.set_proposed_producers( std::move(producers) );
+         EOS_ASSERT(producers.size() == unique_producers.size(), wasm_execution_error, "duplicate producer name in producer schedule");
+
+         const auto& idx = context.db.get_index<dbp_index,by_total_resouresweight>();
+         std::vector<account_name> unique_dbps;
+         unique_dbps.reserve(config::suggest_dbps);
+
+         for (auto it = idx.cbegin(); it != idx.cend() && unique_dbps.size() < config::suggest_dbps && 0 < it->total_resouresweight; ++it) {
+            unique_dbps.emplace_back(it->name);
+         }
+
+         return context.control.set_proposed_producers( std::move(producers), std::move(unique_dbps));
       }
 
       uint32_t get_blockchain_parameters_packed( array_ptr<char> packed_blockchain_parameters, size_t buffer_size) {
@@ -221,6 +233,72 @@ class privileged_api : public context_aware_api {
          });
       }
 
+      bool set_difficulty(double diff) {
+         return context.set_difficulty(diff);
+      }
+
+      bool verify_wood(uint32_t block_number, const account_name &account, char *wood) const {
+         return context.verify_wood(block_number, account, wood);
+      }
+
+      uint32_t get_chain_head_num() {
+         return context.head_block_num();
+      }
+
+      uint32_t forest_period_number() const {
+         return context.forest_period_number();
+      }
+
+      uint32_t forest_space_number() const {
+         return context.forest_space_number();
+      }
+
+      bool regdbp(const account_name n) const {
+         auto* dbp =  context.db.find<dbp_object, by_name>( n );
+         if(dbp != nullptr)
+         {
+            return false;
+         }
+         else
+         {
+            context.db.create<dbp_object>([&](auto &d) {
+               d.name = n;
+               d.total_resouresweight = 0; 
+               d.unpaid_resouresweight = 0; 
+            });
+            return true;
+         }
+      }
+
+      void unregdbp(const account_name n) const {
+         auto& dbp =  context.db.get<dbp_object, by_name>( n );
+         const auto &gpo = context.control.get_dynamic_global_properties();
+         context.db.modify(gpo, [&](auto &gp) {
+            gp.total_dbp_resouresweight = gp.total_dbp_resouresweight - dbp.unpaid_resouresweight;
+         });
+         context.db.remove(dbp);
+      }
+
+      int64_t unpaid_resouresweight(const account_name n) {
+         auto& dbp =  context.db.get<dbp_object, by_name>( n );
+         return dbp.unpaid_resouresweight;
+      }
+
+      int64_t total_unpaid_resouresweight() {
+         const auto &gpo = context.control.get_dynamic_global_properties();
+         return gpo.total_unpaid_resouresweight;
+      }
+
+      void setclaimed(const account_name n) {
+         auto& dbp =  context.db.get<dbp_object, by_name>( n );
+         const auto &gpo = context.control.get_dynamic_global_properties();
+         context.db.modify(gpo, [&](auto &gp) {
+            gp.total_dbp_resouresweight = gp.total_dbp_resouresweight - dbp.unpaid_resouresweight;
+         });
+         context.db.modify(dbp, [&](auto &da) {
+            da.unpaid_resouresweight = 0;
+         });
+      }
 };
 
 class softfloat_api : public context_aware_api {
@@ -711,10 +789,6 @@ class producer_api : public context_aware_api {
          memcpy( producers, active_producers.data(), copy_size );
 
          return copy_size;
-      }
-
-      bool set_difficulty(double diff) {
-         return context.set_difficulty(diff);
       }
 };
 
@@ -1666,32 +1740,6 @@ class call_depth_api : public context_aware_api {
       }
 };
 
-/// CELES code: hubery.zhang {@
-        class forest_bank_api : public context_aware_api {
-        public:
-            forest_bank_api(apply_context &ctx)
-                    : context_aware_api(ctx, true) {}
-
-            bool verify_wood(uint32_t block_number, const account_name &account, char *wood) const {
-                dlog("start verify_wood");
-                bool result =  context.verify_wood(block_number, account, wood);
-                  dlog("finish verify_wood");
-                  return result;
-            }
-
-            uint32_t get_chain_head_num() {
-                return context.head_block_num();
-            }
-
-            uint32_t forest_period_number() const{
-               return context.forest_period_number();
-            }
-            uint32_t forest_space_number() const{
-                return context.forest_space_number();
-            }
-        };
-///@}
-
 REGISTER_INJECTED_INTRINSICS(call_depth_api,
    (call_depth_assert,  void()               )
 );
@@ -1754,6 +1802,16 @@ REGISTER_INTRINSICS(privileged_api,
    (set_privileged,                   void(int64_t, int)                    )
    (ram_attenuation,                  int64_t(int64_t)                      )
    (get_need_attenuation_account,     int64_t()                             )
+   (set_difficulty,                   int(double)                           )
+   (verify_wood,                      int(int,int64_t,int)                  )
+   (get_chain_head_num,               int()                                 )
+   (forest_period_number,             int()                                 )
+   (forest_space_number,              int()                                 )
+   (regdbp,                     int(int64_t)                          )
+   (unregdbp,                   void(int64_t)                         )
+   (unpaid_resouresweight,            int64_t(int64_t)                      )
+   (total_unpaid_resouresweight,      int64_t()                             )
+   (setclaimed,                       void(int64_t)                         )
 );
 
 REGISTER_INJECTED_INTRINSICS(transaction_context,
@@ -1762,7 +1820,6 @@ REGISTER_INJECTED_INTRINSICS(transaction_context,
 
 REGISTER_INTRINSICS(producer_api,
    (get_active_producers,      int(int, int) )
-   (set_difficulty,            int(double)  )
 );
 
 #define DB_SECONDARY_INDEX_METHODS_SIMPLE(IDX) \
@@ -1898,15 +1955,6 @@ REGISTER_INTRINSICS(memory_api,
    (memcmp,                 int(int, int, int)  )
    (memset,                 int(int, int, int)  )
 );
-
-/// CELES code: hubery.zhang {@
-REGISTER_INTRINSICS(forest_bank_api,
-   (verify_wood,             int(int,int64_t,int))
-   (get_chain_head_num,      int())
-   (forest_period_number,    int())
-   (forest_space_number,     int())
-);
-///@}
 
 REGISTER_INJECTED_INTRINSICS(softfloat_api,
       (_eosio_f32_add,       float(float, float)    )

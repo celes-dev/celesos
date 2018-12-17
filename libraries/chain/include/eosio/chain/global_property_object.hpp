@@ -32,7 +32,6 @@ namespace eosio { namespace chain {
       optional<block_num_type>          proposed_schedule_block_num;
       shared_producer_schedule_type     proposed_schedule;
       chain_config                      configuration;
-      double                            diff = 1.0;
    };
 
 
@@ -52,6 +51,9 @@ namespace eosio { namespace chain {
 
         id_type    id;
         uint64_t   global_action_sequence = 0;
+        double     diff = 1.0;
+        int64_t    total_dbp_resouresweight = 0;
+        int64_t    total_unpaid_resouresweight;
    };
 
    using global_property_multi_index = chainbase::shared_multi_index_container<

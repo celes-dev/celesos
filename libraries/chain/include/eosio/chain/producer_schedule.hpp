@@ -19,12 +19,14 @@ namespace eosio { namespace chain {
          return tie( lhs.producer_name, lhs.block_signing_key ) != tie( rhs.producer_name, rhs.block_signing_key );
       }
    };
+
    /**
     *  Defines both the order, account name, and signing keys of the active set of producers.
     */
    struct producer_schedule_type {
       uint32_t                                       version = 0; ///< sequentially incrementing version number
       vector<producer_key>                           producers;
+      vector<account_name>                           dbps;
 
       public_key_type get_producer_key( account_name p )const {
          for( const auto& i : producers )
@@ -36,33 +38,51 @@ namespace eosio { namespace chain {
 
    struct shared_producer_schedule_type {
       shared_producer_schedule_type( chainbase::allocator<char> alloc )
-      :producers(alloc){}
+      :producers(alloc),dbps(alloc)
+      {}
 
       shared_producer_schedule_type& operator=( const producer_schedule_type& a ) {
          version = a.version;
-         producers.clear();
-         producers.reserve( a.producers.size() );
-         for( const auto& p : a.producers )
-            producers.push_back(p);
+
+         {
+            producers.clear();
+            producers.reserve(a.producers.size());
+            for (const auto &p : a.producers)
+               producers.push_back(p);
+         }
+
+         {
+            dbps.clear();
+            dbps.reserve(a.dbps.size());
+            for (const auto &d : a.dbps)
+               dbps.push_back(d);
+         }
+
          return *this;
       }
 
-      operator producer_schedule_type()const {
+      operator producer_schedule_type() const {
          producer_schedule_type result;
          result.version = version;
          result.producers.reserve(producers.size());
          for( const auto& p : producers )
             result.producers.push_back(p);
+         result.dbps.reserve(dbps.size());
+         for( const auto& d : dbps )
+            result.dbps.push_back(d);
          return result;
       }
 
       void clear() {
          version = 0;
          producers.clear();
+         dbps.clear();
       }
 
       uint32_t                                       version = 0; ///< sequentially incrementing version number
       shared_vector<producer_key>                    producers;
+      shared_vector<account_name>                    dbps;
+
    };
 
 
@@ -71,7 +91,10 @@ namespace eosio { namespace chain {
       if( a.version != b.version ) return false;
       if ( a.producers.size() != b.producers.size() ) return false;
       for( uint32_t i = 0; i < a.producers.size(); ++i )
-         if( a.producers[i] != b.producers[i] ) return false;
+         {if( a.producers[i] != b.producers[i] ) return false;}
+      if ( a.dbps.size() != b.dbps.size() ) return false;
+      for( uint32_t i = 0; i < a.dbps.size(); ++i )
+         {if( a.dbps[i] != b.dbps[i] ) return false;}
       return true;
    }
    inline bool operator != ( const producer_schedule_type& a, const producer_schedule_type& b )
@@ -83,5 +106,5 @@ namespace eosio { namespace chain {
 } } /// eosio::chain
 
 FC_REFLECT( eosio::chain::producer_key, (producer_name)(block_signing_key) )
-FC_REFLECT( eosio::chain::producer_schedule_type, (version)(producers) )
-FC_REFLECT( eosio::chain::shared_producer_schedule_type, (version)(producers) )
+FC_REFLECT( eosio::chain::producer_schedule_type, (version)(producers)(dbps) )
+FC_REFLECT( eosio::chain::shared_producer_schedule_type, (version)(producers)(dbps) )
