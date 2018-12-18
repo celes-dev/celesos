@@ -4,7 +4,7 @@
 #include <eosio/chain/chain_config.hpp>
 #include <eosio/chain/config.hpp>
 #include <eosio/chain/types.hpp>
-
+#include <eosio/chain/asset.hpp>
 namespace eosio { namespace chain {
 
 using action_name    = eosio::chain::action_name;
@@ -23,6 +23,20 @@ struct newaccount {
       return N(newaccount);
    }
 };
+    struct buyram {
+        account_name                     payer;
+        account_name                     receiver;
+        asset                        quant;
+
+
+        static account_name get_account() {
+            return N(celes);
+        }
+
+        static action_name get_name() {
+            return N(buyram);
+        }
+    };
 
 struct setcode {
    account_name                     account;
@@ -165,3 +179,4 @@ FC_REFLECT( eosio::chain::linkauth                         , (account)(code)(typ
 FC_REFLECT( eosio::chain::unlinkauth                       , (account)(code)(type) )
 FC_REFLECT( eosio::chain::canceldelay                      , (canceling_auth)(trx_id) )
 FC_REFLECT( eosio::chain::onerror                          , (sender_id)(sent_trx) )
+FC_REFLECT( eosio::chain::buyram                          , (payer)(receiver)(quant) )
