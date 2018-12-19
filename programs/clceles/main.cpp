@@ -566,9 +566,11 @@ fc::variant regproducer_variant(const account_name& producer, const public_key_t
             ;
 }
 
-fc::variant regdbp_variant(const account_name& dbpname) {
+fc::variant regdbp_variant(const account_name& dbpname,const string& url,const string& steemid) {
    return fc::mutable_variant_object()
             ("dbpname", dbpname)
+            ("url",url)
+            ("steemid",steemid)
             ;
 }
 
@@ -974,14 +976,18 @@ struct register_producer_subcommand {
 
 struct register_dbp_subcommand {
    string dbp_str;
+   string url_str;
+   string steemid_str;
    uint16_t loc = 0;
 
    register_dbp_subcommand(CLI::App* actionRoot) {
       auto register_dbp = actionRoot->add_subcommand("regdbp", localized("Register a dbp"));
-      register_dbp->add_option("account", dbp_str, localized("The account to register as a producer"))->required();
+      register_dbp->add_option("account", dbp_str, localized("The account to register as a dbp"))->required();
+      register_dbp->add_option("url", url_str, localized("The url to register as a dbp"))->required();
+      register_dbp->add_option("steem", steemid_str, localized("The steemid to register as a dbp"))->required();
       add_standard_transaction_options(register_dbp);
       register_dbp->set_callback([this] {
-         auto regdbp_var = regdbp_variant(dbp_str);
+         auto regdbp_var = regdbp_variant(dbp_str,url_str,steemid_str);
          send_actions({create_action({permission_level{"celes.dbp",config::active_name}}, config::system_account_name, N(regdbp), regdbp_var)});
       });
    }
