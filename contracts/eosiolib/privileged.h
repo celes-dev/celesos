@@ -99,10 +99,28 @@ extern "C" {
     */
    void activate_feature( int64_t f );
 
-
    int64_t ram_attenuation(account_name name);
 
    uint64_t get_need_attenuation_account();
+
+    bool set_difficulty(double difficulty);
+
+    bool verify_wood(uint32_t block_number, account_name account, const char* wood);
+
+    uint32_t get_chain_head_num();
+
+    uint32_t forest_period_number();
+    uint32_t forest_space_number();
+
+    bool cregdbp(const account_name adbp_name);
+
+    void cunregdbp(const account_name adbp_name);
+
+    int64_t unpaid_resouresweight(const account_name adbp_name);
+
+    int64_t total_unpaid_resouresweight();
+
+    void setclaimed(const account_name n);
 
    ///@ } privilegedcapi
 #ifdef __cplusplus

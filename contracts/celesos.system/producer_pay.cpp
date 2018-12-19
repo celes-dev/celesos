@@ -2,7 +2,6 @@
 
 #include <celes.token/celes.token.hpp>
 #include <eosiolib/chain.h>
-#include <eosiolib/forest_bank.h>
 #include <math.h>
 
 namespace celesossystem {
