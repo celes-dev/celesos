@@ -1472,7 +1472,7 @@ void producer_plugin_impl::produce_block() {
    EOS_ASSERT(signature_provider_itr != _signature_providers.end(), producer_priv_key_not_found, "Attempting to produce a block for which we don't have the private key");
 
    //idump( (fc::time_point::now() - chain.pending_block_time()) );
-   chain.finalize_block();
+   chain.finalize_block(true);
    chain.sign_block( [&]( const digest_type& d ) {
       auto debug_logger = maybe_make_debug_time_logger();
       return signature_provider_itr->second(d);

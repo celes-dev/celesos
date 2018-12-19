@@ -194,7 +194,7 @@ namespace eosio { namespace testing {
 
 
 
-      control->finalize_block();
+      control->finalize_block(true);
       control->sign_block( [&]( digest_type d ) {
                     return priv_key.sign(d);
                     });

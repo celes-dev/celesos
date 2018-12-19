@@ -142,7 +142,7 @@ struct controller_impl {
    map< account_name, map<handler_key, apply_handler> >   apply_handlers;
 
    /// CELES code：hubery.zhang {@
-      uint32_t current_random = 0;
+      std::vector<uint32_t> current_random_vector;
    ///@}
 
    /**
@@ -1236,7 +1236,7 @@ struct controller_impl {
             EOS_ASSERT(check_result, block_validate_exception, "check random is failed");
          ///@}
 
-         finalize_block();
+         finalize_block(false);
 
          // this implicitly asserts that all header fields (less the signature) are identical
          EOS_ASSERT(producer_block_id == pending->_pending_block_state->header.id(),
@@ -1407,17 +1407,17 @@ struct controller_impl {
       std::default_random_engine engine(seed_gen());
       std::uniform_int_distribution<uint32_t> dis(1,RAND_MAX);
       uint32_t random_value = dis(engine);
-      current_random = random_value;
+      current_random_vector.insert(current_random_vector.begin(),random_value);
       block_id_type result_hash = fc::sha256::hash(p->header.previous.str() + random_value);
+      pair<uint32_t, block_id_type> random_pair(random_value, result_hash);
       p->header.next_random_hash = move(result_hash);
-
-      ilog("set_next_random_hash:${result_hash},random_value: ${random_value}",("result_hash",result_hash)("random_value",random_value));
-      ilog("set_next_random_hash pending number:${number}",("number",p->header.block_num()));
    }
 //my random in this block
-   void set_my_random(uint32_t random){
-      pending->_pending_block_state->header.my_random = random;
-      ilog("set_my_random:${random}",("random",random));
+   void set_my_random(){
+      uint32_t temp_random = *(current_random_vector.begin());
+      pending->_pending_block_state->header.my_random = temp_random;
+      ilog("set_my_random:${random}",("random",temp_random));
+      current_random_vector.erase(current_random_vector.begin());
    }
 //the result random for all
    void set_block_random(){
@@ -1440,7 +1440,7 @@ struct controller_impl {
 
       auto p = pending->_pending_block_state;
       if(count > p->active_schedule.producers.size()* 2/3){
-         p->header.block_random = all_random;
+         p->header.block_random = N(fc::sha256::hash(all_random).str());
          ilog("set_block_random:${all_random}",("all_random",all_random));
       }else{
          ilog( "random count is too little:${n}", ("n",count) );
@@ -1484,7 +1484,7 @@ struct controller_impl {
       }
        
       bool result_value = false;
-      if(p->header.block_random == all_random){
+      if(p->header.block_random == N(fc::sha256::hash(all_random).str())){
          result_value = true;
       }
       if(p->active_schedule.producers.size() == 1){
@@ -1495,7 +1495,7 @@ struct controller_impl {
    }
 ///@}
 
-   void finalize_block()
+   void finalize_block(bool is_produce)
    {
       EOS_ASSERT(pending, block_validate_exception, "it is not valid to finalize when there is no pending block");
       try {
@@ -1531,14 +1531,11 @@ struct controller_impl {
 
       auto p = pending->_pending_block_state;
       /// CELES code：hubery.zhang {@
-      if(head){
-         auto prev = fork_db.get_block( head->header.previous );
-          if(prev != nullptr && prev->header.producer != p->header.producer)
-         {
-            set_my_random(current_random);
-            set_next_random_hash();
-            set_block_random();
-         }
+      if(is_produce)
+      {
+         set_my_random();
+         set_next_random_hash();
+         set_block_random();
       }
       ///@}
 
@@ -1781,9 +1778,9 @@ void controller::start_block( block_timestamp_type when, uint16_t confirm_block_
    my->start_block(when, confirm_block_count, block_status::incomplete, optional<block_id_type>() );
 }
 
-void controller::finalize_block() {
+void controller::finalize_block(bool is_produce) {
    validate_db_available_size();
-   my->finalize_block();
+   my->finalize_block(is_produce);
 }
 
 void controller::sign_block( const std::function<signature_type( const digest_type& )>& signer_callback ) {
