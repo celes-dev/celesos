@@ -2626,8 +2626,6 @@ int main( int argc, char** argv ) {
            abiPath = (cpath / abiPath).generic_string();
         }
 
-      elog("abi file : ${abi}",("abi",abiPath));
-
         EOS_ASSERT( fc::exists( abiPath ), abi_file_not_found, "no abi file found ${f}", ("f", abiPath)  );
 
         abi_bytes = fc::raw::pack(fc::json::from_file(abiPath).as<abi_def>());
