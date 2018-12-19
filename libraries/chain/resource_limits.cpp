@@ -197,11 +197,16 @@ void resource_limits_manager::add_pending_ram_usage( const account_name account,
    EOS_ASSERT(ram_delta >= 0 || usage.ram_usage >= (uint64_t)(-ram_delta), transaction_exception,
               "Ram usage delta would underflow UINT64_MAX");
 
-    ///CELES CODE  cuichao{@
-   if(ram_delta<0){
-     _db.create<resource_verify_ram_object>([&](resource_verify_ram_object& object){
-         object.owner = account;
-     });
+   ///CELES CODE  cuichao{@
+   if (ram_delta < 0) {
+
+      const auto *obj = _db.find<resource_verify_ram_object, by_owner>(account);
+
+      if (obj== nullptr) {
+         _db.create<resource_verify_ram_object>([&](resource_verify_ram_object &object) {
+             object.owner = account;
+         });
+      }
    }
    //}@
 

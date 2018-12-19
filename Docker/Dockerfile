@@ -1,6 +1,6 @@
 FROM 172.12.0.12:5000/celesos/builder:v1.4.2 as builder
 ARG branch=master
-ARG symbol=CCHN
+ARG symbol=CELES
 ARG http_proxy=""
 ARG https_proxy=""
 ARG no_proxy=""
@@ -16,7 +16,7 @@ RUN git config --global http.proxy "${git_http_proxy}" \
     && cd celes && echo "$branch:$(git rev-parse HEAD)" > /etc/celesos-version \
     && cmake -H. -B"/tmp/build" -GNinja -DCMAKE_BUILD_TYPE=Release -DWASM_ROOT=/opt/wasm -DCMAKE_CXX_COMPILER=clang++ \
        -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX=/tmp/build -DBUILD_MONGO_DB_PLUGIN=true -DCORE_SYMBOL_NAME=$symbol \
-    && cmake --build /tmp/build --target install && rm /tmp/build/bin/eosiocpp
+    && cmake --build /tmp/build --target install
 
 
 FROM ubuntu:18.04

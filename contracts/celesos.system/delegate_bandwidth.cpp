@@ -13,7 +13,6 @@
 #include <eosiolib/transaction.hpp>
 
 #include <celes.token/celes.token.hpp>
-#include <eosiolib/forest_bank.h>
 
 #include <cmath>
 #include <map>

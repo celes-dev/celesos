@@ -4,7 +4,6 @@
  */
 #include <eosio/faucet_testnet_plugin/faucet_testnet_plugin.hpp>
 #include <eosio/chain_plugin/chain_plugin.hpp>
-#include <eosio/utilities/key_conversion.hpp>
 
 #include <fc/variant.hpp>
 #include <fc/io/json.hpp>
@@ -24,6 +23,7 @@ namespace eosio { namespace detail {
      std::string owner;
      std::string active;
   };
+
 
   struct faucet_testnet_create_account_params {
      std::string account;
@@ -193,12 +193,14 @@ struct faucet_testnet_plugin_impl {
    }
 
    results_pair create_account(const std::string& new_account_name, const fc::crypto::public_key& owner_pub_key, const fc::crypto::public_key& active_pub_key) {
-
-      auto creating_account = database().find<account_object, by_name>(_create_account_name);
+       auto creating_account = database().find<account_object, by_name>(_create_account_name);
       EOS_ASSERT(creating_account != nullptr, transaction_exception,
                  "To create account using the faucet, must already have created account \"${a}\"",("a",_create_account_name));
 
+
       auto existing_account = database().find<account_object, by_name>(new_account_name);
+
+
       if (existing_account != nullptr)
       {
          return find_alternates(new_account_name);
@@ -212,9 +214,8 @@ struct faucet_testnet_plugin_impl {
          return std::make_pair(too_many_requests, fc::variant(response));
       }
 
-      chain::chain_id_type chainid;
       auto& plugin = _app.get_plugin<chain_plugin>();
-      plugin.get_chain_id(chainid);
+      chain::chain_id_type chainid=plugin.get_chain_id();
       controller& cc = plugin.chain();
 
       signed_transaction trx;
@@ -228,14 +229,19 @@ struct faucet_testnet_plugin_impl {
       trx.actions.emplace_back(vector<chain::permission_level>{{_create_account_name,"active"}},
                                newaccount{_create_account_name, new_account_name, owner_auth, active_auth});
 
+      trx.actions.emplace_back(vector<chain::permission_level>{{_create_account_name,"active"}},
+                               buyram{_create_account_name, new_account_name,asset(2000)});
+
+
       trx.expiration = cc.head_block_time() + fc::seconds(30);
       trx.set_reference_block(cc.head_block_id());
       trx.sign(_create_account_private_key, chainid);
 
       try {
-         cc.push_transaction( std::make_shared<transaction_metadata>(trx) );
+         cc.push_transaction( std::make_shared<transaction_metadata>(trx),fc::time_point::maximum(),1000 );
       } catch (const account_name_exists_exception& ) {
          // another transaction ended up adding the account, so look for alternates
+
          return find_alternates(new_account_name);
       }
 
@@ -275,9 +281,9 @@ struct faucet_testnet_plugin_impl {
 
 const uint32_t faucet_testnet_plugin_impl::_default_create_interval_msec = 1000;
 const uint32_t faucet_testnet_plugin_impl::_default_create_alternates_to_return = 3;
-const std::string faucet_testnet_plugin_impl::_default_create_account_name = "faucet";
+const std::string faucet_testnet_plugin_impl::_default_create_account_name = "creator";
 // defaults to the public/private key of init accounts in private testnet genesis.json
-const key_pair faucet_testnet_plugin_impl::_default_key_pair = {"EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV", "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"};
+const key_pair faucet_testnet_plugin_impl::_default_key_pair = {"CELES5HzPvobUGAQdUZQRoBTYv2PVQYMEiZXSTArc5B4Y28CLAeSVSk", "5JEJUeWxCKfrEL8sGffMZbjEv5KKdC6pbRwzp6Jex3DprC4KHu7"};
 
 
 faucet_testnet_plugin::faucet_testnet_plugin()
@@ -306,12 +312,14 @@ void faucet_testnet_plugin::plugin_initialize(const variables_map& options) {
       auto faucet_key_pair = fc::json::from_string( options.at( "faucet-private-key" ).as<std::string>()).as<key_pair>();
       my->_create_account_public_key = public_key_type( faucet_key_pair.first );
       ilog( "Public Key: ${public}", ("public", my->_create_account_public_key));
+
       fc::crypto::private_key private_key( faucet_key_pair.second );
       my->_create_account_private_key = std::move( private_key );
    } FC_LOG_AND_RETHROW()
 }
 
 void faucet_testnet_plugin::plugin_startup() {
+
    app().get_plugin<http_plugin>().add_api({
       CALL(faucet, my, create_account, faucet_testnet_plugin_impl::create_faucet_account )
    });

@@ -16,8 +16,6 @@
 #include <cstdlib>
 #include <string>
 
-#include <eosiolib/forest_bank.h>
-
 // 21*100000000*60% 总量21亿的百分之六十用于此奖励
 #define REWARD_HALF_TIME  1260000000
 

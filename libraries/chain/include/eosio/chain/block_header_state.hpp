@@ -1,6 +1,7 @@
 #pragma once
 #include <eosio/chain/block_header.hpp>
 #include <eosio/chain/incremental_merkle.hpp>
+#include <future>
 
 namespace eosio { namespace chain {
 
@@ -43,7 +44,7 @@ struct block_header_state {
     block_timestamp_type get_slot_time( uint32_t slot_num )const;
     uint32_t             get_slot_at_time( block_timestamp_type t )const;
     producer_key         get_scheduled_producer( uint32_t slot_num )const;
-    uint32_t             producer_participation_rate()const;
+    uint32_t              producer_participation_rate()const;
     */
 
     producer_key         get_scheduled_producer( block_timestamp_type t )const;
@@ -51,10 +52,7 @@ struct block_header_state {
     digest_type          sig_digest()const;
     void                 sign( const std::function<signature_type(const digest_type&)>& signer );
     public_key_type      signee()const;
-
-    void set_Id(){
-
-    }  
+    void                 verify_signee(const public_key_type& signee)const;
 };
 
 

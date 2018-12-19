@@ -8,7 +8,6 @@
 #include <eosiolib/crypto.h>
 #include <eosiolib/datastream.hpp>
 #include <eosiolib/eosio.hpp>
-#include <eosiolib/forest_bank.h>
 #include <eosiolib/multi_index.hpp>
 #include <eosiolib/print.hpp>
 #include <eosiolib/privileged.hpp>
