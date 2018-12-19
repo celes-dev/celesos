@@ -182,20 +182,7 @@ namespace eosio { namespace testing {
          }
       }
 
-<<<<<<< HEAD
-
-
-      control->finalize_block(true);
-      control->sign_block( [&]( digest_type d ) {
-                    return priv_key.sign(d);
-                    });
-
-      control->commit_block();
-      last_produced_block[control->head_block_state()->header.producer] = control->head_block_state()->id;
-=======
       auto head_block = _finish_block();
->>>>>>> 9653370d96585c6e75d2b578099aa4409056fb7c
-
       _start_block( next_time + fc::microseconds(config::block_interval_us));
       return head_block;
    }
@@ -228,7 +215,7 @@ namespace eosio { namespace testing {
          priv_key = private_key_itr->second;
       }
 
-      control->finalize_block();
+      control->finalize_block(true);
       control->sign_block( [&]( digest_type d ) {
                     return priv_key.sign(d);
                     });
