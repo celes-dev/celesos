@@ -146,7 +146,8 @@ struct controller_impl {
    map< account_name, map<handler_key, apply_handler> >   apply_handlers;
 
    /// CELES code：hubery.zhang {@
-      std::vector<uint32_t> current_random_vector;
+      std::vector<std::pair<uint32_t,uint32_t>> current_random_vector;
+      std::vector<std::pair<uint32_t,uint32_t>> last_random_vector;
    ///@}
 
    /**
@@ -1286,8 +1287,10 @@ struct controller_impl {
             pending->_pending_block_state->header.next_random_hash = b->next_random_hash;
             pending->_pending_block_state->header.block_random = b->block_random;
 
-            bool check_result = check_random(b->my_random);
+            bool check_result = check_block_random();
             EOS_ASSERT(check_result, block_validate_exception, "check random is failed");
+            bool check_BP_result = check_BP_random(b->my_random);
+            EOS_ASSERT(check_BP_result, block_validate_exception, "check BP random is failed");
          ///@}
 
          finalize_block(false);
@@ -1488,23 +1491,33 @@ struct controller_impl {
 //my next random and the block of the previous block id hash
    void set_next_random_hash(){
       auto p = pending->_pending_block_state;
+      
+      if(current_random_vector.begin() != current_random_vector.end() && last_random_vector.begin() == last_random_vector.end()){
+         auto random_pair = current_random_vector.back();
+         if((p->header.block_num() - random_pair.first) > 1){
+            //now in new loop
+             last_random_vector = current_random_vector;
+             current_random_vector.clear();
+         }
+      }
 
       //calculate random
       std::random_device seed_gen;
       std::default_random_engine engine(seed_gen());
       std::uniform_int_distribution<uint32_t> dis(1,RAND_MAX);
       uint32_t random_value = dis(engine);
-      current_random_vector.insert(current_random_vector.begin(),random_value);
+      current_random_vector.push_back(make_pair(p->header.block_num(),random_value));
       block_id_type result_hash = fc::sha256::hash(p->header.previous.str() + random_value);
-      pair<uint32_t, block_id_type> random_pair(random_value, result_hash);
       p->header.next_random_hash = move(result_hash);
    }
 //my random in this block
    void set_my_random(){
-      uint32_t temp_random = *(current_random_vector.begin());
-      pending->_pending_block_state->header.my_random = temp_random;
-      ilog("set_my_random:${random}",("random",temp_random));
-      current_random_vector.erase(current_random_vector.begin());
+      if(last_random_vector.begin() != last_random_vector.end()){
+         std::pair<uint32_t,uint32_t> last_random_pair = *(last_random_vector.begin());
+         pending->_pending_block_state->header.my_random = last_random_pair.second;
+         ilog("set_my_random:${random}",("random",last_random_pair.second));
+         last_random_vector.erase(last_random_vector.begin());
+      }
    }
 //the result random for all
    void set_block_random(){
@@ -1527,58 +1540,80 @@ struct controller_impl {
 
       auto p = pending->_pending_block_state;
       if(count > p->active_schedule.producers.size()* 2/3){
-         p->header.block_random = N(fc::sha256::hash(all_random).str());
+         p->header.block_random = N(fc::sha256::hash(all_random + p->header.previous).str());
          ilog("set_block_random:${all_random}",("all_random",all_random));
       }else{
          ilog( "random count is too little:${n}", ("n",count) );
       }
    }
    
-   bool check_random(uint32_t random){
+   bool check_block_random(){
       auto p = pending->_pending_block_state;
-      uint32_t current_num = head->block_num;
+      uint32_t current_num = p->header.block_num();
       uint32_t length_num = 252;
       if(current_num < length_num){
          ilog( "block numer < length_num 252");
          return true;
       }
       uint64_t all_random = 0;
-      bool  is_random_correct = false;
+      // bool  is_random_correct = false;
       for(uint32_t block_number = current_num; block_number > 0; block_number--){
          if(block_number <= 0){
             ilog( "block_number <= 0");
             return true;
          }
-
-
+         if(block_number < (current_num -  length_num)){
+            break;
+         }
          // auto blk_state = self.fetch_block_by_number(block_number);
          auto blk_state = self.fetch_block_by_number( block_number );
-         if( blk_state && block_number > current_num -  length_num) {
+         if( blk_state) {
             all_random += blk_state->my_random;
-         }
-
-         if(blk_state->producer == p->header.producer && block_number < current_num){
-            block_id_type result_hash = fc::sha256::hash(blk_state->previous.str() + random);
-            if(blk_state->next_random_hash == result_hash){
-               is_random_correct = true;
-            }
-         }
-
-         if(is_random_correct && block_number <= current_num -  length_num){
-            ilog( "is_random_correct && block_number <= current_num -  length_num");
-            break;
          }
       }
        
       bool result_value = false;
-      if(p->header.block_random == N(fc::sha256::hash(all_random).str())){
+      if(p->header.block_random == N(fc::sha256::hash(all_random + p->header.previous).str())){
          result_value = true;
       }
       if(p->active_schedule.producers.size() == 1){
          // one BP not have random
          return true;
       }
-      return (result_value && is_random_correct);
+      return result_value;
+   }
+
+   bool check_BP_random(uint32_t random){
+      auto p = pending->_pending_block_state;
+      uint32_t current_num = p->header.block_num();
+      uint32_t random_index = 0;
+      uint32_t hash_index = 0;
+      bool is_last_loop = false;
+      //calculate current my_random position
+      std::vector<signed_block_ptr> last_hash_vector;
+      for(uint32_t block_number = current_num; block_number > 0; block_number--){
+         signed_block_ptr blk_state = self.fetch_block_by_number( block_number );
+         if(p->header.producer == blk_state->producer){
+            if(!is_last_loop){
+               random_index++;
+            }else{
+               hash_index++;
+               last_hash_vector.push_back(blk_state);
+            }
+         }else{
+            if(hash_index > 0){
+               //finded last loop data
+               break;
+            }
+            is_last_loop = true;
+         }
+      }
+      signed_block_ptr blk_state = last_hash_vector[random_index-1];
+      block_id_type result_hash = fc::sha256::hash(blk_state->previous.str() + random);
+      if(blk_state->next_random_hash == result_hash){
+         return true;
+      }
+      return false;
    }
 ///@}
 
@@ -1618,7 +1653,7 @@ struct controller_impl {
 
       auto p = pending->_pending_block_state;
       /// CELES code：hubery.zhang {@
-      if(is_produce)
+     if(is_produce && p->active_schedule.producers.size() > 1)
       {
          set_my_random();
          set_next_random_hash();
