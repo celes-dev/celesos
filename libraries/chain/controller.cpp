@@ -1660,14 +1660,14 @@ struct controller_impl {
       set_trx_merkle();
 
       auto p = pending->_pending_block_state;
-   //    /// CELES code：hubery.zhang {@
-   //   if(is_produce && p->active_schedule.producers.size() > 1)
-   //    {
-   //       set_my_random();
-   //       set_next_random_hash();
-   //       set_block_random();
-   //    }
-   //    ///@}
+      /// CELES code：hubery.zhang {@
+     if(is_produce && p->active_schedule.producers.size() > 1)
+      {
+         set_my_random();
+         set_next_random_hash();
+         set_block_random();
+      }
+      ///@}
 
       p->id = p->header.id();
 
