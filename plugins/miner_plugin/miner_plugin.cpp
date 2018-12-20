@@ -293,11 +293,11 @@ void celesos::miner_plugin::plugin_startup() {
                             const auto &code = chain::config::system_account_name;
                             chain::action_name action{"voteproducer"};
                             auto args = fc::mutable_variant_object{}
-                                    ("voter_name", voter_name)
-                                    ("wood_owner_name", voter_name)
+                                    ("voter_name", voter_name.to_string())
+                                    ("wood_owner_name", voter_name.to_string())
                                     ("wood", wood_hex)
                                     ("block_number", block_num)
-                                    ("producer_name", producer_name);
+                                    ("producer_name", producer_name.to_string());
                             auto a_action = miner_plugin_impl::create_action(the_chain_plugin,
                                                                              std::move(auth), code,
                                                                              std::move(action), std::move(args));
