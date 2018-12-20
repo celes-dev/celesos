@@ -1287,10 +1287,10 @@ struct controller_impl {
             pending->_pending_block_state->header.next_random_hash = b->next_random_hash;
             pending->_pending_block_state->header.block_random = b->block_random;
 
-            bool check_result = check_block_random();
-            EOS_ASSERT(check_result, block_validate_exception, "check random is failed");
-            bool check_BP_result = check_BP_random(b->my_random);
-            EOS_ASSERT(check_BP_result, block_validate_exception, "check BP random is failed");
+            // bool check_result = check_block_random();
+            // EOS_ASSERT(check_result, block_validate_exception, "check random is failed");
+            // bool check_BP_result = check_BP_random(b->my_random);
+            // EOS_ASSERT(check_BP_result, block_validate_exception, "check BP random is failed");
          ///@}
 
          finalize_block(false);
@@ -1660,14 +1660,14 @@ struct controller_impl {
       set_trx_merkle();
 
       auto p = pending->_pending_block_state;
-      /// CELES code：hubery.zhang {@
-     if(is_produce && p->active_schedule.producers.size() > 1)
-      {
-         set_my_random();
-         set_next_random_hash();
-         set_block_random();
-      }
-      ///@}
+   //    /// CELES code：hubery.zhang {@
+   //   if(is_produce && p->active_schedule.producers.size() > 1)
+   //    {
+   //       set_my_random();
+   //       set_next_random_hash();
+   //       set_block_random();
+   //    }
+   //    ///@}
 
       p->id = p->header.id();
 
