@@ -1323,7 +1323,7 @@ struct list_producers_subcommand {
             std::cout << "No producers found" << std::endl;
             return;
          }
-         auto weight = result.total_producer_vote_weight;
+         auto weight = result.total_wood;
          if ( !weight )
             weight = 1;
          printf("%-13s %-57s %-59s %s\n", "Producer", "Producer key", "Url", "Scaled votes");
