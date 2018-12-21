@@ -1624,7 +1624,7 @@ struct controller_impl {
             is_last_loop = true;
          }
       }
-      signed_block_ptr blk_state = last_hash_vector[random_index-1];
+      signed_block_ptr blk_state = last_hash_vector[last_hash_vector.size() - random_index];
       block_id_type result_hash = fc::sha256::hash(blk_state->previous.str() + random);
       ilog("------check_BP_random random_index:${random_index}",("random_index",random_index));
       ilog("------check_BP_random last_hash_vector count:${count}",("count",last_hash_vector.size()));
