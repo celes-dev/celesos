@@ -103,6 +103,7 @@ namespace eosio { namespace chain {
 
          int64_t ram_attenuation(account_name name);
          uint64_t get_need_attenuation_account();
+         uint32_t get_question_block_number() const;
 
          /**
           *  These transactions were previously pushed by have since been unapplied, recalling push_transaction

@@ -558,6 +558,16 @@ public:
    chain::symbol extract_core_symbol()const;
 
    friend struct resolver_factory<read_only>;
+
+
+
+   using get_question_block_number_params = empty;
+    struct get_question_block_number_result{
+        uint32_t question_block_number;
+    };
+
+    get_question_block_number_result get_question_block_number(const get_question_block_number_params&)const;
+
 };
 
 class read_write {
@@ -752,3 +762,4 @@ FC_REFLECT( eosio::chain_apis::read_only::abi_bin_to_json_params, (code)(action)
 FC_REFLECT( eosio::chain_apis::read_only::abi_bin_to_json_result, (args) )
 FC_REFLECT( eosio::chain_apis::read_only::get_required_keys_params, (transaction)(available_keys) )
 FC_REFLECT( eosio::chain_apis::read_only::get_required_keys_result, (required_keys) )
+FC_REFLECT( eosio::chain_apis::read_only::get_question_block_number_result, (question_block_number) )

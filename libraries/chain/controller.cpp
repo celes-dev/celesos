@@ -2517,6 +2517,7 @@ const flat_set<account_name> &controller::get_resource_greylist() const {
    return  my->conf.resource_greylist;
 }
 
+///CELES CODE  cuichao{@
 int64_t controller::ram_attenuation(account_name name){
    int64_t ram = 0;
    int64_t cpu = 0;
@@ -2532,4 +2533,28 @@ uint64_t controller::get_need_attenuation_account(){
    return result;
 }
 
+uint32_t controller::get_question_block_number()const{
+  celesos::forest::forest_bank* fb = celesos::forest::forest_bank::getInstance(my->self);
+  uint32_t fsn = fb->forest_space_number();
+
+  uint32_t block_num = head_block_num();
+
+
+  if(block_num <= fsn){
+     return 1;
+  }
+
+  uint32_t temp = block_num%fsn;
+
+  uint32_t qbn= block_num - temp;
+
+  if(temp>0){
+     qbn = qbn+1;
+  }else{
+     qbn = qbn - fsn +1;
+  }
+
+  return qbn;
+}
+//}@
 } } /// eosio::chain
