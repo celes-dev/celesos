@@ -1628,11 +1628,14 @@ struct controller_impl {
             is_last_loop = true;
          }
       }
-      ilog("1111111");
+
       signed_block_ptr blk_state = last_hash_vector[last_hash_vector.size() - random_index];
-      ilog("2222222");
+      if(blk_state == nullptr){
+
+         ilog("check_BP_random last_hash_vector count:${count},get index:${index}",("count",last_hash_vector.size())("index",(last_hash_vector.size() - random_index)));
+         return true;
+      }
       block_id_type result_hash = fc::sha256::hash(blk_state->previous.str() + random);
-      ilog("3333333");
       // ilog("------check_BP_random random_index:${random_index}",("random_index",random_index));
       // ilog("------check_BP_random last_hash_vector count:${count}",("count",last_hash_vector.size()));
       // ilog("------check_BP_random random:${random}",("random",random));
