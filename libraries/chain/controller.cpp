@@ -1515,6 +1515,8 @@ struct controller_impl {
       current_random_vector.push_back(make_pair(p->header.block_num(),random_value));
       block_id_type result_hash = fc::sha256::hash(p->header.previous.str() + random_value);
       p->header.next_random_hash = move(result_hash);
+      ilog("----------set_next_random_hash block_number:${number},\nrandom_value:${random_value},\nresult_hash:${result_hash}",
+      ("number",p->header.block_num())("random_value",random_value)("result_hash",result_hash));
    }
 //my random in this block
    void set_my_random(){
@@ -1626,11 +1628,14 @@ struct controller_impl {
       block_id_type result_hash = fc::sha256::hash(blk_state->previous.str() + random);
       ilog("------check_BP_random random_index:${random_index}",("random_index",random_index));
       ilog("------check_BP_random last_hash_vector count:${count}",("count",last_hash_vector.size()));
-       vector<signed_block_ptr>::iterator i;
+      ilog("------check_BP_random random:${random}",("random",random));
+      
+      vector<signed_block_ptr>::iterator i;
       for(i=last_hash_vector.begin();i<last_hash_vector.end();i++)
       {
          signed_block_ptr blk_state = *i;
-         ilog("last_hash_vector all values:${value}",("value",blk_state->my_random));
+         ilog("last_hash_vector all values:${value}",("value",blk_state->next_random_hash));
+         ilog("------check_BP_random block num:${num}",("num",blk_state->block_num()));
       }
       
       if(blk_state->next_random_hash == result_hash){
