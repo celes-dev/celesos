@@ -579,7 +579,7 @@ namespace bacc = boost::accumulators;
 
       acontext.exec( trace );
 
-      if(bool(first_action_account))
+      if(first_action_account.value == 0)
       {
          first_action_account = a.account; 
       }
@@ -630,6 +630,15 @@ namespace bacc = boost::accumulators;
       if (nullptr != dbp) {
          int64_t weight = cpu_usage * 5 + net_usage + ram_usage;
          const auto &gpo = control.get_dynamic_global_properties();
+
+         ilog("****cpu_usage:${cpu_usage}",("cpu_usage",cpu_usage));
+         ilog("****net_usage:${net_usage}",("net_usage",net_usage));
+         ilog("****ram_usage:${ram_usage}",("ram_usage",ram_usage));
+         ilog("****thisweight:${weight}",("weight",weight));
+         ilog("****unpaweight:${unpaid_resouresweight}",("unpaid_resouresweight",dbp->unpaid_resouresweight + weight));
+         ilog("****bptoweight:${total_resouresweight}",("total_resouresweight",dbp->total_resouresweight + weight));
+         ilog("****totaweight:${total_resouresweight}",("total_resouresweight",gpo.total_dbp_resouresweight + weight));
+
          control.mutable_db().modify(gpo, [&](auto &gp) {
             gp.total_dbp_resouresweight = gp.total_dbp_resouresweight + weight;
          });
