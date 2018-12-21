@@ -1727,30 +1727,39 @@ struct controller_impl {
       //TODO: Add tests
    }
 
-   void update_dbps_authority() {
-      const auto& dbps = pending->_pending_block_state->active_schedule.dbps;
-
-      auto update_permission = [&]( auto& permission, auto threshold ) {
-         auto auth = authority( threshold, {}, {});
-         for( auto& d : dbps ) {
-            auth.accounts.push_back({{d, config::active_name}, 1});
+   void update_dbps_authority()
+   {
+      const auto &dbps = pending->_pending_block_state->active_schedule.dbps;
+      auto update_permission = [&](auto &permission, auto threshold) {
+         auto auth = authority(threshold, {}, {});
+         if (dbps.size() > 0)
+         {
+            for (auto &d : dbps)
+            {
+               auth.accounts.push_back({{d, config::active_name}, 1});
+            }
+         }
+         else
+         {
+            auth.accounts.push_back({{config::producers_account_name, config::active_name}, 1});
          }
 
-         if( static_cast<authority>(permission.auth) != auth ) { // TODO: use a more efficient way to check that authority has not changed
-            db.modify(permission, [&]( auto& po ) {
+         if (static_cast<authority>(permission.auth) != auth)
+         { // TODO: use a more efficient way to check that authority has not changed
+            db.modify(permission, [&](auto &po) {
                po.auth = auth;
             });
          }
       };
 
-      uint32_t num_dbps = dbps.size();
-      auto calculate_threshold = [=]( uint32_t numerator, uint32_t denominator ) {
-         return ( (num_dbps * numerator) / denominator ) + 1;
+      uint32_t num_dbps = dbps.size() > 0 ? dbps.size() : 1;
+      auto calculate_threshold = [=](uint32_t numerator, uint32_t denominator) {
+         return ((num_dbps * numerator) / denominator) + 1;
       };
 
-      update_permission( authorization.get_permission({config::dbp_account_name,
-                                                       config::active_name}),
-                         calculate_threshold( 1, 2 ) /* more than one-half */                      );
+      update_permission(authorization.get_permission({config::dbp_account_name,
+                                                      config::active_name}),
+                        calculate_threshold(1, 2) /* more than one-half */);
    }
 
    void create_block_summary(const block_id_type& id) {
