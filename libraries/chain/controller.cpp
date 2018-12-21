@@ -1290,7 +1290,7 @@ struct controller_impl {
             ilog("-----------apply_block block num:${num},my_random:${my_random},next_random_hash:${next_random_hash},block_random:${}",
             ("num",pending->_pending_block_state->header.block_num())
             ("my_random",pending->_pending_block_state->header.my_random)
-            ("next_random_hash",pending->_pending_block_state->next_random_hash)
+            ("next_random_hash",pending->_pending_block_state->header.next_random_hash)
             ("block_random",pending->_pending_block_state->header.block_random));
 
             bool check_result = check_block_random();
