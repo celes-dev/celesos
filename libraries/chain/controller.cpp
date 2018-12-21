@@ -1287,7 +1287,7 @@ struct controller_impl {
             pending->_pending_block_state->header.next_random_hash = b->next_random_hash;
             pending->_pending_block_state->header.block_random = b->block_random;
 
-            ilog("-----------apply_block block num:${num},my_random:${my_random},next_random_hash:${next_random_hash},block_random:${}",
+            ilog("-----------apply_block block num:${num},my_random:${my_random},next_random_hash:${next_random_hash},block_random:${block_random}",
             ("num",pending->_pending_block_state->header.block_num())
             ("my_random",pending->_pending_block_state->header.my_random)
             ("next_random_hash",pending->_pending_block_state->header.next_random_hash)
@@ -1624,6 +1624,8 @@ struct controller_impl {
       }
       signed_block_ptr blk_state = last_hash_vector[random_index-1];
       block_id_type result_hash = fc::sha256::hash(blk_state->previous.str() + random);
+      ilog("------check_BP_random random_index:${random_index}",("random_index",random_index));
+      ilog("------check_BP_random last_hash_vector count:${count}",("count",last_hash_vector.size()));
       if(blk_state->next_random_hash == result_hash){
          return true;
       }
