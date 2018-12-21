@@ -1287,6 +1287,12 @@ struct controller_impl {
             pending->_pending_block_state->header.next_random_hash = b->next_random_hash;
             pending->_pending_block_state->header.block_random = b->block_random;
 
+            ilog("-----------apply_block block num:${num},my_random:${my_random},next_random_hash:${next_random_hash},block_random:${}",
+            ("num",pending->_pending_block_state->header.block_num())
+            ("my_random",pending->_pending_block_state->header.my_random)
+            ("next_random_hash",pending->_pending_block_state->next_random_hash)
+            ("block_random",pending->_pending_block_state->header.block_random));
+
             bool check_result = check_block_random();
             EOS_ASSERT(check_result, block_validate_exception, "check random is failed");
             bool check_BP_result = check_BP_random(b->my_random);
@@ -1663,6 +1669,7 @@ struct controller_impl {
       /// CELES code：hubery.zhang {@
      if(is_produce && p->active_schedule.producers.size() > 1)
       {
+         ilog("finalize_block enter set random!!");
          set_my_random();
          set_next_random_hash();
          set_block_random();
