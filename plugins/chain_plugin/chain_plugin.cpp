@@ -1895,10 +1895,10 @@ chain::symbol read_only::extract_core_symbol()const {
 
 ///CELES CODE  cuichao{@
 //获取为题块
-read_only::get_question_block_number_result read_only::get_question_block_number(const read_only::get_question_block_number_params& params) const{
+read_only::get_question_block_number_result read_only::get_question_block_number(const read_only::get_question_block_number_params&) const{
 
     read_only::get_question_block_number_result result;
-    result.question_block_number = db.get_question_block_number();
+   //  result.question_block_number = db.get_question_block_number();
     return result;
 }
 //}@
