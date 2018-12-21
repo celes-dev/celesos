@@ -1626,8 +1626,13 @@ struct controller_impl {
       block_id_type result_hash = fc::sha256::hash(blk_state->previous.str() + random);
       ilog("------check_BP_random random_index:${random_index}",("random_index",random_index));
       ilog("------check_BP_random last_hash_vector count:${count}",("count",last_hash_vector.size()));
-      ilog("------check_BP_random blk_state->next_random_hash:${hash}",("hash",blk_state->next_random_hash));
-      ilog("------check_BP_random result_hash:${result_hash}",("result_hash",result_hash));
+       vector<signed_block_ptr>::iterator i;
+      for(i=last_hash_vector.begin();i<last_hash_vector.end();i++)
+      {
+         signed_block_ptr blk_state = *i;
+         ilog("last_hash_vector all values:${value}",("value",blk_state->my_random));
+      }
+      
       if(blk_state->next_random_hash == result_hash){
          return true;
       }
