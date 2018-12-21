@@ -1293,9 +1293,13 @@ struct controller_impl {
             ("next_random_hash",pending->_pending_block_state->header.next_random_hash)
             ("block_random",pending->_pending_block_state->header.block_random));
 
+            ilog("check_block_random begin");
             bool check_result = check_block_random();
+            ilog("check_block_random end");
             EOS_ASSERT(check_result, block_validate_exception, "check random is failed");
+            ilog("check_BP_random begin");
             bool check_BP_result = check_BP_random(b->my_random);
+            ilog("check_BP_random end");
             EOS_ASSERT(check_BP_result, block_validate_exception, "check BP random is failed");
          ///@}
 
