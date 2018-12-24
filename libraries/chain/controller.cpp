@@ -1597,9 +1597,13 @@ struct controller_impl {
       ilog("====================previous p->header.previous.str():${previous}",("previous",p->header.previous.str()));
       ilog("====================previous result_hash:${result_hash}",("result_hash",result_hash));
 
-      if(p->header.block_random == N(fc::sha256::hash(all_random + p->header.previous.str()))){
+      if(p->header.block_random == N(result_hash)){
          result_value = true;
       }
+
+      ilog("====================previous header.block_random:${header.block_random}",("header.block_random",p->header.block_random));
+
+
       if(p->active_schedule.producers.size() == 1){
          // one BP not have random
          return true;
