@@ -1632,8 +1632,11 @@ struct controller_impl {
          }
       }
       ilog("-----------------------------------------444444444");
-      if(last_hash_vector.size() - random_index < last_hash_vector.size()){
-         ilog("last random hash count:${count},get index:${index}",("count",last_hash_vector.size())("index",last_hash_vector.size() - random_index));
+      if(last_hash_vector.size() - random_index >= last_hash_vector.size()){
+         ilog("last random hash count:${count},get index:${index},producer:${producer}",
+         ("count",last_hash_vector.size())
+         ("index",last_hash_vector.size() - random_index)
+         ("producer",N(p->header.producer)));
          return true;
       }
 
