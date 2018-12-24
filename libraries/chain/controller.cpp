@@ -1596,10 +1596,12 @@ struct controller_impl {
    }
 
    bool check_BP_random(uint32_t random){
+      ilog("-----------------------------------------11111111");
       if(random == 0){
-         ilog("check_BP_random random is invalide");
+         ilog("check_BP_random random is 0");
          return true;
       }
+      ilog("-----------------------------------------2222222");
       auto p = pending->_pending_block_state;
       uint32_t current_num = head->block_num;
       uint32_t random_index = 0;
@@ -1613,6 +1615,7 @@ struct controller_impl {
             ilog("check_BP_random block_number:${block_number} block is nullptr",("block_number",block_number));
             return true;
          }
+         ilog("-----------------------------------------33333333");
          if(p->header.producer == blk_state->producer){
             if(!is_last_loop){
                random_index++;
@@ -1628,17 +1631,20 @@ struct controller_impl {
             is_last_loop = true;
          }
       }
+      ilog("-----------------------------------------444444444");
       if(last_hash_vector.size() - random_index < last_hash_vector.size()){
          ilog("last random hash count:${count},get index:${index}",("count",last_hash_vector.size())("index",last_hash_vector.size() - random_index));
          return true;
       }
 
+      ilog("-----------------------------------------555555555");
       signed_block_ptr blk_state = last_hash_vector[last_hash_vector.size() - random_index];
       if(blk_state == nullptr){
 
          ilog("check_BP_random last_hash_vector count:${count},get index:${index}",("count",last_hash_vector.size())("index",(last_hash_vector.size() - random_index)));
          return true;
       }
+      ilog("-----------------------------------------666666666");
       block_id_type result_hash = fc::sha256::hash(blk_state->previous.str() + random);
       // ilog("------check_BP_random random_index:${random_index}",("random_index",random_index));
       // ilog("------check_BP_random last_hash_vector count:${count}",("count",last_hash_vector.size()));
@@ -1651,7 +1657,7 @@ struct controller_impl {
       //    ilog("last_hash_vector all values:${value}",("value",blk_state->next_random_hash));
       //    ilog("------check_BP_random block num:${num}",("num",blk_state->block_num()));
       // }
-      
+      ilog("-----------------------------------------77777777777777");
       if(blk_state->next_random_hash == result_hash){
          return true;
       }
