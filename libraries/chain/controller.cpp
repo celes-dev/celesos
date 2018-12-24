@@ -1287,19 +1287,9 @@ struct controller_impl {
             pending->_pending_block_state->header.next_random_hash = b->next_random_hash;
             pending->_pending_block_state->header.block_random = b->block_random;
 
-            ilog("-----------apply_block block num:${num},my_random:${my_random},next_random_hash:${next_random_hash},block_random:${block_random}",
-            ("num",pending->_pending_block_state->header.block_num())
-            ("my_random",pending->_pending_block_state->header.my_random)
-            ("next_random_hash",pending->_pending_block_state->header.next_random_hash)
-            ("block_random",pending->_pending_block_state->header.block_random));
-
-            ilog("check_block_random begin");
             bool check_result = check_block_random();
-            ilog("check_block_random end");
             EOS_ASSERT(check_result, block_validate_exception, "check random is failed");
-            ilog("check_BP_random begin");
             bool check_BP_result = check_BP_random(b->my_random);
-            ilog("check_BP_random end");
             EOS_ASSERT(check_BP_result, block_validate_exception, "check BP random is failed");
          ///@}
 
@@ -1552,8 +1542,11 @@ struct controller_impl {
 
       auto p = pending->_pending_block_state;
       if(count > p->active_schedule.producers.size()* 2/3){
-         p->header.block_random = N(fc::sha256::hash(all_random + p->header.previous).str());
-         ilog("set_block_random:${all_random}",("all_random",all_random));
+         block_id_type result_hash = fc::sha256::hash(all_random + p->header.previous.str());
+         p->header.block_random = N(result_hash);
+         ilog("====================set_block_random:${all_random}",("all_random",all_random));
+         ilog("====================set_block_random block hash:${result_hash}",("result_hash",result_hash));
+         ilog("====================set_block_random block_random:${block_random}",("block_random",p->header.block_random));
       }else{
          ilog( "random count is too little:${n}", ("n",count) );
       }
