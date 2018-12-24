@@ -1509,8 +1509,6 @@ struct controller_impl {
       current_random_vector.push_back(make_pair(p->header.block_num(),random_value));
       block_id_type result_hash = fc::sha256::hash(p->header.previous.str() + random_value);
       p->header.next_random_hash = move(result_hash);
-      ilog("----------set_next_random_hash block_number:${number},\nrandom_value:${random_value},\nresult_hash:${result_hash}",
-      ("number",p->header.block_num())("random_value",random_value)("result_hash",result_hash));
    }
 //my random in this block
    void set_my_random(){
@@ -1548,15 +1546,8 @@ struct controller_impl {
       }
    
       if(count > p->active_schedule.producers.size()* 2/3){
-         ilog("set_block_random enter-------------");
-         ilog("====================set_block_random:${all_random}",("all_random",all_random));
-         ilog("====================previous p->header.previous.str():${previous}",("previous",p->header.previous.str()));
          block_id_type result_hash = fc::sha256::hash(all_random + p->header.previous.str());
-         uint256_t temp = result_hash._hash[0];
-         ilog("====================set_block_random uint256_t block random:${temp}",("temp",temp));
-         p->header.block_random = N(result_hash);
-         ilog("====================set_block_random block hash:${result_hash}",("result_hash",result_hash));
-         ilog("====================set_block_random block_random:${block_random}",("block_random",p->header.block_random));
+         p->header.block_random = result_hash._hash[0];
       }else{
          ilog( "random count is too little:${n}", ("n",count) );
       }
@@ -1595,18 +1586,10 @@ struct controller_impl {
       bool result_value = false;
 
       block_id_type result_hash = fc::sha256::hash(all_random + p->header.previous.str());
-      ilog("====================set_block_random:${all_random}",("all_random",all_random));
-      ilog("====================previous p->header.previous.str():${previous}",("previous",p->header.previous.str()));
-      ilog("====================previous result_hash:${result_hash}",("result_hash",result_hash));
-      uint64_t temp = result_hash._hash[0];
-      ilog("====================set_block_random uint256_t block random:${temp}",("temp",temp));
-      if(p->header.block_random == N(result_hash)){
+      uint64_t random_value = result_hash._hash[0];
+      if(p->header.block_random ==  random_value){
          result_value = true;
       }
-
-      ilog("====================previous header.block_random:${header.block_random}",("header.block_random",result_hash));
-
-
       if(p->active_schedule.producers.size() == 1){
          // one BP not have random
          return true;
