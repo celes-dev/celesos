@@ -1644,13 +1644,15 @@ struct controller_impl {
          return true;
       }
       block_id_type result_hash = fc::sha256::hash(blk_state->previous.str() + random);
+      if(blk_state->next_random_hash == result_hash){
+         return true;
+      }
+
       ilog("check_BP_random my random:${random}",("random",random));
       ilog("check_BP_random my hash:${hash}",("hash",result_hash));
       ilog("check_BP_random blk_state hash:${hash}",("hash",blk_state->next_random_hash));
       ilog("check_BP_random last_hash_vector value:${value}",("value",last_hash_vector));
-      if(blk_state->next_random_hash == result_hash){
-         return true;
-      }
+
       return false;
    }
 ///@}
