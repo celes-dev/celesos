@@ -1552,6 +1552,8 @@ struct controller_impl {
          ilog("====================set_block_random:${all_random}",("all_random",all_random));
          ilog("====================previous p->header.previous.str():${previous}",("previous",p->header.previous.str()));
          block_id_type result_hash = fc::sha256::hash(all_random + p->header.previous.str());
+         uint256_t temp = N(result_hash);
+         ilog("====================set_block_random uint256_t block random:${temp}",("temp",temp));
          p->header.block_random = N(result_hash);
          ilog("====================set_block_random block hash:${result_hash}",("result_hash",result_hash));
          ilog("====================set_block_random block_random:${block_random}",("block_random",p->header.block_random));
@@ -1596,12 +1598,13 @@ struct controller_impl {
       ilog("====================set_block_random:${all_random}",("all_random",all_random));
       ilog("====================previous p->header.previous.str():${previous}",("previous",p->header.previous.str()));
       ilog("====================previous result_hash:${result_hash}",("result_hash",result_hash));
-
+      uint256_t temp = N(result_hash);
+      ilog("====================set_block_random uint256_t block random:${temp}",("temp",temp));
       if(p->header.block_random == N(result_hash)){
          result_value = true;
       }
 
-      ilog("====================previous header.block_random:${header.block_random}",("header.block_random",p->header.block_random));
+      ilog("====================previous header.block_random:${header.block_random}",("header.block_random",result_hash));
 
 
       if(p->active_schedule.producers.size() == 1){
