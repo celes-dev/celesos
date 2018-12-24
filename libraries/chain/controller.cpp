@@ -1541,6 +1541,12 @@ struct controller_impl {
       }
 
       auto p = pending->_pending_block_state;
+      if(all_random == 0){
+         p->header.block_random = 0;
+         ilog("set_block_random block random is 0");
+         return;
+      }
+   
       if(count > p->active_schedule.producers.size()* 2/3){
          ilog("set_block_random enter-------------");
          ilog("====================set_block_random:${all_random}",("all_random",all_random));
@@ -1577,6 +1583,11 @@ struct controller_impl {
          if( blk_state) {
             all_random += blk_state->my_random;
          }
+      }
+
+      if(all_random == 0){
+         ilog("check_block_random the blcok random is 0");
+         return true;
       }
        
       bool result_value = false;
