@@ -1542,6 +1542,7 @@ struct controller_impl {
 
       auto p = pending->_pending_block_state;
       if(count > p->active_schedule.producers.size()* 2/3){
+         ilog("set_block_random enter-------------");
          block_id_type result_hash = fc::sha256::hash(all_random + p->header.previous.str());
          p->header.block_random = N(result_hash);
          ilog("====================set_block_random:${all_random}",("all_random",all_random));
