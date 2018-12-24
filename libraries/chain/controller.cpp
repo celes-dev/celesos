@@ -1580,7 +1580,13 @@ struct controller_impl {
       }
        
       bool result_value = false;
-      if(p->header.block_random == N(fc::sha256::hash(all_random + p->header.previous).str())){
+
+      block_id_type result_hash = fc::sha256::hash(all_random + p->header.previous.str());
+      ilog("====================set_block_random:${all_random}",("all_random",all_random));
+      ilog("====================previous p->header.previous.str():${previous}",("previous",p->header.previous.str()));
+      ilog("====================previous result_hash:${result_hash}",("result_hash",result_hash));
+
+      if(p->header.block_random == N(fc::sha256::hash(all_random + p->header.previous.str()))){
          result_value = true;
       }
       if(p->active_schedule.producers.size() == 1){
