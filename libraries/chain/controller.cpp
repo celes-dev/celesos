@@ -146,8 +146,8 @@ struct controller_impl {
    map< account_name, map<handler_key, apply_handler> >   apply_handlers;
 
    /// CELES code：hubery.zhang {@
-      std::vector<std::pair<uint32_t,uint32_t>> current_random_vector;
-      std::vector<std::pair<uint32_t,uint32_t>> last_random_vector;
+      std::vector<std::pair<uint32_t,uint64_t>> current_random_vector;
+      std::vector<std::pair<uint32_t,uint64_t>> last_random_vector;
    ///@}
 
    /**
@@ -1504,8 +1504,8 @@ struct controller_impl {
       //calculate random
       std::random_device seed_gen;
       std::default_random_engine engine(seed_gen());
-      std::uniform_int_distribution<uint32_t> dis(1,RAND_MAX);
-      uint32_t random_value = dis(engine);
+      std::uniform_int_distribution<uint64_t> dis(1,RAND_MAX);
+      uint64_t random_value = dis(engine);
       current_random_vector.push_back(make_pair(p->header.block_num(),random_value));
       block_id_type result_hash = fc::sha256::hash(p->header.previous.str() + random_value);
       p->header.next_random_hash = move(result_hash);
@@ -1515,7 +1515,7 @@ struct controller_impl {
 //my random in this block
    void set_my_random(){
       if(last_random_vector.begin() != last_random_vector.end()){
-         std::pair<uint32_t,uint32_t> last_random_pair = *(last_random_vector.begin());
+         std::pair<uint32_t,uint64_t> last_random_pair = *(last_random_vector.begin());
          pending->_pending_block_state->header.my_random = last_random_pair.second;
          ilog("set_my_random:${random}",("random",last_random_pair.second));
          last_random_vector.erase(last_random_vector.begin());
@@ -1523,7 +1523,7 @@ struct controller_impl {
    }
 //the result random for all
    void set_block_random(){
-      uint32_t current_num = head->block_num;
+      uint64_t current_num = head->block_num;
       uint32_t length_num = 252;
       uint64_t all_random = 0;
       int count = 0;
@@ -1552,7 +1552,7 @@ struct controller_impl {
          ilog("====================set_block_random:${all_random}",("all_random",all_random));
          ilog("====================previous p->header.previous.str():${previous}",("previous",p->header.previous.str()));
          block_id_type result_hash = fc::sha256::hash(all_random + p->header.previous.str());
-         uint256_t temp = N(result_hash);
+         uint256_t temp = result_hash._hash[0];
          ilog("====================set_block_random uint256_t block random:${temp}",("temp",temp));
          p->header.block_random = N(result_hash);
          ilog("====================set_block_random block hash:${result_hash}",("result_hash",result_hash));
@@ -1598,7 +1598,7 @@ struct controller_impl {
       ilog("====================set_block_random:${all_random}",("all_random",all_random));
       ilog("====================previous p->header.previous.str():${previous}",("previous",p->header.previous.str()));
       ilog("====================previous result_hash:${result_hash}",("result_hash",result_hash));
-      uint256_t temp = N(result_hash);
+      uint64_t temp = result_hash._hash[0];
       ilog("====================set_block_random uint256_t block random:${temp}",("temp",temp));
       if(p->header.block_random == N(result_hash)){
          result_value = true;
@@ -1614,7 +1614,7 @@ struct controller_impl {
       return result_value;
    }
 
-   bool check_BP_random(uint32_t random){
+   bool check_BP_random(uint64_t random){
       if(random == 0){
          ilog("check_BP_random random is 0");
          return true;

@@ -57,7 +57,7 @@ namespace celesossystem {
 
 /// CELES code：hubery.zhang {@
       checksum256                      next_random_hash;
-      uint32_t                         my_random;
+      uint64_t                         my_random;
       uint64_t                         block_random;
 ///@}
 

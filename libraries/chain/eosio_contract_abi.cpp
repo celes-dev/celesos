@@ -97,7 +97,7 @@ abi_def eosio_contract_abi(const abi_def& celesos_system_abi)
          {"schedule_version", "uint32"},
          {"new_producers", "producer_schedule?"},
          {"next_random_hash", "checksum256"},
-         {"my_random", "uint32"},
+         {"my_random", "uint64"},
          {"block_random", "uint64"},
          {"header_extensions", "extension[]"}
       }

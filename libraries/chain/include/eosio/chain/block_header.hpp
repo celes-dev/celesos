@@ -36,7 +36,7 @@ namespace eosio { namespace chain {
 
 /// CELES code：hubery.zhang {@
       checksum256_type                 next_random_hash;
-      uint32_t                         my_random = 0;
+      uint64_t                         my_random = 0;
       uint64_t                         block_random = 0;
 ///@}
 
