@@ -1628,6 +1628,10 @@ struct controller_impl {
             is_last_loop = true;
          }
       }
+      if(last_hash_vector.size() - random_index < last_hash_vector.size()){
+         ilog("last random hash count:${count},get index:${index}",("count",last_hash_vector.size())("index",last_hash_vector.size() - random_index));
+         return true;
+      }
 
       signed_block_ptr blk_state = last_hash_vector[last_hash_vector.size() - random_index];
       if(blk_state == nullptr){
