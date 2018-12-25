@@ -1362,11 +1362,11 @@ struct list_dbps_subcommand {
             return;
          }
 
-         printf("totalweight:%llu\n", result.total_dbp_resouresweight);
-         printf("total_unpaid_resouresweight:%llu\n", result.total_unpaid_resouresweight);
+         printf("totalweight:%lu\n", result.total_dbp_resouresweight);
+         printf("total_unpaid_resouresweight:%lu\n", result.total_unpaid_resouresweight);
          printf("%-13s %-25s %s-20s %-20s %-20s\n", "DBP", "Url", "Steem id","Total weight","Unpaid weight");
          for ( auto& row : result.rows )
-            printf("%-13s %-25s %-20s %-20llu %-20llu\n",
+            printf("%-13s %-25s %-20s %-20lu %-20lu\n",
                    row["owner"].as_string().c_str(),
                    row["url"].as_string().c_str(),
                    row["steemid"].as_string().c_str(),
@@ -3425,11 +3425,11 @@ int main( int argc, char** argv ) {
 
      // multisig unapprove
    auto abstainapprove = msig->add_subcommand("abstain", localized("abstain proposed transaction"));
-   add_standard_transaction_options(unapprove, "proposer@active");
-   unapprove->add_option("proposer", proposer, localized("proposer name (string)"))->required();
-   unapprove->add_option("proposal_name", proposal_name, localized("proposal name (string)"))->required();
-   unapprove->add_option("permissions", perm, localized("The JSON string of filename defining approving permissions"))->required();
-   unapprove->set_callback([&] { approve_or_unapprove("abstain"); });
+   add_standard_transaction_options(abstainapprove, "proposer@active");
+   abstainapprove->add_option("proposer", proposer, localized("proposer name (string)"))->required();
+   abstainapprove->add_option("proposal_name", proposal_name, localized("proposal name (string)"))->required();
+   abstainapprove->add_option("permissions", perm, localized("The JSON string of filename defining approving permissions"))->required();
+   abstainapprove->set_callback([&] { approve_or_unapprove("abstain"); });
 
    // multisig invalidate
    string invalidator;
