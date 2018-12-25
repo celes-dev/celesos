@@ -299,6 +299,48 @@ class privileged_api : public context_aware_api {
             da.unpaid_resouresweight = 0;
          });
       }
+
+      bool is_systemaccount_transaction( array_ptr<char> trx_data,     size_t trx_size) {
+
+         transaction trx = fc::raw::unpack<transaction>( trx_data, trx_size );
+
+         if(trx.actions.size() == 0)
+         {
+            return false;
+         }
+         else
+         {
+            for (auto action : trx.actions)
+            {
+               if (action.account != N(celes) &&
+                   action.account != N(celes.msig) &&
+                   action.account != N(celes.names) &&
+                   action.account != N(celes.ram) &&
+                   action.account != N(celes.ramfee) &&
+                   action.account != N(celes.saving) &&
+                   action.account != N(celes.stake) &&
+                   action.account != N(celes.token) &&
+                   action.account != N(celes.dbps) &&
+                   action.account != N(celes.prods) &&
+                   action.account != N(celes.dbp) &&
+                   action.account != N(celes.bpay) &&
+                   action.account != N(celes.wpay) &&
+                   action.account != N(celes.day) &&
+                   action.account != N(celes.bpayp) &&
+                   action.account != N(celes.wpayp) &&
+                   action.account != N(celes.dayp))
+               {
+                  continue;
+               }
+               else
+               {
+                  return false;
+               }
+            }
+
+            return true;
+         }
+      }
 };
 
 class softfloat_api : public context_aware_api {
@@ -1793,6 +1835,7 @@ REGISTER_INTRINSICS(privileged_api,
    (unpaid_resouresweight,            int64_t(int64_t)                      )
    (total_unpaid_resouresweight,      int64_t()                             )
    (setclaimed,                       void(int64_t)                         )
+   (is_systemaccount_transaction,     int(int, int)                         )
 );
 
 REGISTER_INJECTED_INTRINSICS(transaction_context,

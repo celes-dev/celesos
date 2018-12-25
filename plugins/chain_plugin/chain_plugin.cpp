@@ -15,6 +15,8 @@
 #include <eosio/chain/controller.hpp>
 #include <eosio/chain/generated_transaction_object.hpp>
 #include <eosio/chain/snapshot.hpp>
+#include <eosio/chain/dbp_object.hpp>
+#include <eosio/chain/global_property_object.hpp>
 
 #include <eosio/chain/eosio_contract.hpp>
 
@@ -1025,6 +1027,7 @@ read_only::get_info_results read_only::get_info(const read_only::get_info_params
       db.fork_db_head_block_id(),
       db.fork_db_head_block_time(),
       db.fork_db_head_block_producer(),
+      db.get_forest_diff(),
       rm.get_virtual_block_cpu_limit(),
       rm.get_virtual_block_net_limit(),
       rm.get_block_cpu_limit(),
@@ -1369,6 +1372,78 @@ read_only::get_producers_result read_only::get_producers( const read_only::get_p
    }
 
    result.total_wood = get_global_row(d, abi, abis, abi_serializer_max_time, shorten_abi_errors)["total_wood"].as_uint64();
+   return result;
+}
+
+read_only::get_dbps_result read_only::get_dbps(const read_only::get_dbps_params &p) const
+{
+   const abi_def abi = eosio::chain_apis::get_abi(db, config::system_account_name);
+   const auto table_type = get_table_type(abi, N(dbps));
+   const abi_serializer abis{abi, abi_serializer_max_time};
+
+   EOS_ASSERT(table_type == KEYi64, chain::contract_table_query_exception, "Invalid table type ${type} for table dbp", ("type", table_type));
+
+   const auto &d = db.db();
+
+   static const uint8_t secondary_index_num = 0;
+   const auto *const table_id = d.find<chain::table_id_object, chain::by_code_scope_table>(
+       boost::make_tuple(config::system_account_name, config::system_account_name, N(dbps)));
+
+   const auto &kv_index = d.get_index<key_value_index, by_scope_primary>();
+
+   read_only::get_dbps_result result;
+   const auto stopTime = fc::time_point::now() + fc::microseconds(1000 * 10); // 10ms
+
+   auto lower_bound_lookup_tuple = std::make_tuple(table_id->id, std::numeric_limits<uint64_t>::lowest());
+   auto upper_bound_lookup_tuple = std::make_tuple(table_id->id, std::numeric_limits<uint64_t>::max());
+
+   if (p.lower_bound.size())
+   {
+      name s(p.lower_bound);
+      std::get<1>(lower_bound_lookup_tuple) = s.value;
+   }
+
+   if (upper_bound_lookup_tuple < lower_bound_lookup_tuple)
+      return result;
+
+   auto walk_table_row_range = [&](auto itr, auto end_itr) {
+      auto cur_time = fc::time_point::now();
+      auto end_time = cur_time + fc::microseconds(1000 * 10); /// 10ms max time
+      vector<char> data;
+      for (unsigned int count = 0; cur_time <= end_time && count < p.limit && itr != end_itr; ++count, ++itr, cur_time = fc::time_point::now())
+      {
+         copy_inline_row(*itr, data);
+
+         fc::variant data_var;
+         if (p.json)
+         {
+            data_var = abis.binary_to_variant(abis.get_table_type(N(dbps)), data, abi_serializer_max_time, shorten_abi_errors);
+         }
+         else
+         {
+            data_var = fc::variant(data);
+         }
+
+         auto* dbp =  d.find<dbp_object, by_name>(itr->primary_key);
+         fc::mutable_variant_object mutable_data_var(data_var);
+         mutable_data_var.set("total_resouresweight",dbp->total_resouresweight).set("unpaid_resouresweight",dbp->unpaid_resouresweight);
+         result.rows.emplace_back( std::move(mutable_data_var));
+      }
+      if (itr != end_itr)
+      {
+         result.more = name{itr->primary_key}.to_string();
+      }
+   };
+
+   auto lower = kv_index.lower_bound(lower_bound_lookup_tuple);
+   auto upper = kv_index.upper_bound(upper_bound_lookup_tuple);
+
+   walk_table_row_range(lower, upper);
+
+   const dynamic_global_property_object& dynamic_global_property = d.get<dynamic_global_property_object>();
+   result.total_dbp_resouresweight = dynamic_global_property.total_dbp_resouresweight;
+   result.total_unpaid_resouresweight = dynamic_global_property.total_unpaid_resouresweight;
+
    return result;
 }
 

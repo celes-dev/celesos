@@ -29,8 +29,8 @@ namespace eosio { namespace chain {
 
       id_type              id;
       account_name         name;
-      int64_t              total_resouresweight;   // 总点击（非真实点击，以CPU、NET及ROM进行折算）
-      int64_t              unpaid_resouresweight;  // 未领取奖励的点击（非真实点击，以CPU、NET及ROM进行折算）
+      int64_t              total_resouresweight = 0;   // 总点击（非真实点击，以CPU、NET及ROM进行折算）
+      int64_t              unpaid_resouresweight = 0;  // 未领取奖励的点击（非真实点击，以CPU、NET及ROM进行折算）
    };
    
    using dbp_id_type = dbp_object::id_type;

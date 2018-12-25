@@ -1332,7 +1332,46 @@ struct list_producers_subcommand {
                    row["owner"].as_string().c_str(),
                    row["producer_key"].as_string().c_str(),
                    row["url"].as_string().c_str(),
-                   row["total_votes"].as_double() / weight);
+                   row["total_wood"].as_double() / weight);
+         if ( !result.more.empty() )
+            std::cout << "-L " << result.more << " for more" << std::endl;
+      });
+   }
+};
+
+struct list_dbps_subcommand {
+   bool print_json = false;
+   uint32_t limit = 50;
+   std::string lower;
+
+   list_dbps_subcommand(CLI::App* actionRoot) {
+      auto list_producers = actionRoot->add_subcommand("listdbps", localized("List dbps"));
+      list_producers->add_flag("--json,-j", print_json, localized("Output in JSON format"));
+      list_producers->add_option("-l,--limit", limit, localized("The maximum number of rows to return"));
+      list_producers->add_option("-L,--lower", lower, localized("lower bound value of key, defaults to first"));
+      list_producers->set_callback([this] {
+         auto rawResult = call(get_dbps_func, fc::mutable_variant_object
+            ("json", true)("lower_bound", lower)("limit", limit));
+         if ( print_json ) {
+            std::cout << fc::json::to_pretty_string(rawResult) << std::endl;
+            return;
+         }
+         auto result = rawResult.as<eosio::chain_apis::read_only::get_dbps_result>();
+         if ( result.rows.empty() ) {
+            std::cout << "No dbps found" << std::endl;
+            return;
+         }
+
+         printf("totalweight:%llu\n", result.total_dbp_resouresweight);
+         printf("total_unpaid_resouresweight:%llu\n", result.total_unpaid_resouresweight);
+         printf("%-13s %-25s %s-20s %-20s %-20s\n", "DBP", "Url", "Steem id","Total weight","Unpaid weight");
+         for ( auto& row : result.rows )
+            printf("%-13s %-25s %-20s %-20llu %-20llu\n",
+                   row["owner"].as_string().c_str(),
+                   row["url"].as_string().c_str(),
+                   row["steemid"].as_string().c_str(),
+                   row["total_resouresweight"].as_int64(),
+                   row["unpaid_resouresweight"].as_int64());
          if ( !result.more.empty() )
             std::cout << "-L " << result.more << " for more" << std::endl;
       });
@@ -3384,6 +3423,14 @@ int main( int argc, char** argv ) {
    unapprove->add_option("permissions", perm, localized("The JSON string of filename defining approving permissions"))->required();
    unapprove->set_callback([&] { approve_or_unapprove("unapprove"); });
 
+     // multisig unapprove
+   auto abstainapprove = msig->add_subcommand("abstain", localized("abstain proposed transaction"));
+   add_standard_transaction_options(unapprove, "proposer@active");
+   unapprove->add_option("proposer", proposer, localized("proposer name (string)"))->required();
+   unapprove->add_option("proposal_name", proposal_name, localized("proposal name (string)"))->required();
+   unapprove->add_option("permissions", perm, localized("The JSON string of filename defining approving permissions"))->required();
+   unapprove->set_callback([&] { approve_or_unapprove("abstain"); });
+
    // multisig invalidate
    string invalidator;
    auto invalidate = msig->add_subcommand("invalidate", localized("Invalidate all multisig approvals of an account"));
@@ -3508,6 +3555,7 @@ int main( int argc, char** argv ) {
     auto setProxy = set_proxy_subcommand(system);
 
    auto listProducers = list_producers_subcommand(system);
+   auto listDbps = list_dbps_subcommand(system);
 
    auto delegateBandWidth = delegate_bandwidth_subcommand(system);
    auto undelegateBandWidth = undelegate_bandwidth_subcommand(system);
