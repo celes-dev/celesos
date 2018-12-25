@@ -1509,6 +1509,8 @@ struct controller_impl {
       current_random_vector.push_back(make_pair(p->header.block_num(),random_value));
       block_id_type result_hash = fc::sha256::hash(p->header.previous.str() + random_value);
       p->header.next_random_hash = move(result_hash);
+
+      ilog("set_next_random_hash random_value:${random_value},hash:${result_hash}",("random_value",random_value)("result_hash",result_hash));
    }
 //my random in this block
    void set_my_random(){
