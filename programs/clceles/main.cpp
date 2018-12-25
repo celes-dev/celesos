@@ -3425,11 +3425,11 @@ int main( int argc, char** argv ) {
 
      // multisig unapprove
    auto abstainapprove = msig->add_subcommand("abstain", localized("abstain proposed transaction"));
-   add_standard_transaction_options(unapprove, "proposer@active");
-   unapprove->add_option("proposer", proposer, localized("proposer name (string)"))->required();
-   unapprove->add_option("proposal_name", proposal_name, localized("proposal name (string)"))->required();
-   unapprove->add_option("permissions", perm, localized("The JSON string of filename defining approving permissions"))->required();
-   unapprove->set_callback([&] { approve_or_unapprove("abstain"); });
+   add_standard_transaction_options(abstainapprove, "proposer@active");
+   abstainapprove->add_option("proposer", proposer, localized("proposer name (string)"))->required();
+   abstainapprove->add_option("proposal_name", proposal_name, localized("proposal name (string)"))->required();
+   abstainapprove->add_option("permissions", perm, localized("The JSON string of filename defining approving permissions"))->required();
+   abstainapprove->set_callback([&] { approve_or_unapprove("abstain"); });
 
    // multisig invalidate
    string invalidator;
