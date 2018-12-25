@@ -1362,11 +1362,11 @@ struct list_dbps_subcommand {
             return;
          }
 
-         printf("totalweight:%llu\n", result.total_dbp_resouresweight);
-         printf("total_unpaid_resouresweight:%llu\n", result.total_unpaid_resouresweight);
+         printf("totalweight:%lu\n", result.total_dbp_resouresweight);
+         printf("total_unpaid_resouresweight:%lu\n", result.total_unpaid_resouresweight);
          printf("%-13s %-25s %s-20s %-20s %-20s\n", "DBP", "Url", "Steem id","Total weight","Unpaid weight");
          for ( auto& row : result.rows )
-            printf("%-13s %-25s %-20s %-20llu %-20llu\n",
+            printf("%-13s %-25s %-20s %-20lu %-20lu\n",
                    row["owner"].as_string().c_str(),
                    row["url"].as_string().c_str(),
                    row["steemid"].as_string().c_str(),
