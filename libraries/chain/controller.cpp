@@ -146,8 +146,8 @@ struct controller_impl {
    map< account_name, map<handler_key, apply_handler> >   apply_handlers;
 
    /// CELES code：hubery.zhang {@
-      std::vector<std::pair<uint32_t,uint64_t>> current_random_vector;
-      std::vector<std::pair<uint32_t,uint64_t>> last_random_vector;
+      std::vector<std::tuple<uint32_t, uint64_t, fc::sha256>> current_random_vector;
+      std::vector<std::tuple<uint32_t, uint64_t, fc::sha256>> last_random_vector;
    ///@}
 
    /**
@@ -1493,9 +1493,11 @@ struct controller_impl {
       auto p = pending->_pending_block_state;
       
       if(current_random_vector.begin() != current_random_vector.end() && last_random_vector.begin() == last_random_vector.end()){
-         auto random_pair = current_random_vector.back();
-         if((p->header.block_num() - random_pair.first) > 1){
+         auto random_tuple = current_random_vector.back();
+         std::tuple_element<1, decltype(random_tuple)>::type number = std::get<1>(random_tuple);
+         if(p->header.block_num() - number){
             //now in new loop
+             last_random_vector.clear();
              last_random_vector = current_random_vector;
              current_random_vector.clear();
          }
@@ -1506,19 +1508,63 @@ struct controller_impl {
       std::default_random_engine engine(seed_gen());
       std::uniform_int_distribution<uint64_t> dis(1,RAND_MAX);
       uint64_t random_value = dis(engine);
-      current_random_vector.push_back(make_pair(p->header.block_num(),random_value));
       block_id_type result_hash = fc::sha256::hash(p->header.previous.str() + random_value);
+      current_random_vector.push_back(std::make_tuple(p->header.block_num(),random_value,result_hash));
       p->header.next_random_hash = move(result_hash);
 
       ilog("set_next_random_hash random_value:${random_value},hash:${result_hash}",("random_value",random_value)("result_hash",result_hash));
    }
 //my random in this block
    void set_my_random(){
-      if(last_random_vector.begin() != last_random_vector.end()){
-         std::pair<uint32_t,uint64_t> last_random_pair = *(last_random_vector.begin());
-         pending->_pending_block_state->header.my_random = last_random_pair.second;
-         ilog("set_my_random:${random}",("random",last_random_pair.second));
-         last_random_vector.erase(last_random_vector.begin());
+      // if(last_random_vector.begin() != last_random_vector.end()){
+      //    std::pair<uint32_t,uint64_t> last_random_pair = *(last_random_vector.begin());
+      //    pending->_pending_block_state->header.my_random = last_random_pair.second;
+      //    ilog("set_my_random:${random}",("random",last_random_pair.second));
+      //    last_random_vector.erase(last_random_vector.begin());
+      // }
+      auto p = pending->_pending_block_state;
+      uint32_t current_num = p->header.block_num();
+      uint32_t random_index = 0;
+      uint32_t hash_index = 0;
+      bool is_last_loop = false;
+      //calculate current my_random position
+      signed_block_ptr last_blk_state;
+      for(uint32_t block_number = current_num; block_number > 0; block_number--){
+         signed_block_ptr blk_state = self.fetch_block_by_number( block_number );
+         if(blk_state == nullptr){
+            ilog("set_my_random block_number:${block_number} block is nullptr",("block_number",block_number));
+            return;
+         }
+         if(p->header.producer == blk_state->producer){
+            if(!is_last_loop){
+               random_index++;
+            }else{
+               hash_index++;
+               if(hash_index == random_index){
+                  last_blk_state = blk_state;
+                  break;
+               }
+            }
+         }else{
+            if(hash_index > 0){
+               //finded last loop data
+               break;
+            }
+            is_last_loop = true;
+         }
+      }
+      if(last_blk_state == nullptr){
+         return;
+      }
+
+      for(int i = 0;i < last_random_vector.size();i++){
+         std::tuple<uint32_t, uint64_t, fc::sha256> last_random_tuple = last_random_vector[i];
+         fc::sha256 next_hash = get<2>(last_random_tuple);
+         uint64_t random_value = get<1>(last_random_tuple);
+         if(last_blk_state->next_random_hash == next_hash){
+             pending->_pending_block_state->header.my_random = random_value;
+             ilog("set_my_random:${random}",("random",random_value));
+         }
       }
    }
 //the result random for all
@@ -1532,7 +1578,6 @@ struct controller_impl {
             ilog( "block numer < length_num 252");
             return;
          }
-
          auto blk_state = self.fetch_block_by_number(block_number);
          if( blk_state != nullptr) {
             all_random += blk_state->my_random;
@@ -1605,7 +1650,7 @@ struct controller_impl {
          return true;
       }
       auto p = pending->_pending_block_state;
-      uint32_t current_num = head->block_num;
+      uint32_t current_num = p->header.block_num();
       uint32_t random_index = 0;
       uint32_t hash_index = 0;
       bool is_last_loop = false;
