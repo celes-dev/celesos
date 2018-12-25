@@ -1651,7 +1651,10 @@ struct controller_impl {
       ilog("check_BP_random my random:${random}",("random",random));
       ilog("check_BP_random my hash:${hash}",("hash",result_hash));
       ilog("check_BP_random blk_state hash:${hash}",("hash",blk_state->next_random_hash));
-      ilog("check_BP_random last_hash_vector value:${value}",("value",last_hash_vector));
+      for(int i = 0;i < last_hash_vector.size();i++){
+         signed_block_ptr blk_state_temp = last_hash_vector[i];
+         ilog("********************check_BP_random blk_state hash:${hash}\n",("hash",blk_state_temp->next_random_hash));
+      }
 
       return false;
    }
