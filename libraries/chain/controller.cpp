@@ -1656,6 +1656,8 @@ struct controller_impl {
       for(int i = 0;i < last_hash_vector.size();i++){
          signed_block_ptr blk_state_temp = last_hash_vector[i];
          ilog("********************check_BP_random blk_state hash:${hash}\n",("hash",blk_state_temp->next_random_hash));
+         ilog("********************check_BP_random blk_state my random:${random}\n",("random",blk_state_temp->my_random));
+         ilog("********************check_BP_random blk_state block number:${number}\n",("number",blk_state_temp->block_num()));
       }
 
       return false;
