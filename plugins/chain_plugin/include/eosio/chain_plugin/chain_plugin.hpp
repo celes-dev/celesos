@@ -96,6 +96,7 @@ public:
       fc::time_point          head_block_time;
       account_name            head_block_producer;
 
+      double                  difficulity;
       uint64_t                virtual_block_cpu_limit = 0;
       uint64_t                virtual_block_net_limit = 0;
 
@@ -340,6 +341,21 @@ public:
    };
 
    get_producers_result get_producers( const get_producers_params& params )const;
+
+   struct get_dbps_params {
+      bool        json = false;
+      string      lower_bound;
+      uint32_t    limit = 50;
+   };
+
+   struct get_dbps_result {
+      vector<fc::variant> rows; ///< one row per item, either encoded as hex string or JSON object
+      uint64_t            total_dbp_resouresweight = 0;
+      uint64_t            total_unpaid_resouresweight = 0;
+      string              more; ///< fill lower_bound with this value to fetch more rows
+   };
+
+   get_dbps_result get_dbps( const get_dbps_params& params )const;
 
    struct get_producer_schedule_params {
    };
@@ -714,7 +730,7 @@ private:
 FC_REFLECT( eosio::chain_apis::permission, (perm_name)(parent)(required_auth) )
 FC_REFLECT(eosio::chain_apis::empty, )
 FC_REFLECT(eosio::chain_apis::read_only::get_info_results,
-(server_version)(chain_id)(head_block_num)(last_irreversible_block_num)(last_irreversible_block_id)(head_block_id)(head_block_time)(head_block_producer)(virtual_block_cpu_limit)(virtual_block_net_limit)(block_cpu_limit)(block_net_limit)(server_version_string) )
+(server_version)(chain_id)(head_block_num)(last_irreversible_block_num)(last_irreversible_block_id)(head_block_id)(head_block_time)(head_block_producer)(difficulity)(virtual_block_cpu_limit)(virtual_block_net_limit)(block_cpu_limit)(block_net_limit)(server_version_string) )
 FC_REFLECT(eosio::chain_apis::read_only::get_block_params, (block_num_or_id))
 FC_REFLECT(eosio::chain_apis::read_only::get_block_header_state_params, (block_num_or_id))
 
@@ -732,7 +748,10 @@ FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symb
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(max_supply)(issuer));
 
 FC_REFLECT( eosio::chain_apis::read_only::get_producers_params, (json)(lower_bound)(limit) )
-FC_REFLECT( eosio::chain_apis::read_only::get_producers_result, (rows)(total_wood)(more) );
+FC_REFLECT( eosio::chain_apis::read_only::get_producers_result, (rows)(total_wood)(more));
+
+FC_REFLECT( eosio::chain_apis::read_only::get_dbps_params, (json)(lower_bound)(limit) )
+FC_REFLECT( eosio::chain_apis::read_only::get_dbps_result, (rows)(total_dbp_resouresweight)(total_unpaid_resouresweight)(more) );
 
 FC_REFLECT_EMPTY( eosio::chain_apis::read_only::get_producer_schedule_params )
 FC_REFLECT( eosio::chain_apis::read_only::get_producer_schedule_result, (active)(pending)(proposed) );

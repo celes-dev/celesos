@@ -53,7 +53,7 @@ namespace eosio { namespace chain {
         uint64_t   global_action_sequence = 0;
         double     diff = 1.0;
         int64_t    total_dbp_resouresweight = 0;
-        int64_t    total_unpaid_resouresweight;
+        int64_t    total_unpaid_resouresweight = 0;
    };
 
    using global_property_multi_index = chainbase::shared_multi_index_container<

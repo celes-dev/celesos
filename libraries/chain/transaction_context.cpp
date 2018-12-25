@@ -641,6 +641,7 @@ namespace bacc = boost::accumulators;
 
          control.mutable_db().modify(gpo, [&](auto &gp) {
             gp.total_dbp_resouresweight = gp.total_dbp_resouresweight + weight;
+            gp.total_unpaid_resouresweight = gp.total_unpaid_resouresweight + weight;
          });
          control.mutable_db().modify<dbp_object>(*dbp, [&](auto &da) {
             da.unpaid_resouresweight = da.unpaid_resouresweight + weight;
