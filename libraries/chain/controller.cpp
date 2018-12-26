@@ -1537,8 +1537,8 @@ struct controller_impl {
             ilog("set_my_random block_number:${block_number} block is nullptr",("block_number",block_number));
             return;
          }
-         ilog("p producer:${producer}",("producer",p->header.producer.to_string));
-         ilog("blk_state producer:${producer}",("producer",blk_state->header.producer.to_string));
+         ilog("p producer:${producer}",("producer",p->header.producer));
+         ilog("blk_state producer:${producer}",("producer",blk_state->header.producer));
          if(p->header.producer == blk_state->producer){
             if(!is_last_loop){
                random_index++;
