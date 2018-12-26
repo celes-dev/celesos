@@ -1672,7 +1672,7 @@ struct controller_impl {
          signed_block_ptr blk_state = self.fetch_block_by_number( block_number );
          if(blk_state == nullptr){
             ilog("check_BP_random block_number:${block_number} block is nullptr",("block_number",block_number));
-            return true;
+            blk_state = p->block;
          }
          if(p->header.producer == blk_state->producer){
             if(!is_last_loop){
