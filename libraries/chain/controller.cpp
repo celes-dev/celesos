@@ -1523,7 +1523,7 @@ struct controller_impl {
       //    last_random_vector.erase(last_random_vector.begin());
       // }
       auto p = pending->_pending_block_state;
-      uint32_t current_num = p->header.block_num();
+      uint32_t current_num = head->block_num;
       uint32_t random_index = 0;
       uint32_t hash_index = 0;
       bool is_last_loop = false;
