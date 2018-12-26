@@ -1574,6 +1574,8 @@ struct controller_impl {
          std::tuple<uint32_t, uint64_t, fc::sha256> last_random_tuple = last_random_vector[i];
          fc::sha256 next_hash = get<2>(last_random_tuple);
          uint64_t random_value = get<1>(last_random_tuple);
+         ilog("blk_state number:${number},hash:${hash}",("number",blk_state->block_num())("hash",blk_state->next_random_hash));
+         ilog("tuple number:${number},hash:${hash}",("number",get<0>(last_random_tuple))("hash",get<2>(last_random_tuple)));
          if(blk_state->next_random_hash == next_hash){
              pending->_pending_block_state->header.my_random = random_value;
              ilog("set_my_random:${random}",("random",random_value));
