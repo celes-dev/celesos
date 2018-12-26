@@ -1523,7 +1523,7 @@ struct controller_impl {
       // }
       ilog("=====1111111111");
       auto p = pending->_pending_block_state;
-      uint32_t current_num = head->block_num;
+      uint32_t current_num = p->header.block_num();
       uint32_t random_index = 0;
       uint32_t hash_index = 0;
       bool is_last_loop = false;
@@ -1537,6 +1537,8 @@ struct controller_impl {
             ilog("set_my_random block_number:${block_number} block is nullptr",("block_number",block_number));
             return;
          }
+         ilog("p producer:${producer}",("producer",p->header.producer.to_string));
+         ilog("blk_state producer:${producer}",("producer",blk_state->header.producer.to_string));
          if(p->header.producer == blk_state->producer){
             if(!is_last_loop){
                random_index++;
