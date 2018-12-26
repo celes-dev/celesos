@@ -1521,7 +1521,6 @@ struct controller_impl {
       //    ilog("set_my_random:${random}",("random",last_random_pair.second));
       //    last_random_vector.erase(last_random_vector.begin());
       // }
-      ilog("=====1111111111");
       auto p = pending->_pending_block_state;
       uint32_t current_num = p->header.block_num();
       uint32_t random_index = 0;
@@ -1533,12 +1532,12 @@ struct controller_impl {
       std::vector<signed_block_ptr> last_hash_vector;
       for(uint32_t block_number = current_num; block_number > 0; block_number--){
          signed_block_ptr blk_state = self.fetch_block_by_number( block_number );
-         if(blk_state == nullptr){
-            ilog("set_my_random block_number:${block_number} block is nullptr",("block_number",block_number));
+         if(blk_state == nullptr && block_number == current_num){
             blk_state = p->block;
+         }else if(blk_state){
+            ilog("block_number:${block_number} blk_state is null",("block_number",block_number));
+            return;
          }
-         ilog("p producer:${producer}",("producer",p->header.producer));
-         ilog("blk_state producer:${producer}",("producer",blk_state->producer));
          if(p->header.producer == blk_state->producer){
             if(!is_last_loop){
                random_index++;
@@ -1554,7 +1553,11 @@ struct controller_impl {
             is_last_loop = true;
          }
       }
-      ilog("=====222222");
+
+      if(last_hash_vector.size() < random_index){
+         ilog("last_hash_vector.size() < random_index");
+         return;
+      }
       if(hash_index == 0){
          ilog("last_hash_vector.size() == 0");
          return;
@@ -1567,12 +1570,10 @@ struct controller_impl {
          ilog("get index is null");
          return;
       }
-      ilog("=====333333");
       for(int i = 0;i < last_random_vector.size();i++){
          std::tuple<uint32_t, uint64_t, fc::sha256> last_random_tuple = last_random_vector[i];
          fc::sha256 next_hash = get<2>(last_random_tuple);
          uint64_t random_value = get<1>(last_random_tuple);
-         ilog("---==next_hash:${next_hash}---=blk_state->next_random_hash:${hash}",("next_hash",next_hash)("hash",blk_state->next_random_hash));
          if(blk_state->next_random_hash == next_hash){
              pending->_pending_block_state->header.my_random = random_value;
              ilog("set_my_random:${random}",("random",random_value));
