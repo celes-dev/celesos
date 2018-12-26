@@ -1527,6 +1527,8 @@ struct controller_impl {
       uint32_t random_index = 0;
       uint32_t hash_index = 0;
       bool is_last_loop = false;
+      ilog("current_num:${current_num}",("current_num",current_num));
+      ilog("p number:${number}",("number",p->header.block_num()));
       //calculate current my_random position
       std::vector<signed_block_ptr> last_hash_vector;
       for(uint32_t block_number = current_num; block_number > 0; block_number--){
