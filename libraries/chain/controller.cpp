@@ -1496,6 +1496,7 @@ struct controller_impl {
          std::tuple_element<1, decltype(random_tuple)>::type number = std::get<1>(random_tuple);
          if(p->header.block_num() - number > 1){
             //now in new loop
+            ilog("~~~~~~~~~new loop clear vector!")
              last_random_vector.clear();
              last_random_vector = current_random_vector;
              current_random_vector.clear();
@@ -1570,6 +1571,7 @@ struct controller_impl {
          ilog("get index is null");
          return;
       }
+      ilog("!!last_random_vector.size();${size}",("size",last_random_vector.size()));
       for(int i = 0;i < last_random_vector.size();i++){
          std::tuple<uint32_t, uint64_t, fc::sha256> last_random_tuple = last_random_vector[i];
          fc::sha256 next_hash = get<2>(last_random_tuple);
