@@ -1753,9 +1753,9 @@ struct controller_impl {
       if(is_produce && p->active_schedule.producers.size() > 1)
       {
          ilog("finalize_block enter set random!!");
-         set_my_random();
-         set_next_random_hash();
-         set_block_random();
+         // set_my_random();
+         // set_next_random_hash();
+         // set_block_random();
       }
       ///@}
 

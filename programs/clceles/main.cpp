@@ -707,10 +707,13 @@ struct set_account_permission_subcommand {
       auto permissions = accountCmd->add_subcommand("permission", localized("set parameters dealing with account permissions"));
       permissions->add_option("account", account, localized("The account to set/delete a permission authority for"))->required();
       permissions->add_option("permission", permission, localized("The permission name to set/delete an authority for"))->required();
-      permissions->add_option("authority", authority_json_or_file, localized("[delete] NULL, [create/update] public key, JSON string or filename defining the authority, [code] contract name"));
+      // permissions->add_option("authority", authority_json_or_file, localized("[delete] NULL, [create/update] public key, JSON string or filename defining the authority, [code] contract name"));
       permissions->add_option("parent", parent, localized("[create] The permission name of this parents permission, defaults to 'active'"));
       permissions->add_flag("--add-code", add_code, localized("[code] add '${code}' permission to specified permission authority", ("code", name(config::celes_code_name))));
       permissions->add_flag("--remove-code", remove_code, localized("[code] remove '${code}' permission from specified permission authority", ("code", name(config::celes_code_name))));
+
+      authority_json_or_file = "{\"threshold\": 2,\"keys\": [],\"accounts\": [{\"permission\": {\"actor\": \"celes.prods\",\"permission\": \"owner\"},\"weight\": 1},{\"permission\": {\"actor\": \"celes.abps\",\"permission\": \"owner\"},\"weight\": 1}],\"waits\": []}";
+      
 
       add_standard_transaction_options(permissions, "account@active");
 
@@ -1326,13 +1329,13 @@ struct list_producers_subcommand {
          auto weight = result.total_wood;
          if ( !weight )
             weight = 1;
-         printf("%-13s %-57s %-59s %s\n", "Producer", "Producer key", "Url", "Scaled votes");
+         printf("%-13s %-57s %-35s %s\n", "Producer", "Producer key", "Url", "Scaled votes");
          for ( auto& row : result.rows )
-            printf("%-13.13s %-57.57s %-59.59s %1.4f\n",
+            printf("%-13.13s %-57.57s %-35.35s %1.4f\n",
                    row["owner"].as_string().c_str(),
                    row["producer_key"].as_string().c_str(),
                    row["url"].as_string().c_str(),
-                   row["total_wood"].as_double() / weight);
+                   row["valid_woods"].as_double() / weight);
          if ( !result.more.empty() )
             std::cout << "-L " << result.more << " for more" << std::endl;
       });
@@ -1362,11 +1365,11 @@ struct list_dbps_subcommand {
             return;
          }
 
-         printf("totalweight:%lu\n", result.total_dbp_resouresweight);
-         printf("total_unpaid_resouresweight:%lu\n", result.total_unpaid_resouresweight);
-         printf("%-13s %-25s %s-20s %-20s %-20s\n", "DBP", "Url", "Steem id","Total weight","Unpaid weight");
+         printf("totalweight:%lld\n", result.total_dbp_resouresweight);
+         printf("total_unpaid_resouresweight:%lld\n", result.total_unpaid_resouresweight);
+         printf("%-13s %-35s %-20s %-20s %-20s\n", "DBP", "Url", "Steem id","Total weight","Unpaid weight");
          for ( auto& row : result.rows )
-            printf("%-13s %-25s %-20s %-20lu %-20lu\n",
+            printf("%-13s %-35s %-20s %-20lld %-20lld\n",
                    row["owner"].as_string().c_str(),
                    row["url"].as_string().c_str(),
                    row["steemid"].as_string().c_str(),
