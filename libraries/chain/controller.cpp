@@ -1534,7 +1534,7 @@ struct controller_impl {
          signed_block_ptr blk_state = self.fetch_block_by_number( block_number );
          if(blk_state == nullptr && block_number == current_num){
             blk_state = p->block;
-         }else if(blk_state){
+         }else if(blk_state == nullptr){
             ilog("block_number:${block_number} blk_state is null",("block_number",block_number));
             return;
          }
