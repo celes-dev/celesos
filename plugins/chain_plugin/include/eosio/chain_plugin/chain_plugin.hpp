@@ -350,8 +350,8 @@ public:
 
    struct get_dbps_result {
       vector<fc::variant> rows; ///< one row per item, either encoded as hex string or JSON object
-      uint64_t            total_dbp_resouresweight = 0;
-      uint64_t            total_unpaid_resouresweight = 0;
+      int64_t            total_dbp_resouresweight = 0;
+      int64_t            total_unpaid_resouresweight = 0;
       string              more; ///< fill lower_bound with this value to fetch more rows
    };
 
