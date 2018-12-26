@@ -1493,7 +1493,7 @@ struct controller_impl {
       auto p = pending->_pending_block_state;
       if(current_random_vector.begin() != current_random_vector.end() && last_random_vector.begin() == last_random_vector.end()){
          auto random_tuple = current_random_vector.back();
-         std::tuple_element<1, decltype(random_tuple)>::type number = std::get<1>(random_tuple);
+         std::tuple_element<1, decltype(random_tuple)>::type number = std::get<0>(random_tuple);
          if(p->header.block_num() - number > 1){
             //now in new loop
             ilog("~~~~~~~~~new loop clear vector!");
