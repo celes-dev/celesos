@@ -302,43 +302,39 @@ class privileged_api : public context_aware_api {
 
       bool is_systemaccount_transaction( array_ptr<char> trx_data,     size_t trx_size) {
 
-         transaction trx = fc::raw::unpack<transaction>( trx_data, trx_size );
+         transaction trx = fc::raw::unpack<transaction>(trx_data, trx_size);
 
-         if(trx.actions.size() == 0)
+         if (trx.actions.size() == 0)
          {
             return false;
          }
          else
          {
-            for (auto action : trx.actions)
+            account_name account = trx.first_authorizor();
+            if (account == N(celes) ||
+                account == N(celes.msig) ||
+                account == N(celes.names) ||
+                account == N(celes.ram) ||
+                account == N(celes.ramfee) ||
+                account == N(celes.saving) ||
+                account == N(celes.stake) ||
+                account == N(celes.token) ||
+                account == N(celes.dbps) ||
+                account == N(celes.prods) ||
+                account == N(celes.dbp) ||
+                account == N(celes.bpay) ||
+                account == N(celes.wpay) ||
+                account == N(celes.day) ||
+                account == N(celes.bpayp) ||
+                account == N(celes.wpayp) ||
+                account == N(celes.dayp))
             {
-               if (action.account != N(celes) &&
-                   action.account != N(celes.msig) &&
-                   action.account != N(celes.names) &&
-                   action.account != N(celes.ram) &&
-                   action.account != N(celes.ramfee) &&
-                   action.account != N(celes.saving) &&
-                   action.account != N(celes.stake) &&
-                   action.account != N(celes.token) &&
-                   action.account != N(celes.dbps) &&
-                   action.account != N(celes.prods) &&
-                   action.account != N(celes.dbp) &&
-                   action.account != N(celes.bpay) &&
-                   action.account != N(celes.wpay) &&
-                   action.account != N(celes.day) &&
-                   action.account != N(celes.bpayp) &&
-                   action.account != N(celes.wpayp) &&
-                   action.account != N(celes.dayp))
-               {
-                  continue;
-               }
-               else
-               {
-                  return false;
-               }
+               return true;
             }
-
-            return true;
+            else
+            {
+               return false;
+            }
          }
       }
 };
