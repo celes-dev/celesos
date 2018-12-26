@@ -1493,11 +1493,10 @@ struct controller_impl {
       auto p = pending->_pending_block_state;
       if(current_random_vector.begin() != current_random_vector.end() && last_random_vector.begin() == last_random_vector.end()){
          auto random_tuple = current_random_vector.back();
-         std::tuple_element<1, decltype(random_tuple)>::type number = std::get<0>(random_tuple);
+         uint32_t number = std::get<0>(random_tuple);
          if(p->header.block_num() - number > 1){
             //now in new loop
             ilog("~~~~~~~~~new loop clear vector!");
-             last_random_vector.clear();
              last_random_vector = current_random_vector;
              current_random_vector.clear();
          }
@@ -1766,9 +1765,12 @@ struct controller_impl {
       if(is_produce && p->active_schedule.producers.size() > 1)
       {
          ilog("finalize_block enter set random!!");
-         set_my_random();
          set_next_random_hash();
+         set_my_random();
          set_block_random();
+      }
+      if(is_produce == false && p->active_schedule.producers.size() > 1){
+         last_random_vector.clear();
       }
       ///@}
 
