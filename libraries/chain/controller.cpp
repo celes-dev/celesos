@@ -1528,7 +1528,7 @@ struct controller_impl {
       uint32_t hash_index = 0;
       bool is_last_loop = false;
       //calculate current my_random position
-      signed_block_ptr last_blk_state;
+      std::vector<signed_block_ptr> last_hash_vector;
       for(uint32_t block_number = current_num; block_number > 0; block_number--){
          signed_block_ptr blk_state = self.fetch_block_by_number( block_number );
          if(blk_state == nullptr){
@@ -1541,8 +1541,7 @@ struct controller_impl {
             }else{
                hash_index++;
                if(hash_index == random_index){
-                  last_blk_state = blk_state;
-                  break;
+                  last_hash_vector.push_back(blk_state);
                }
             }
          }else{
@@ -1553,15 +1552,16 @@ struct controller_impl {
             is_last_loop = true;
          }
       }
-      if(last_blk_state == nullptr){
+
+      signed_block_ptr blk_state = last_hash_vector[last_hash_vector.size() - random_index];
+      if(blk_state == nullptr){
          return;
       }
-
       for(int i = 0;i < last_random_vector.size();i++){
          std::tuple<uint32_t, uint64_t, fc::sha256> last_random_tuple = last_random_vector[i];
          fc::sha256 next_hash = get<2>(last_random_tuple);
          uint64_t random_value = get<1>(last_random_tuple);
-         if(last_blk_state->next_random_hash == next_hash){
+         if(blk_state->next_random_hash == next_hash){
              pending->_pending_block_state->header.my_random = random_value;
              ilog("set_my_random:${random}",("random",random_value));
          }
