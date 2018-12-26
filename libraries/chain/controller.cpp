@@ -1491,7 +1491,6 @@ struct controller_impl {
 //my next random and the block of the previous block id hash
    void set_next_random_hash(){
       auto p = pending->_pending_block_state;
-      
       if(current_random_vector.begin() != current_random_vector.end() && last_random_vector.begin() == last_random_vector.end()){
          auto random_tuple = current_random_vector.back();
          std::tuple_element<1, decltype(random_tuple)>::type number = std::get<1>(random_tuple);
@@ -1522,6 +1521,7 @@ struct controller_impl {
       //    ilog("set_my_random:${random}",("random",last_random_pair.second));
       //    last_random_vector.erase(last_random_vector.begin());
       // }
+      ilog("=====1111111111");
       auto p = pending->_pending_block_state;
       uint32_t current_num = head->block_num;
       uint32_t random_index = 0;
@@ -1550,7 +1550,7 @@ struct controller_impl {
             is_last_loop = true;
          }
       }
-
+      ilog("=====222222");
       if(hash_index == 0){
          ilog("last_hash_vector.size() == 0");
          return;
@@ -1561,6 +1561,7 @@ struct controller_impl {
          ilog("get index is null");
          return;
       }
+      ilog("=====333333");
       for(int i = 0;i < last_random_vector.size();i++){
          std::tuple<uint32_t, uint64_t, fc::sha256> last_random_tuple = last_random_vector[i];
          fc::sha256 next_hash = get<2>(last_random_tuple);
