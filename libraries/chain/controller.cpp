@@ -1555,12 +1555,14 @@ struct controller_impl {
 
       signed_block_ptr blk_state = last_hash_vector[last_hash_vector.size() - random_index];
       if(blk_state == nullptr){
+         ilog("get index is null");
          return;
       }
       for(int i = 0;i < last_random_vector.size();i++){
          std::tuple<uint32_t, uint64_t, fc::sha256> last_random_tuple = last_random_vector[i];
          fc::sha256 next_hash = get<2>(last_random_tuple);
          uint64_t random_value = get<1>(last_random_tuple);
+         ilog("---==next_hash${next_hash}---=blk_state->next_random_hash:${hash}",("next_hash",next_hash)("hash",blk_state->next_random_hash));
          if(blk_state->next_random_hash == next_hash){
              pending->_pending_block_state->header.my_random = random_value;
              ilog("set_my_random:${random}",("random",random_value));
