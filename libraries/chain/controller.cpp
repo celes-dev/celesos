@@ -1540,9 +1540,7 @@ struct controller_impl {
                random_index++;
             }else{
                hash_index++;
-               if(hash_index == random_index){
-                  last_hash_vector.push_back(blk_state);
-               }
+               last_hash_vector.push_back(blk_state);
             }
          }else{
             if(hash_index > 0){
@@ -1551,6 +1549,11 @@ struct controller_impl {
             }
             is_last_loop = true;
          }
+      }
+
+      if(hash_index == 0){
+         ilog("last_hash_vector.size() == 0");
+         return;
       }
 
       signed_block_ptr blk_state = last_hash_vector[last_hash_vector.size() - random_index];
@@ -1747,7 +1750,7 @@ struct controller_impl {
 
       auto p = pending->_pending_block_state;
       /// CELES code：hubery.zhang {@
-     if(is_produce && p->active_schedule.producers.size() > 1)
+      if(is_produce && p->active_schedule.producers.size() > 1)
       {
          ilog("finalize_block enter set random!!");
          set_my_random();
