@@ -1841,7 +1841,7 @@ struct controller_impl {
 
       update_permission(authorization.get_permission({config::dbp_account_name,
                                                       config::active_name}),
-                        calculate_threshold(1, 2) /* more than one-half */);
+                        calculate_threshold(2, 3) /* more than one-half */);
    }
 
    void create_block_summary(const block_id_type& id) {
