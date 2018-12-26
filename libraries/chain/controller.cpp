@@ -1538,7 +1538,7 @@ struct controller_impl {
             return;
          }
          ilog("p producer:${producer}",("producer",p->header.producer));
-         ilog("blk_state producer:${producer}",("producer",blk_state->header.producer));
+         ilog("blk_state producer:${producer}",("producer",blk_state->producer));
          if(p->header.producer == blk_state->producer){
             if(!is_last_loop){
                random_index++;
