@@ -1675,10 +1675,14 @@ struct controller_impl {
       std::vector<signed_block_ptr> last_hash_vector;
       for(uint32_t block_number = current_num; block_number > 0; block_number--){
          signed_block_ptr blk_state = self.fetch_block_by_number( block_number );
-         if(blk_state == nullptr){
-            ilog("check_BP_random block_number:${block_number} block is nullptr",("block_number",block_number));
+
+         if(blk_state == nullptr && block_number == current_num){
+            blk_state = p->block;
+         }else if(blk_state == nullptr){
+            ilog("block_number:${block_number} blk_state is null",("block_number",block_number));
             return true;
          }
+
          if(p->header.producer == blk_state->producer){
             if(!is_last_loop){
                random_index++;
