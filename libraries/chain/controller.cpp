@@ -1555,6 +1555,7 @@ struct controller_impl {
          ilog("last_hash_vector.size() == 0");
          return;
       }
+      ilog("last_hash_vector count:${count}",("count",last_hash_vector.size()));
 
       signed_block_ptr blk_state = last_hash_vector[last_hash_vector.size() - random_index];
       if(blk_state == nullptr){
