@@ -1394,17 +1394,26 @@ read_only::get_dbps_result read_only::get_dbps(const read_only::get_dbps_params 
    read_only::get_dbps_result result;
    const auto stopTime = fc::time_point::now() + fc::microseconds(1000 * 10); // 10ms
 
-   auto lower_bound_lookup_tuple = std::make_tuple(table_id->id, std::numeric_limits<uint64_t>::lowest());
-   auto upper_bound_lookup_tuple = std::make_tuple(table_id->id, std::numeric_limits<uint64_t>::max());
-
-   if (p.lower_bound.size())
+   if (table_id == nullptr)
    {
-      name s(p.lower_bound);
-      std::get<1>(lower_bound_lookup_tuple) = s.value;
+      return result;
    }
 
-   if (upper_bound_lookup_tuple < lower_bound_lookup_tuple)
+   const auto &idx = db.db().get_index<dbp_index, by_total_resouresweight>();
+   if (idx.begin() == idx.end())
+   {
       return result;
+   }
+
+   auto lower_bound_lookup_tuple = std::make_tuple(idx.begin()->total_resouresweight);
+   if (p.lower_bound.size())
+   {
+      auto *dbp = d.find<dbp_object, by_name>(name(p.lower_bound.c_str()));
+      if (dbp != nullptr)
+      {
+         std::get<0>(lower_bound_lookup_tuple) = dbp->total_resouresweight;
+      }
+   }
 
    auto walk_table_row_range = [&](auto itr, auto end_itr) {
       auto cur_time = fc::time_point::now();
@@ -1412,7 +1421,9 @@ read_only::get_dbps_result read_only::get_dbps(const read_only::get_dbps_params 
       vector<char> data;
       for (unsigned int count = 0; cur_time <= end_time && count < p.limit && itr != end_itr; ++count, ++itr, cur_time = fc::time_point::now())
       {
-         copy_inline_row(*itr, data);
+         auto contract_dbp = kv_index.find(std::make_tuple(table_id->id, itr->name));
+
+         copy_inline_row(*contract_dbp, data);
 
          fc::variant data_var;
          if (p.json)
@@ -1424,23 +1435,20 @@ read_only::get_dbps_result read_only::get_dbps(const read_only::get_dbps_params 
             data_var = fc::variant(data);
          }
 
-         auto* dbp =  d.find<dbp_object, by_name>(itr->primary_key);
          fc::mutable_variant_object mutable_data_var(data_var);
-         mutable_data_var.set("total_resouresweight",dbp->total_resouresweight).set("unpaid_resouresweight",dbp->unpaid_resouresweight);
-         result.rows.emplace_back( std::move(mutable_data_var));
+         mutable_data_var.set("total_resouresweight", itr->total_resouresweight).set("unpaid_resouresweight", itr->unpaid_resouresweight);
+         result.rows.emplace_back(std::move(mutable_data_var));
       }
       if (itr != end_itr)
       {
-         result.more = name{itr->primary_key}.to_string();
+         result.more = name{itr->name}.to_string();
       }
    };
 
-   auto lower = kv_index.lower_bound(lower_bound_lookup_tuple);
-   auto upper = kv_index.upper_bound(upper_bound_lookup_tuple);
+   auto lower = idx.lower_bound(lower_bound_lookup_tuple);
+   walk_table_row_range(lower, idx.end());
 
-   walk_table_row_range(lower, upper);
-
-   const dynamic_global_property_object& dynamic_global_property = d.get<dynamic_global_property_object>();
+   const dynamic_global_property_object &dynamic_global_property = d.get<dynamic_global_property_object>();
    result.total_dbp_resouresweight = dynamic_global_property.total_dbp_resouresweight;
    result.total_unpaid_resouresweight = dynamic_global_property.total_unpaid_resouresweight;
 
