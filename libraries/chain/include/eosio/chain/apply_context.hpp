@@ -615,6 +615,7 @@ class apply_context {
       uint32_t head_block_num() const;
       uint32_t forest_period_number()const;
       uint32_t forest_space_number()const;
+      uint64_t block_random_by_num(uint32_t num)const;
     ///@}
     /// CELES code：cuichao{@
     bool is_supervision(apply_context& context);

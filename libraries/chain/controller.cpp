@@ -1496,7 +1496,6 @@ struct controller_impl {
          uint32_t number = std::get<0>(random_tuple);
          if(p->header.block_num() - number > 1){
             //now in new loop
-            ilog("~~~~~~~~~new loop clear vector!");
              last_random_vector = current_random_vector;
              current_random_vector.clear();
          }
@@ -1510,7 +1509,6 @@ struct controller_impl {
       block_id_type result_hash = fc::sha256::hash(p->header.previous.str() + random_value);
       current_random_vector.push_back(std::make_tuple(p->header.block_num(),random_value,result_hash));
       p->header.next_random_hash = move(result_hash);
-
       ilog("set_next_random_hash random_value:${random_value},hash:${result_hash}",("random_value",random_value)("result_hash",result_hash));
    }
 //my random in this block
@@ -1526,8 +1524,6 @@ struct controller_impl {
       uint32_t random_index = 0;
       uint32_t hash_index = 0;
       bool is_last_loop = false;
-      ilog("current_num:${current_num}",("current_num",current_num));
-      ilog("p number:${number}",("number",p->header.block_num()));
       //calculate current my_random position
       std::vector<signed_block_ptr> last_hash_vector;
       for(uint32_t block_number = current_num; block_number > 0; block_number--){
@@ -1562,21 +1558,16 @@ struct controller_impl {
          ilog("last_hash_vector.size() == 0");
          return;
       }
-      ilog("last_hash_vector count:${count}",("count",last_hash_vector.size()));
-      ilog("last_hash_vector get index:${index}",("index",last_hash_vector.size() - random_index));
 
       signed_block_ptr blk_state = last_hash_vector[last_hash_vector.size() - random_index];
       if(blk_state == nullptr){
          ilog("get index is null");
          return;
       }
-      ilog("!!last_random_vector.size();${size}",("size",last_random_vector.size()));
       for(int i = 0;i < last_random_vector.size();i++){
          std::tuple<uint32_t, uint64_t, fc::sha256> last_random_tuple = last_random_vector[i];
          fc::sha256 next_hash = get<2>(last_random_tuple);
          uint64_t random_value = get<1>(last_random_tuple);
-         ilog("blk_state number:${number},hash:${hash}",("number",blk_state->block_num())("hash",blk_state->next_random_hash));
-         ilog("tuple number:${number},hash:${hash}",("number",get<0>(last_random_tuple))("hash",get<2>(last_random_tuple)));
          if(blk_state->next_random_hash == next_hash){
              pending->_pending_block_state->header.my_random = random_value;
              ilog("set_my_random:${random}",("random",random_value));
@@ -1768,12 +1759,11 @@ struct controller_impl {
       /// CELES code：hubery.zhang {@
       if(is_produce && p->active_schedule.producers.size() > 1)
       {
-         ilog("finalize_block enter set random!!");
          set_next_random_hash();
          set_my_random();
          set_block_random();
       }
-      if(is_produce == false && p->active_schedule.producers.size() > 1){
+      if(is_produce == false && last_random_vector.size() > 0){
          last_random_vector.clear();
       }
       ///@}
@@ -2182,6 +2172,12 @@ void controller::set_key_blacklist( const flat_set<public_key_type>& new_key_bla
 uint32_t controller::head_block_num()const {
    return my->head->block_num;
 }
+/// CELES code:hubery.zhang {@
+uint64_t controller::block_random_by_num(uint32_t num) const{
+   return my->head->header.block_random;
+}
+/// @}
+
 time_point controller::head_block_time()const {
    return my->head->header.timestamp;
 }

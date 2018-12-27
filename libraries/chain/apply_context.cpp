@@ -813,6 +813,10 @@ uint32_t apply_context::head_block_num() const
 {
     return control.head_block_num();
 }
+
+uint64_t apply_context::block_random_by_num(uint32_t num) const{
+   return control.block_random_by_num(num);
+}
 ///@}
 
 } } /// eosio::chain
