@@ -154,5 +154,9 @@ extern "C" {
     */
    int get_context_free_data( uint32_t index, char* buff, size_t size );
 
+   /// CELES code:hubery.zhang {@
+   uint64_t block_random_by_num(uint32_t num);
+   /// @}
+
    ///@ } transactioncapi
 }

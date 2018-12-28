@@ -197,7 +197,6 @@ bool system_contract::verify(const std::string wood,
 
         itl++;
     }
-
     return verify_wood(block_number, wood_owner_name, wood.c_str());
 }
 

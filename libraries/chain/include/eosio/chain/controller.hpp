@@ -242,6 +242,9 @@ namespace eosio { namespace chain {
          /// @}
 
          double get_forest_diff() const;
+         /// CELES code: hubery.zhang {@
+         uint64_t block_random_by_num(uint32_t num) const;
+         /// @}
 
          bool skip_auth_check()const;
          bool skip_db_sessions( )const;
