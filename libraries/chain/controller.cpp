@@ -2174,7 +2174,12 @@ uint32_t controller::head_block_num()const {
 }
 /// CELES code:hubery.zhang {@
 uint64_t controller::block_random_by_num(uint32_t num) const{
-   return my->head->header.block_random;
+   signed_block_ptr blk_state = fetch_block_by_number( num );
+   if(blk_state == nullptr){
+      ilog("block number:${number} not exist!",("number",num));
+      return 0;
+   }
+   return blk_state->block_random;
 }
 /// @}
 
