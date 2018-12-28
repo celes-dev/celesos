@@ -264,36 +264,36 @@ namespace celesos {
                 auto block_id_tmp =
                         forest_bank::getBlockIdFromCache(first_cache_pair->first).str();
                 block_id_type seed = fc::sha256::hash(block_id_tmp);
-                fc_dlog(this->logger, "\n\tcalc seed with "
-                     "\n\t\tblock_num: ${block_num}"
-                     "\n\t\tblock_id: ${block_id}"
-                     "\n\t\tseed: ${seed}",
-                     ("block_num", first_cache_pair->first)("block_id", block_id_tmp)(
-                             "seed", seed.str()));
+                // fc_dlog(this->logger, "\n\tcalc seed with "
+                //      "\n\t\tblock_num: ${block_num}"
+                //      "\n\t\tblock_id: ${block_id}"
+                //      "\n\t\tseed: ${seed}",
+                //      ("block_num", first_cache_pair->first)("block_id", block_id_tmp)(
+                //              "seed", seed.str()));
 
                 // call ethash verify wood
                 auto result_value = celesos::ethash::hash_light_hex(
                         wood_forest, string(wood), data_set_count, cache_data);
 
-                fc_dlog(this->logger, "\n\tverify_wood with "
-                                      "\n\t\tblock_value: ${block_number} "
-                                      "\n\t\tseed: ${seed} "
-                                      "\n\t\tdouble_target: ${double_target} "
-                                      "\n\t\ttemp_double_target: ${temp_double_target} "
-                                      "\n\t\ttarget_value: ${target} "
-                                      "\n\t\twood_forest: ${wood_forest} "
-                                      "\n\t\twood: ${wood} "
-                                      "\n\t\tdata_set_count: ${data_set_count}"
-                                      "\n\t\tresult_value: ${result_value}",
-                     ("block_number", block_number)
-                     ("seed", seed.str())
-                     ("double_target", double_target)
-                     ("temp_double_target", target.str(0, std::ios_base::hex))
-                     ("target", target.str(0, std::ios_base::hex))
-                     ("wood_forest", wood_forest)
-                     ("wood", wood)
-                     ("data_set_count", data_set_count)
-                     ("result_value", result_value.str(0, std::ios_base::hex)));
+                // fc_dlog(this->logger, "\n\tverify_wood with "
+                //                       "\n\t\tblock_value: ${block_number} "
+                //                       "\n\t\tseed: ${seed} "
+                //                       "\n\t\tdouble_target: ${double_target} "
+                //                       "\n\t\ttemp_double_target: ${temp_double_target} "
+                //                       "\n\t\ttarget_value: ${target} "
+                //                       "\n\t\twood_forest: ${wood_forest} "
+                //                       "\n\t\twood: ${wood} "
+                //                       "\n\t\tdata_set_count: ${data_set_count}"
+                //                       "\n\t\tresult_value: ${result_value}",
+                //      ("block_number", block_number)
+                //      ("seed", seed.str())
+                //      ("double_target", double_target)
+                //      ("temp_double_target", target.str(0, std::ios_base::hex))
+                //      ("target", target.str(0, std::ios_base::hex))
+                //      ("wood_forest", wood_forest)
+                //      ("wood", wood)
+                //      ("data_set_count", data_set_count)
+                //      ("result_value", result_value.str(0, std::ios_base::hex)));
 
                 return result_value <= target;
             }
