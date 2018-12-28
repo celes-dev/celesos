@@ -1033,6 +1033,12 @@ class system_api : public context_aware_api {
          return static_cast<uint64_t>( context.trx_context.published.time_since_epoch().count() );
       }
 
+     /// CELES code:hubery.zhang {@
+      uint64_t block_random_by_num(uint32_t num) {
+         return context.block_random_by_num(num);
+      }
+    /// @}
+
 };
 
 class context_free_system_api :  public context_aware_api {
@@ -1490,12 +1496,6 @@ class context_free_transaction_api : public context_aware_api {
       int get_action( uint32_t type, uint32_t index, array_ptr<char> buffer, size_t buffer_size )const {
          return context.get_action( type, index, buffer, buffer_size );
       }
-
-   /// CELES code:hubery.zhang {@
-      uint64_t block_random_by_num(uint32_t num) {
-         return context.block_random_by_num(num);
-      }
-   /// @}
 };
 
 class compiler_builtins : public context_aware_api {
@@ -1916,6 +1916,7 @@ REGISTER_INTRINSICS(permission_api,
 REGISTER_INTRINSICS(system_api,
    (current_time, int64_t()       )
    (publication_time,   int64_t() )
+   (block_random_by_num,    int64_t (int32_t) )
 );
 
 REGISTER_INTRINSICS(context_free_system_api,
@@ -1961,7 +1962,6 @@ REGISTER_INTRINSICS(context_free_transaction_api,
    (tapos_block_prefix,     int()                    )
    (tapos_block_num,        int()                    )
    (get_action,             int (int, int, int, int) )
-   (block_random_by_num,    int64_t (int32_t) )
    );
 
 REGISTER_INTRINSICS(transaction_api,
