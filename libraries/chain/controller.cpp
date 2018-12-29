@@ -2645,5 +2645,10 @@ uint32_t controller::get_question_block_number()const{
 
   return qbn;
 }
+
+bool controller::verify_wood(uint32_t block_number,const account_name &account, const char *wood)const{
+  celesos::forest::forest_bank* fb = celesos::forest::forest_bank::getInstance(my->self);
+  return fb->verify_wood(block_number,account,wood);
+};
 //}@
 } } /// eosio::chain

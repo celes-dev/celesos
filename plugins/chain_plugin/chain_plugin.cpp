@@ -1984,6 +1984,28 @@ read_only::get_question_block_number_result read_only::get_question_block_number
     result.question_block_number = db.get_question_block_number();
     return result;
 }
+
+    read_only::verify_wood_result read_only::verify_wood(const eosio::chain_apis::read_only::verify_wood_params &params) const {
+
+       read_only::verify_wood_result verify_wood_result;
+
+       uint32_t block_number=params.block_number;
+       account_name account{params.account};
+
+
+       const char *wood = params.wood.c_str();
+
+       verify_wood_result.result = db.verify_wood(block_number,account,wood);
+
+//    get_block_header_state_params pa;
+//    pa.block_num_or_id="123";
+//    fc::variant va = get_block_header_state(pa);
+
+
+
+       return verify_wood_result;
+    }
+
 //}@
 
 } // namespace chain_apis

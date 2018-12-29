@@ -584,6 +584,21 @@ public:
 
     get_question_block_number_result get_question_block_number(const get_question_block_number_params&)const;
 
+
+    struct verify_wood_params{
+        uint32_t block_number;
+        string account;
+        string wood;
+    };
+    struct verify_wood_result{
+        bool result;
+    };
+    verify_wood_result verify_wood(const verify_wood_params& params)const;
+
+
+//
+
+
 };
 
 class read_write {
@@ -782,3 +797,5 @@ FC_REFLECT( eosio::chain_apis::read_only::abi_bin_to_json_result, (args) )
 FC_REFLECT( eosio::chain_apis::read_only::get_required_keys_params, (transaction)(available_keys) )
 FC_REFLECT( eosio::chain_apis::read_only::get_required_keys_result, (required_keys) )
 FC_REFLECT( eosio::chain_apis::read_only::get_question_block_number_result, (question_block_number) )
+FC_REFLECT( eosio::chain_apis::read_only::verify_wood_result, (result) )
+FC_REFLECT( eosio::chain_apis::read_only::verify_wood_params, (block_number) (account)(wood))

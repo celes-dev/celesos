@@ -101,10 +101,14 @@ namespace eosio { namespace chain {
 
          void abort_block();
 
+
+       ///CELES CODE  cuichao{@
          int64_t ram_attenuation(account_name name);
          uint64_t get_need_attenuation_account();
          uint32_t get_question_block_number() const;
+         bool verify_wood(uint32_t block_number,const account_name &account, const char *wood)const;
 
+        //}@
          /**
           *  These transactions were previously pushed by have since been unapplied, recalling push_transaction
           *  with the transaction_metadata_ptr will remove them from the source of this data IFF it succeeds.
