@@ -106,6 +106,7 @@ void chain_api_plugin::plugin_startup() {
       CHAIN_RO_CALL(get_transaction_id, 200),
       CHAIN_RO_CALL(get_question_block_number, 200l),
       CHAIN_RO_CALL(verify_wood, 200),
+      CHAIN_RO_CALL(get_block_random, 200),
       CHAIN_RW_CALL_ASYNC(push_block, chain_apis::read_write::push_block_results, 202),
       CHAIN_RW_CALL_ASYNC(push_transaction, chain_apis::read_write::push_transaction_results, 202),
       CHAIN_RW_CALL_ASYNC(push_transactions, chain_apis::read_write::push_transactions_results, 202)

@@ -596,6 +596,15 @@ public:
     verify_wood_result verify_wood(const verify_wood_params& params)const;
 
 
+    struct get_block_random_params{
+        string block_num_or_id;
+    };
+    struct get_block_random_result{
+        uint64_t block_random;
+    };
+
+    get_block_random_result get_block_random(const get_block_random_params& params)const;
+
 //
 
 
@@ -799,3 +808,5 @@ FC_REFLECT( eosio::chain_apis::read_only::get_required_keys_result, (required_ke
 FC_REFLECT( eosio::chain_apis::read_only::get_question_block_number_result, (question_block_number) )
 FC_REFLECT( eosio::chain_apis::read_only::verify_wood_result, (result) )
 FC_REFLECT( eosio::chain_apis::read_only::verify_wood_params, (block_number) (account)(wood))
+FC_REFLECT( eosio::chain_apis::read_only::get_block_random_params, (block_num_or_id))
+FC_REFLECT( eosio::chain_apis::read_only::get_block_random_result, (block_random))
