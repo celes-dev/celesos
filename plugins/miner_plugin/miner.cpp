@@ -20,7 +20,9 @@ using boost::signals2::connection;
 
 celesos::miner::miner::miner(const fc::logger &logger,
                              boost::asio::io_service &main_io_service,
-                             unsigned int worker_count) :
+                             unsigned int worker_count,
+                             uint32_t sleep_interval_sec,
+                             float sleep_probability) :
         _logger{logger},
         _alive_worker_ptrs{0, vector<shared_ptr<worker>>::allocator_type()},
         _signal_ptr{make_shared<celesos::miner::mine_signal_type>()},
@@ -28,14 +30,16 @@ celesos::miner::miner::miner(const fc::logger &logger,
         _io_thread{&celesos::miner::miner::run, this},
         _state{state::initialized},
         _worker_count{worker_count},
-        _failure_retry_interval_us{fc::milliseconds(5000)} {
+        _failure_retry_interval_us{fc::milliseconds(5000)},
+        _sleep_interval_sec{sleep_interval_sec},
+        _sleep_probability{sleep_probability} {
 }
 
 celesos::miner::miner::~miner() {
-    if(this->_io_work_ptr) {
+    if (this->_io_work_ptr) {
         this->_io_work_ptr.reset();
     }
-    if(this->_signal_ptr) {
+    if (this->_signal_ptr) {
         this->_signal_ptr->disconnect_all_slots();
         this->_signal_ptr.reset();
     }
@@ -243,6 +247,8 @@ void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::fore
                     .block_num = forest_info.block_number,
                     .io_service_ref = this->_main_io_service_ref,
                     .signal_ptr = this->_signal_ptr,
+                    .sleep_interval_sec = this->_sleep_interval_sec,
+                    .sleep_probability = this->_sleep_probability,
             };
             this->_alive_worker_ptrs[i] = make_shared<worker>(std::move(ctx));
         }

@@ -41,6 +41,8 @@ namespace celesos {
             boost::optional<fc::microseconds> _last_failure_time_us;
             unsigned int _worker_count;
             fc::microseconds _failure_retry_interval_us;
+            uint32_t _sleep_interval_sec;
+            float _sleep_probability;
 
             void on_forest_updated(const std::shared_ptr<celesos::forest::forest_struct> forest_info_ptr,
                                    const eosio::chain::account_name &relative_account);
@@ -55,7 +57,11 @@ namespace celesos {
 
             static void gen_random_uint256(boost::multiprecision::uint256_t &dst);
 
-            miner(const fc::logger &logger, boost::asio::io_service &main_io_service, unsigned int worker_count = 1);
+            miner(const fc::logger &logger,
+                  boost::asio::io_service &main_io_service,
+                  unsigned int worker_count,
+                  uint32_t sleep_interval_sec,
+                  float sleep_probability);
 
             miner() = delete;
 
