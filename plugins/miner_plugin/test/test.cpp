@@ -76,6 +76,8 @@ BOOST_AUTO_TEST_SUITE(worker_suite)
                 .block_num = 1024,
                 .io_service_ref = *io_service_ptr,
                 .signal_ptr = signal_ptr,
+                .sleep_interval_sec = 0,
+                .sleep_probability = 0.0f,
         };
         miner::worker worker{std::move(ctx)};
         worker.start();
