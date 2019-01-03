@@ -324,10 +324,10 @@ class privileged_api : public context_aware_api {
                 account == N(celes.dbp) ||
                 account == N(celes.bpay) ||
                 account == N(celes.wpay) ||
-                account == N(celes.day) ||
+                account == N(celes.dpay) ||
                 account == N(celes.bpayp) ||
                 account == N(celes.wpayp) ||
-                account == N(celes.dayp))
+                account == N(celes.dpayp))
             {
                return true;
             }
