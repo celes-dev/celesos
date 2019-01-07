@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @copyright defined in eos/libraries/pow/LICENSE.txt
+ */
 //
 // Created by huberyzhang on 2018/7/25.
 //

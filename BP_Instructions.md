@@ -3,10 +3,9 @@
 This document is indented to contain the information a BPC need to know to build and connect.   
 This document assumes a working knowledge of the EOSIO software
 
-Node OS Version (nodeos -v):   3679913985  
+Node OS Version (nodeos -v):   3679913985
 Github: https://github.com/EOS-Mainnet/eos  
 Tag:  mainnet-1.0.2.2  
-
 
 Peer List Location:  https://docs.google.com/spreadsheets/d/1K_un5Vak3eDh_b4Wdh43sOersuhs0A76HMCfeQplDOY/edit#gid=0  
 Genesis:  https://github.com/EOS-Mainnet/eos/blob/launch-rc-1.0.2/mainnet-genesis.json  

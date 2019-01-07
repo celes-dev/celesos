@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in celes/LICENSE.txt
+ *  @copyright defined in eos/libraries/pow/LICENSE.txt
  */
 #pragma once
 #include <eosio/chain/database_utils.hpp>
@@ -10,10 +10,6 @@
 
 #include "multi_index_includes.hpp"
 
-/**
- *  @file
- *  @copyright defined in eos/LICENSE.txt
- */
 #pragma once
 #include <eosio/chain/database_utils.hpp>
 #include <eosio/chain/authority.hpp>

@@ -1,6 +1,5 @@
 Welcome to the CELES.OS Documentation
 -----------------------------------
-
 @note This documentation is in progress and subject to change due to rapid development. Please report inaccuracies identified to the [CELES.OS Developer Telegram Group](https://t.me/joinchat/EaEnSUPktgfoI-XPfMYtcQ)
 
 ## CELES.OS
