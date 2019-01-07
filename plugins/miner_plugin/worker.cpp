@@ -4,13 +4,14 @@
 
 #include <vector>
 #include <random>
+#include <thread>
 #include <celesos/pow/ethash.hpp>
 #include <celesos/miner_plugin/worker.hpp>
 
 using namespace std;
 using namespace celesos;
 using namespace eosio;
-
+using std::chrono::system_clock;
 using boost::multiprecision::uint256_t;
 
 void *celesos::miner::worker::thread_run(void *arg) {
@@ -18,10 +19,7 @@ void *celesos::miner::worker::thread_run(void *arg) {
 
     auto &logger = worker_ptr->_ctx.logger;
 
-    std::stringstream buffer{};
-    buffer << std::this_thread::get_id();
-    auto thread_id = buffer.str();
-    fc_ilog(logger, "begin run() on thread: ${t_id}", ("t_id", thread_id));
+    fc_ilog(logger, "begin run()");
 
     const auto &target = *worker_ptr->_ctx.target_ptr;
     const auto &dataset = *worker_ptr->_ctx.dataset_ptr;
@@ -30,13 +28,27 @@ void *celesos::miner::worker::thread_run(void *arg) {
     const auto &forest = *worker_ptr->_ctx.forest_ptr;
     auto retry_count = *worker_ptr->_ctx.retry_count_ptr;
     uint256_t nonce_current = *worker_ptr->_ctx.nonce_start_ptr;
+    uint32_t sleep_interval_sec = worker_ptr->_ctx.sleep_interval_sec;
+    float sleep_probability = worker_ptr->_ctx.sleep_probability;
     boost::optional<uint256_t> wood_opt{};
+    std::default_random_engine engine{};
+    std::uniform_real_distribution<float> distribution{0.0f, 1.0f};
+
+    auto next_check_time = system_clock::now() + std::chrono::seconds{sleep_interval_sec};
     do {
         read_lock_type lock{worker_ptr->_mutex};
         if (worker_ptr->_state == state::stopped) {
             break;
         }
         lock.unlock();
+
+        if (sleep_interval_sec > 0 && sleep_probability > 0 && system_clock::now() >= next_check_time) {
+            if (distribution(engine) <= sleep_probability) {
+                std::this_thread::sleep_for(std::chrono::seconds{sleep_interval_sec});
+                continue;
+            }
+            next_check_time = system_clock::now() + std::chrono::seconds{sleep_interval_sec};
+        }
 
         if (ethash::hash_full(forest, nonce_current, dataset_count, dataset) <= target) {
             wood_opt = nonce_current;
@@ -62,7 +74,7 @@ void *celesos::miner::worker::thread_run(void *arg) {
         ++nonce_current;
     } while (--retry_count > 0);
 
-    fc_ilog(logger, "end run() on thread: ${t_id}", ("t_id", thread_id));
+    fc_ilog(logger, "end run()");
     pthread_exit(nullptr);
 }
 

@@ -76,6 +76,8 @@ BOOST_AUTO_TEST_SUITE(worker_suite)
                 .block_num = 1024,
                 .io_service_ref = *io_service_ptr,
                 .signal_ptr = signal_ptr,
+                .sleep_interval_sec = 0,
+                .sleep_probability = 0.0f,
         };
         miner::worker worker{std::move(ctx)};
         worker.start();
@@ -98,7 +100,7 @@ BOOST_AUTO_TEST_SUITE(miner_suite)
         std::condition_variable stop_signal{};
         auto bank = forest::forest_bank::getInstance(controller_ref);
 
-        miner::miner miner{fc::logger::get(), app().get_io_service(), 1};
+        miner::miner miner{fc::logger::get(), app().get_io_service(), 1, 0, 0.0f};
         miner.connect([&stop_signal, bank](bool is_success, chain::block_num_type block_num,
                                            const boost::optional<uint256_t> &wood_opt) {
             BOOST_CHECK_EQUAL(is_success, true);

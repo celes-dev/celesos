@@ -1654,7 +1654,7 @@ struct controller_impl {
 
    bool check_BP_random(uint64_t random){
       if(random == 0){
-         ilog("check_BP_random random is 0");
+         // ilog("check_BP_random random is 0");
          return true;
       }
       auto p = pending->_pending_block_state;
@@ -1690,16 +1690,16 @@ struct controller_impl {
          }
       }
       if(last_hash_vector.size() - random_index >= last_hash_vector.size()){
-         ilog("last random hash count:${count},get index:${index},producer:${producer}",
-         ("count",last_hash_vector.size())
-         ("index",last_hash_vector.size() - random_index)
-         ("producer",N(p->header.producer)));
+         // ilog("last random hash count:${count},get index:${index},producer:${producer}",
+         // ("count",last_hash_vector.size())
+         // ("index",last_hash_vector.size() - random_index)
+         // ("producer",N(p->header.producer)));
          return true;
       }
 
       signed_block_ptr blk_state = last_hash_vector[last_hash_vector.size() - random_index];
       if(blk_state == nullptr){
-         ilog("check_BP_random last_hash_vector count:${count},get index:${index}",("count",last_hash_vector.size())("index",(last_hash_vector.size() - random_index)));
+         // ilog("check_BP_random last_hash_vector count:${count},get index:${index}",("count",last_hash_vector.size())("index",(last_hash_vector.size() - random_index)));
          return true;
       }
       block_id_type result_hash = fc::sha256::hash(blk_state->previous.str() + random);
@@ -1707,14 +1707,14 @@ struct controller_impl {
          return true;
       }
 
-      ilog("check_BP_random my random:${random}",("random",random));
-      ilog("check_BP_random my hash:${hash}",("hash",result_hash));
-      ilog("check_BP_random blk_state hash:${hash}",("hash",blk_state->next_random_hash));
+      // ilog("check_BP_random my random:${random}",("random",random));
+      // ilog("check_BP_random my hash:${hash}",("hash",result_hash));
+      // ilog("check_BP_random blk_state hash:${hash}",("hash",blk_state->next_random_hash));
       for(int i = 0;i < last_hash_vector.size();i++){
          signed_block_ptr blk_state_temp = last_hash_vector[i];
-         ilog("********************check_BP_random blk_state hash:${hash}\n",("hash",blk_state_temp->next_random_hash));
-         ilog("********************check_BP_random blk_state my random:${random}\n",("random",blk_state_temp->my_random));
-         ilog("********************check_BP_random blk_state block number:${number}\n",("number",blk_state_temp->block_num()));
+         // ilog("********************check_BP_random blk_state hash:${hash}\n",("hash",blk_state_temp->next_random_hash));
+         // ilog("********************check_BP_random blk_state my random:${random}\n",("random",blk_state_temp->my_random));
+         // ilog("********************check_BP_random blk_state block number:${number}\n",("number",blk_state_temp->block_num()));
       }
 
       return false;

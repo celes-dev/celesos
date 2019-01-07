@@ -339,10 +339,10 @@ bool resource_limits_manager::is_system_account( account_name account)const{
        account == N(celes.dbp)||
        account == N(celes.bpay)||
        account == N(celes.wpay)||
-       account == N(celes.day)||
+       account == N(celes.dpay)||
        account == N(celes.bpayp)||
        account == N(celes.wpayp)||
-       account == N(celes.dayp))
+       account == N(celes.dpayp))
    {
       return true;
    }

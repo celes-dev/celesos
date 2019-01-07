@@ -31,6 +31,8 @@ namespace celesos {
             const eosio::chain::block_num_type block_num;
             boost::asio::io_service &io_service_ref;
             const celesos::miner::mine_signal_ptr_type signal_ptr;
+            const uint32_t sleep_interval_sec;
+            const float sleep_probability;
         };
 
         class worker {

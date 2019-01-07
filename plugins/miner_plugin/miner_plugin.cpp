@@ -41,6 +41,8 @@ public:
     account_name _producer_name;
 //    uint32_t _worker_priority;
     unsigned int _worker_count;
+    float _sleep_probability;
+    uint32_t _sleep_interval_sec;
     std::map<chain::public_key_type, signature_provider_type> _signature_providers;
     fc::microseconds _kcelesd_provider_timeout_us;
     fc::logger _logger;
@@ -111,6 +113,12 @@ void celesos::miner_plugin::set_program_options(options_description &, options_d
              "Producer to vote when solve puzzle,program will "
              "perform vote action with answer after puzzle "
              "solved.")
+            ("miner-sleep-interval-sec",
+             boost::program_options::value<uint32_t>()->default_value(60),
+             "Sleep interval when mining, unit is second, default is 60sec")
+            ("miner-sleep-probability",
+             boost::program_options::value<float>()->default_value(0.3f),
+             "Probability to sleep when mining, value is in range [0,1], default is 0")
             ("miner-signature-provider",
              boost::program_options::value<vector<string>>()->composing()->multitoken(),
              "Key=Value pairs in the form <public-key>=<provider-spec>\n"
@@ -199,6 +207,14 @@ void celesos::miner_plugin::plugin_initialize(const variables_map &options) {
             }
         }
 
+        auto &&sleep_interval_sec = options["miner-sleep-interval-sec"].as<uint32_t>();
+        this->my->_sleep_interval_sec = sleep_interval_sec;
+        auto sleep_probability = options["miner-sleep-probability"].as<float>();
+        if (sleep_interval_sec < 0.0f || sleep_interval_sec > 1.0f) {
+            elog("Option \"miner-sleep-probability\" must be in range [0,1]");
+        }
+        this->my->_sleep_probability = sleep_probability;
+
 //        auto worker_priority = options["miner-worker-priority"].as<uint32_t>();
 //        if (worker_priority < 1 || worker_priority > 99) {
 //            FC_THROW("worker priority must between [1,99]");
@@ -231,7 +247,11 @@ void celesos::miner_plugin::plugin_startup() {
         }
 
         ilog("plugin_startup() begin");
-        this->my->_miner_opt.emplace(logger, app().get_io_service(), this->my->_worker_count);
+        this->my->_miner_opt.emplace(logger,
+                                     app().get_io_service(),
+                                     this->my->_worker_count,
+                                     this->my->_sleep_interval_sec,
+                                     this->my->_sleep_probability);
         auto &the_chain_plugin = app().get_plugin<chain_plugin>();
         this->my->_miner_opt->start(this->my->_voter_name, the_chain_plugin.chain());
 

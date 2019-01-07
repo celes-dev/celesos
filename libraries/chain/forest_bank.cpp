@@ -146,10 +146,10 @@ namespace celesos {
 
             auto itr = idx.cbegin();
             while (itr != idx.cend()) {
-                fc_dlog(this->logger, "load block cache block "
-                     "number:${block_number},block_id:${block_id},diff:${diff}",
-                     ("block_number", itr->block_number)("block_id",
-                                                         itr->block_id)("diff", itr->diff));
+                // fc_dlog(this->logger, "load block cache block "
+                //      "number:${block_number},block_id:${block_id},diff:${diff}",
+                //      ("block_number", itr->block_number)("block_id",
+                //                                          itr->block_id)("diff", itr->diff));
 
                 forest_bank::update_forest_with_block_number(itr->block_number + 1,
                                                              itr->diff,
