@@ -426,7 +426,10 @@ struct launcher_def {
    string start_temp;
    string start_script;
    fc::optional<uint32_t> max_block_cpu_usage;
-   fc::optional<uint32_t> max_transaction_cpu_usage;
+   fc::optional<uint32_t> origin_difficulty;
+   fc::optional<uint64_t> base_user_cpu_usage;
+   fc::optional<uint16_t> base_user_net_usage;
+   fc::optional<uint16_t> max_transaction_cpu_usage;
    eosio::chain::genesis_state genesis_from_file;
 
    void assign_name (eosd_def &node, bool is_bios);
@@ -536,6 +539,18 @@ launcher_def::initialize (const variables_map &vmap) {
 
   if (vmap.count("max-block-cpu-usage")) {
      max_block_cpu_usage = vmap["max-block-cpu-usage"].as<uint32_t>();
+  }
+
+  if (vmap.count("origin_difficulty")) {
+     origin_difficulty = vmap["origin_difficulty"].as<uint64_t>();
+  }
+
+  if (vmap.count("base_user_cpu_usage")) {
+     base_user_cpu_usage = vmap["base_user_cpu_usage"].as<uint16_t>();
+  }
+
+  if (vmap.count("base_user_net_usage")) {
+     base_user_net_usage = vmap["base_user_net_usage"].as<uint16_t>();
   }
 
   if (vmap.count("max-transaction-cpu-usage")) {
@@ -1192,6 +1207,12 @@ launcher_def::init_genesis () {
       genesis_from_file.initial_configuration.max_block_cpu_usage = *max_block_cpu_usage;
    if (max_transaction_cpu_usage)
       genesis_from_file.initial_configuration.max_transaction_cpu_usage = *max_transaction_cpu_usage;
+    if (origin_difficulty)
+      genesis_from_file.initial_configuration.origin_difficulty = *origin_difficulty;
+    if (base_user_cpu_usage)
+      genesis_from_file.initial_configuration.base_user_cpu_usage = *base_user_cpu_usage;
+    if (base_user_net_usage)
+      genesis_from_file.initial_configuration.base_user_net_usage = *base_user_net_usage;
 }
 
 void

@@ -293,7 +293,10 @@ extern const char* const state_history_plugin_abi = R"({
                 { "type": "uint32", "name": "max_transaction_delay" },
                 { "type": "uint32", "name": "max_inline_action_size" },
                 { "type": "uint16", "name": "max_inline_action_depth" },
-                { "type": "uint16", "name": "max_authority_depth" }
+                { "type": "uint16", "name": "max_authority_depth" },
+                { "type": "uint64", "name": "origin_difficulty" },
+                { "type": "uint16", "name": "base_user_cpu_usage" },
+                { "type": "uint16", "name": "base_user_net_usage" },
             ]
         },
         {

@@ -255,6 +255,9 @@ datastream<ST>& operator<<(datastream<ST>& ds, const history_serial_wrapper<eosi
    fc::raw::pack(ds, as_type<uint32_t>(obj.obj.max_inline_action_size));
    fc::raw::pack(ds, as_type<uint16_t>(obj.obj.max_inline_action_depth));
    fc::raw::pack(ds, as_type<uint16_t>(obj.obj.max_authority_depth));
+   fc::raw::pack(ds, as_type<uint64_t>(obj.obj.origin_difficulty));
+   fc::raw::pack(ds, as_type<uint16_t>(obj.obj.base_user_cpu_usage));
+   fc::raw::pack(ds, as_type<uint16_t>(obj.obj.base_user_net_usage));
    return ds;
 }
 
