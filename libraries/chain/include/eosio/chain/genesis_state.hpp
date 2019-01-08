@@ -40,9 +40,11 @@ struct genesis_state {
       .max_inline_action_size               = config::default_max_inline_action_size,
       .max_inline_action_depth              = config::default_max_inline_action_depth,
       .max_authority_depth                  = config::default_max_auth_depth,
-      .base_user_cpu_usage                  = config::base_user_cpu_usage,
-      .base_user_net_usage                  = config::base_user_net_usage,
       .origin_difficulty                    = config::default_origin_difficulty,
+      .base_user_cpu_usage                  = config::default_base_user_cpu_usage,
+      .base_user_net_usage                  = config::default_base_user_net_usage,
+      .user_cpu_scale                       = config::default_user_cpu_scale,
+      .user_net_scale                       = config::default_user_net_scale,
    };
 
    time_point                               initial_timestamp;

@@ -297,6 +297,8 @@ extern const char* const state_history_plugin_abi = R"({
                 { "type": "uint64", "name": "origin_difficulty" },
                 { "type": "uint16", "name": "base_user_cpu_usage" },
                 { "type": "uint16", "name": "base_user_net_usage" },
+                { "type": "float32", "name": "user_cpu_scale" },
+                { "type": "float32", "name": "user_net_scale" },
             ]
         },
         {

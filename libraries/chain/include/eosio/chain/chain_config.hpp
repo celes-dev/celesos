@@ -37,9 +37,11 @@ struct chain_config {
    uint32_t   max_inline_action_size;              ///< maximum allowed size (in bytes) of an inline action
    uint16_t   max_inline_action_depth;             ///< recursion depth limit on sending inline actions
    uint16_t   max_authority_depth;                 ///< recursion depth limit for checking if an authority is satisfied
-   uint64_t   origin_difficulty;              ///origin difficulty
+   uint64_t   origin_difficulty;                   ///origin difficulty
    uint16_t   base_user_cpu_usage;                 ///< base user cpu usage
    uint16_t   base_user_net_usage;                 ///< base user net usage
+   float      user_cpu_scale;                      ///< user cpu scale
+   float      user_net_scale;                      ///< user net scale                 
 
    void validate()const;
 
@@ -66,7 +68,9 @@ struct chain_config {
                  << "Max Authority Depth: " << c.max_authority_depth << ","
                  << "Origin Difficulty: " << c.origin_difficulty << ","
                  << "Base user cpu usage: " << c.base_user_cpu_usage << ","
-                 << "Base user net usage: " << c.base_user_net_usage << "\n";
+                 << "Base user cpu usage: " << c.base_user_net_usage << ","
+                 << "User cpu scale: " << c.user_cpu_scale << ","
+                 << "User net scale: " << c.user_net_scale << "\n";
    }
 
    friend inline bool operator ==( const chain_config& lhs, const chain_config& rhs ) {
@@ -80,7 +84,7 @@ struct chain_config {
                            lhs.max_block_cpu_usage,
                            lhs.target_block_cpu_usage_pct,
                            lhs.max_transaction_cpu_usage,
-                           lhs.max_transaction_cpu_usage,
+                           lhs.min_transaction_cpu_usage,
                            lhs.max_transaction_lifetime,
                            lhs.deferred_trx_expiration_window,
                            lhs.max_transaction_delay,
@@ -89,7 +93,9 @@ struct chain_config {
                            lhs.max_authority_depth,
                            lhs.origin_difficulty,
                            lhs.base_user_cpu_usage,
-                           lhs.base_user_net_usage
+                           lhs.base_user_net_usage,
+                           lhs.user_cpu_scale,
+                           lhs.user_net_scale
                         )
                ==
                std::tie(   rhs.max_block_net_usage,
@@ -102,7 +108,7 @@ struct chain_config {
                            rhs.max_block_cpu_usage,
                            rhs.target_block_cpu_usage_pct,
                            rhs.max_transaction_cpu_usage,
-                           rhs.max_transaction_cpu_usage,
+                           rhs.min_transaction_cpu_usage,
                            rhs.max_transaction_lifetime,
                            rhs.deferred_trx_expiration_window,
                            rhs.max_transaction_delay,
@@ -111,7 +117,9 @@ struct chain_config {
                            rhs.max_authority_depth,
                            rhs.origin_difficulty,
                            rhs.base_user_cpu_usage,
-                           rhs.base_user_net_usage
+                           rhs.base_user_net_usage,
+                           lhs.user_cpu_scale,
+                           lhs.user_net_scale
                         );
    };
 
@@ -130,6 +138,7 @@ FC_REFLECT(eosio::chain::chain_config,
            (max_transaction_cpu_usage)(min_transaction_cpu_usage)
 
            (max_transaction_lifetime)(deferred_trx_expiration_window)(max_transaction_delay)
-           (max_inline_action_size)(max_inline_action_depth)(max_authority_depth)(origin_difficulty)(base_user_cpu_usage)(base_user_net_usage)
+           (max_inline_action_size)(max_inline_action_depth)(max_authority_depth)
+           (origin_difficulty)(base_user_cpu_usage)(base_user_net_usage)(user_cpu_scale)(user_net_scale)
 
 )

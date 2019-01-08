@@ -83,8 +83,11 @@ const static uint16_t   default_max_inline_action_depth        = 4;
 const static uint16_t   default_max_auth_depth                 = 6;
 const static uint64_t   default_origin_difficulty              = 72057594037927940;
 const static uint16_t   default_controller_thread_pool_size    = 2;
-const static uint16_t   base_user_cpu_usage                    = 2000;
-const static uint16_t   base_user_net_usage                    = 512;
+const static uint16_t   default_base_user_cpu_usage            = 2000;
+const static uint16_t   default_base_user_net_usage            = 512;
+
+const static float      default_user_cpu_scale                 = 1.0f;
+const static float      default_user_net_scale                 = 1.0f;
 
 const static uint32_t   min_net_usage_delta_between_base_and_max_for_trx  = 10*1024;
 // Should be large enough to allow recovery from badly set blockchain parameters without a hard fork

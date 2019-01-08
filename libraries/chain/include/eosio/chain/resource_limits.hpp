@@ -26,6 +26,8 @@ namespace eosio { namespace chain { namespace resource_limits {
       uint32_t max_multiplier;   // the multiplier by which virtual space can oversell usage when uncongested
       ratio    contract_rate;    // the rate at which a congested resource contracts its limit
       ratio    expand_rate;       // the rate at which an uncongested resource expands its limits
+      uint16_t base_usage;
+      float    user_scale;
 
       void validate()const; // throws if the parameters do not satisfy basic sanity checks
    };
@@ -97,4 +99,4 @@ namespace eosio { namespace chain { namespace resource_limits {
 
 FC_REFLECT( eosio::chain::resource_limits::account_resource_limit, (used)(available)(max) )
 FC_REFLECT( eosio::chain::resource_limits::ratio, (numerator)(denominator))
-FC_REFLECT( eosio::chain::resource_limits::elastic_limit_parameters, (target)(max)(periods)(max_multiplier)(contract_rate)(expand_rate))
+FC_REFLECT( eosio::chain::resource_limits::elastic_limit_parameters, (target)(max)(periods)(max_multiplier)(contract_rate)(expand_rate)(base_usage)(user_scale))

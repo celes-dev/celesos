@@ -144,7 +144,7 @@ void resource_limits_manager::add_transaction_usage(const flat_set<account_name>
          uint128_t user_weight     = (uint128_t)cpu_weight;
          uint128_t all_user_weight = state.total_cpu_weight;
 
-         auto max_user_use_in_window = (virtual_network_capacity_in_window * user_weight) / all_user_weight;
+         auto max_user_use_in_window = (virtual_network_capacity_in_window * user_weight) / all_user_weight * config.cpu_limit_parameters.user_scale + config.cpu_limit_parameters.base_usage;
 
          EOS_ASSERT( cpu_used_in_window <= max_user_use_in_window,
                      tx_cpu_usage_exceeded,
@@ -163,7 +163,7 @@ void resource_limits_manager::add_transaction_usage(const flat_set<account_name>
          uint128_t user_weight     = (uint128_t)net_weight;
          uint128_t all_user_weight = state.total_net_weight;
 
-         auto max_user_use_in_window = (virtual_network_capacity_in_window * user_weight) / all_user_weight;
+         auto max_user_use_in_window = (virtual_network_capacity_in_window * user_weight) / all_user_weight * config.net_limit_parameters.user_scale + config.net_limit_parameters.base_usage;;
 
          EOS_ASSERT( net_used_in_window <= max_user_use_in_window,
                      tx_net_usage_exceeded,
@@ -520,7 +520,7 @@ account_resource_limit resource_limits_manager::get_account_cpu_limit_ex( const 
    uint128_t user_weight     = (uint128_t)cpu_weight;
    uint128_t all_user_weight = (uint128_t)state.total_cpu_weight;
 
-   auto max_user_use_in_window = (virtual_cpu_capacity_in_window * user_weight) / all_user_weight;
+   int64_t max_user_use_in_window = (virtual_cpu_capacity_in_window * user_weight) / all_user_weight * config.cpu_limit_parameters.user_scale + config.cpu_limit_parameters.base_usage;
    auto cpu_used_in_window  = impl::integer_divide_ceil((uint128_t)usage.cpu_usage.value_ex * window_size, (uint128_t)config::rate_limiting_precision);
 
    if( max_user_use_in_window <= cpu_used_in_window )
@@ -559,7 +559,7 @@ account_resource_limit resource_limits_manager::get_account_net_limit_ex( const 
    uint128_t all_user_weight = (uint128_t)state.total_net_weight;
 
 
-   auto max_user_use_in_window = (virtual_network_capacity_in_window * user_weight) / all_user_weight;
+   int64_t max_user_use_in_window = (virtual_network_capacity_in_window * user_weight) / all_user_weight * config.net_limit_parameters.user_scale + config.net_limit_parameters.base_usage;
    auto net_used_in_window  = impl::integer_divide_ceil((uint128_t)usage.net_usage.value_ex * window_size, (uint128_t)config::rate_limiting_precision);
 
    if( max_user_use_in_window <= net_used_in_window )

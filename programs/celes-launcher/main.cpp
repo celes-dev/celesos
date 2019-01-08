@@ -430,6 +430,8 @@ struct launcher_def {
    fc::optional<uint64_t> base_user_cpu_usage;
    fc::optional<uint16_t> base_user_net_usage;
    fc::optional<uint16_t> max_transaction_cpu_usage;
+   fc::optional<float> user_cpu_scale;
+   fc::optional<float> user_net_scale;
    eosio::chain::genesis_state genesis_from_file;
 
    void assign_name (eosd_def &node, bool is_bios);
@@ -551,6 +553,14 @@ launcher_def::initialize (const variables_map &vmap) {
 
   if (vmap.count("base_user_net_usage")) {
      base_user_net_usage = vmap["base_user_net_usage"].as<uint16_t>();
+  }
+
+  if (vmap.count("user_cpu_scale")) {
+     user_cpu_scale = vmap["user_cpu_scale"].as<float>();
+  }
+
+  if (vmap.count("user_net_scale")) {
+     user_net_scale = vmap["user_net_scale"].as<float>();
   }
 
   if (vmap.count("max-transaction-cpu-usage")) {
@@ -1213,6 +1223,10 @@ launcher_def::init_genesis () {
       genesis_from_file.initial_configuration.base_user_cpu_usage = *base_user_cpu_usage;
     if (base_user_net_usage)
       genesis_from_file.initial_configuration.base_user_net_usage = *base_user_net_usage;
+    if (user_cpu_scale)
+      genesis_from_file.initial_configuration.user_cpu_scale = *user_cpu_scale;
+    if (user_net_scale)
+      genesis_from_file.initial_configuration.user_net_scale = *user_net_scale;
 }
 
 void

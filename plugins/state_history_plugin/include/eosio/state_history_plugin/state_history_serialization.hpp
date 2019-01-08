@@ -258,6 +258,8 @@ datastream<ST>& operator<<(datastream<ST>& ds, const history_serial_wrapper<eosi
    fc::raw::pack(ds, as_type<uint64_t>(obj.obj.origin_difficulty));
    fc::raw::pack(ds, as_type<uint16_t>(obj.obj.base_user_cpu_usage));
    fc::raw::pack(ds, as_type<uint16_t>(obj.obj.base_user_net_usage));
+   fc::raw::pack(ds, as_type<float>(obj.obj.user_cpu_scale));
+   fc::raw::pack(ds, as_type<float>(obj.obj.user_net_scale));
    return ds;
 }
 

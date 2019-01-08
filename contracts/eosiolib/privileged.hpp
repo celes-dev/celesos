@@ -115,6 +115,20 @@ namespace eosio {
        */
       uint16_t base_user_net_usage;
 
+      /**
+       * User cpu usage
+       *
+       * @brief User net usage
+       */
+      float user_cpu_scale;
+
+      /**
+       * User net usage
+       *
+       * @brief User net usage
+       */
+      float user_net_scale;
+
 
       EOSLIB_SERIALIZE( blockchain_parameters,
                         (max_block_net_usage)(target_block_net_usage_pct)
@@ -125,7 +139,8 @@ namespace eosio {
                         (max_transaction_cpu_usage)(min_transaction_cpu_usage)
 
                         (max_transaction_lifetime)(deferred_trx_expiration_window)(max_transaction_delay)
-                        (max_inline_action_size)(max_inline_action_depth)(max_authority_depth)(origin_difficulty)(base_user_cpu_usage)(base_user_net_usage)
+                        (max_inline_action_size)(max_inline_action_depth)(max_authority_depth)
+                        (origin_difficulty)(base_user_cpu_usage)(base_user_net_usage)(user_cpu_scale)(user_net_scale)
       )
    };
 
