@@ -991,7 +991,9 @@ struct register_dbp_subcommand {
       add_standard_transaction_options(register_dbp);
       register_dbp->set_callback([this] {
          auto regdbp_var = regdbp_variant(dbp_str,url_str,steemid_str);
-         send_actions({create_action({permission_level{"celes.dbp",config::active_name}}, config::system_account_name, N(regdbp), regdbp_var)});
+         auto accountPermissions = get_account_permissions(tx_permission);
+         send_actions({create_action(accountPermissions, config::system_account_name, N(regdbp), regdbp_var)});
+         // send_actions({create_action({permission_level{"celes.dbp",config::active_name}}, config::system_account_name, N(regdbp), regdbp_var)});
          // send_actions({create_action({permission_level{dbp_str,config::active_name}}, config::system_account_name, N(regdbp), regdbp_var)});
       });
    }
