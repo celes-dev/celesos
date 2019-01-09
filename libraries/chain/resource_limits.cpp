@@ -419,12 +419,12 @@ void resource_limits_manager::process_account_limit_updates() {
 
    // convenience local lambda to reduce clutter
    auto update_state_and_value = [](uint64_t &total, int64_t &value, int64_t pending_value, const char* debug_which) -> void {
-      if (value > 0 && total>0) {
+      if (value > 0 ) {
          EOS_ASSERT(total >= value, rate_limiting_state_inconsistent, "underflow when reverting old value to ${which}", ("which", debug_which));
          total -= value;
       }
 
-      if (pending_value > 0 && total>0) {
+      if (pending_value > 0 ) {
          EOS_ASSERT(UINT64_MAX - total >= pending_value, rate_limiting_state_inconsistent, "overflow when applying new value to ${which}", ("which", debug_which));
          total += pending_value;
       }
@@ -446,7 +446,7 @@ void resource_limits_manager::process_account_limit_updates() {
             update_state_and_value(rso.total_ram_bytes,  rlo.ram_bytes,  itr->ram_bytes, "ram_bytes");
             update_state_and_value(rso.total_cpu_weight, rlo.cpu_weight, itr->cpu_weight, "cpu_weight");
             update_state_and_value(rso.total_net_weight, rlo.net_weight, itr->net_weight, "net_weight");
-            update_state_and_value(last_position, rlo.last_position,itr->last_position, "ram_last_position");
+            update_state_and_value(last_position, rlo.last_position, itr->last_position, "ram_last_position");
          });
 
          multi_index.remove(*itr);
