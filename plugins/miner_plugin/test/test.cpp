@@ -66,7 +66,9 @@ BOOST_AUTO_TEST_SUITE(worker_suite)
         ethash::calc_dataset(*dataset_ptr, DATASET_COUNT, *cache_ptr);
         BOOST_TEST_MESSAGE("end prepare dataset with count: " << DATASET_COUNT);
 
+        fc::logger a_logger{};
         miner::worker_ctx ctx{
+                .logger = a_logger,
                 .dataset_ptr = dataset_ptr,
                 .seed_ptr = seed_ptr,
                 .forest_ptr = forest_ptr,
