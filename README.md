@@ -7,18 +7,16 @@ Welcome to the EOSIO source code repository! This software enables businesses to
 
 Some of the groundbreaking features of EOSIO include:
 
-1. Free Rate Limited Transactions 
-1. Low Latency Block confirmation (0.5 seconds)
-1. Low-overhead Byzantine Fault Tolerant Finality
-1. Designed for optional high-overhead, low-latency BFT finality 
-1. Smart contract platform powered by Web Assembly
-1. Designed for Sparse Header Light Client Validation
-1. Scheduled Recurring Transactions 
-1. Time Delay Security
-1. Hierarchical Role Based Permissions
-1. Support for Biometric Hardware Secured Keys (e.g. Apple Secure Enclave)
-1. Designed for Parallel Execution of Context Free Validation Logic
-1. Designed for Inter Blockchain Communication 
+1. 基于DPOW的共识机制
+1. 我们使用燃木作为pow的中间产物
+1. ABP是所有被燃木投票选出的BP（出块者）
+1. DBP被用来定义所有在主链上的运行DAPP的拥有者
+1. 在整个主网中，多签和治理有更重要的位置
+1. 提供更丰富的奖励机制给到全网的所有用户，包括开发者和用户
+1. 特别提供DBP优惠期用以培育Dapp以及用户
+1. 合约可以使用一个特别的权限
+1. 购买的ram将会随着时间进行衰减，以减少炒作的概率
+1. 如果你没有足够的cpu和net，你将在主网上有一个最低的免费资源可以使用。
 
 EOSIO is released under the open source MIT license and is offered “AS IS” without warranty of any kind, express or implied. Any security provided by the EOSIO software depends in part on how it is used, configured, and deployed. EOSIO is built upon many third-party libraries such as Binaryen (Apache License) and WAVM  (BSD 3-clause) which are also provided “AS IS” without warranty of any kind. Without limiting the generality of the foregoing, Block.one makes no representation or guarantee that EOSIO or any third-party libraries will perform as intended or will be free of errors, bugs or faulty code. Both may fail in large or small ways that could completely or partially limit functionality or compromise computer systems. If you use or implement EOSIO, you do so at your own risk. In no event will Block.one be liable to any party for any damages whatsoever, even if it had been advised of the possibility of damage.  
 
@@ -72,7 +70,7 @@ $ sudo yum remove eosio.cdt
 
 ## Supported Operating Systems
 EOSIO currently supports the following operating systems:  
-1. Amazon 2017.09 and higher
+1. Amazon 2018.03 and higher
 2. Centos 7
 3. Fedora 25 and higher (Fedora 27 recommended)
 4. Mint 18

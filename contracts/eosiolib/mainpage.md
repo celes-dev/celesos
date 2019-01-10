@@ -1,9 +1,9 @@
-Welcome to the CELES.OS Documentation
+Welcome to the CELESOS Documentation
 -----------------------------------
-@note This documentation is in progress and subject to change due to rapid development. Please report inaccuracies identified to the [CELES.OS Developer Telegram Group](https://t.me/joinchat/EaEnSUPktgfoI-XPfMYtcQ)
+@note This documentation is in progress and subject to change due to rapid development. Please report inaccuracies identified to the [CELESOS Developer Telegram Group](https://t.me/joinchat/KB1ZXBYDErSoBBEm58n79A)
 
 ## CELES.OS
- - [Additional resources - Github Readme](https://github.com/CELESOS/celes#readme)
+ - [Additional resources - Github Readme](https://github.com/celes-dev/celesos#readme)
 
 ## Smart Contract Developers
 - @ref eosiorpc

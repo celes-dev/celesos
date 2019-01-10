@@ -1,6 +1,6 @@
 # Run in docker
 
-Simple and fast setup of CELES.OS on Docker is also available.
+Simple and fast setup of CELESOS on Docker is also available.
 
 ## Install Dependencies
 
@@ -12,11 +12,11 @@ Simple and fast setup of CELES.OS on Docker is also available.
 - At least 7GB RAM (Docker -> Preferences -> Advanced -> Memory -> 7GB or above)
 - If the build below fails, make sure you've adjusted Docker Memory settings and try again.
 
-## Build celes image
+## Build celesos image
 
 ```bash
-git clone https://github.com/CELESOS/celes.git --recursive  --depth 1
-cd celes/Docker
+git clone https://github.com/celes-dev/celesos.git --recursive  --depth 1
+cd celesos/Docker
 docker build . -t celesos/celes
 ```
 

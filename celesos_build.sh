@@ -1,11 +1,9 @@
 #!/bin/bash
 ##########################################################################
 # This is the CELESOS automated install script for Linux and Mac OS.
-# This file was downloaded from https://github.com/CELESOS/celes
+# This file was downloaded from https://github.com/celes-dev/celesos
 #
-# Copyright (c) 2017, Respective Authors all rights reserved.
-#
-# After June 1, 2018 this software is available under the following terms:
+# Copyright (c) 2018, Respective Authors all rights reserved.
 #
 # The MIT License
 #
@@ -27,7 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# https://github.com/CELESOS/celes/blob/master/LICENSE
+# https://github.com/celes-dev/celesos/blob/master/LICENSE
 ##########################################################################
 
    SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -120,8 +118,8 @@
 
    if [ ! -d "${SOURCE_DIR}/.git" ]; then
       printf "\\n\\tThis build script only works with sources cloned from git\\n"
-      printf "\\tPlease clone a new celes directory with 'git clone https://github.com/CELESOS/celes --recursive'\\n"
-      printf "\\tSee the wiki for instructions: https://github.com/CELESOS/celes/wiki\\n"
+      printf "\\tPlease clone a new celes directory with 'git clone https://github.com/celes-dev/celesos --recursive'\\n"
+      printf "\\tSee the wiki for instructions: https://github.com/celes-dev/celesos/wiki\\n"
       exit 1
    fi
 
@@ -301,6 +299,6 @@
    print_instructions
 
    printf "\\tFor more information:\\n"
-   printf "\\tCELESOS website: https://celes.os\\n"
-   printf "\\tCELESOS resources: https://celes.os/resources/\\n"
-   printf "\\tCELESOS wiki: https://github.com/CELESOS/celes/wiki\\n\\n\\n"
+   printf "\\tCELESOS website: https://www.celesos.com/\\n"
+   printf "\\tCELESOS developer: https://developers.celesos.com/\\n"
+   printf "\\tCELESOS wiki: https://github.com/celes-dev/celesos/wiki\\n\\n\\n"

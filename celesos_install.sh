@@ -1,7 +1,7 @@
 #!/bin/bash
 ##########################################################################
 # This is the CELESOS automated install script for Linux and Mac OS.
-# This file was downloaded from https://github.com/CELESOS/celes
+# This file was downloaded from https://github.com/celes-dev/celesos
 #
 # Copyright (c) 2017, Respective Authors all rights reserved.
 #
@@ -27,7 +27,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# https://github.com/CELESOS/celes/blob/master/LICENSE.txt
+# https://github.com/celes-dev/celesos/blob/master/LICENSE
 ##########################################################################
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -114,6 +114,6 @@ fi
    printf "${txtrst}"
 
    printf "\\tFor more information:\\n"
-   printf "\\tCELESOS website: https://celes.os\\n"
-   printf "\\tCELESOS resources: https://celes.os/resources/\\n"
-   printf "\\tCELESOS wiki: https://github.com/CELESOS/celes/wiki\\n\\n\\n"
+   printf "\\tCELESOS website: https://www.celesos.com/\\n"
+   printf "\\tCELESOS developer: https://developers.celesos.com/\\n"
+   printf "\\tCELESOS wiki: https://github.com/celes-dev/celesos/wiki\\n\\n\\n"

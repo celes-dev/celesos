@@ -152,7 +152,7 @@ function print_help {
 
 function print_deprecation_notice {
     echo -e "\033[0;33mWARNING: this tool is deprecated and will be removed in a future release\033[0m" 1>&2
-    echo -e "\033[0;33mPlease consider using the EOSIO.CDT (https://github.com/EOSIO/eosio.cdt/)\033[0m" 1>&2
+    echo -e "\033[0;33mPlease consider using the EOSIO.CDT (https://github.com/celes-dev/celesos.cdt/)\033[0m" 1>&2
 }
 
 command=""

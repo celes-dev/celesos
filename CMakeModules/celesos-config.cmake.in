@@ -1,5 +1,5 @@
 if(CELESOS_ROOT STREQUAL "" OR NOT CELESOS_ROOT)
-   set(CELESOS_ROOT "@EOS_ROOT_DIR@")
+   set(CELESOS_ROOT "@CELES_ROOT_DIR@")
 endif()
 list(APPEND CMAKE_MODULE_PATH ${CELESOS_ROOT}/lib/cmake/celesos)
 include(EosioTester)
