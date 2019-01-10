@@ -70,6 +70,7 @@ void *celesos::miner::worker::thread_run(void *arg) {
                         auto is_success = !!wood_opt;
                         (*signal)(std::move(is_success), block_num, wood_opt);
                     });
+            std::this_thread::sleep_for(std::chrono::seconds{1}); // if success,then sleep 1 second.
         }
         ++nonce_current;
     } while (--retry_count > 0);
