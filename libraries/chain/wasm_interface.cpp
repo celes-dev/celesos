@@ -312,16 +312,16 @@ class privileged_api : public context_aware_api {
          {
             account_name account = trx.first_authorizor();
             if (account == N(celes) ||
-                account == N(celes.msig) ||
-                account == N(celes.names) ||
-                account == N(celes.ram) ||
-                account == N(celes.ramfee) ||
-                account == N(celes.saving) ||
-                account == N(celes.stake) ||
-                account == N(celes.token) ||
                 account == N(celes.dbps) ||
                 account == N(celes.prods) ||
                 account == N(celes.dbp) ||
+                account == N(celes.msig) ||
+                account == N(celes.names) ||
+                account == N(celes.stake) ||
+                account == N(celes.unregd) ||
+                account == N(celes.ram) ||
+                account == N(celes.ramfee) ||
+                account == N(celes.token) ||
                 account == N(celes.bpay) ||
                 account == N(celes.wpay) ||
                 account == N(celes.dpay) ||

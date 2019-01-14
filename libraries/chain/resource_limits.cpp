@@ -325,23 +325,24 @@ uint64_t resource_limits_manager::get_need_attenuation_account () const{
 
 }
 
-bool resource_limits_manager::is_system_account( account_name account)const{
-   if( account == N(celes)||
-       account == N(celes.msig)||
-       account == N(celes.names)||
-       account == N(celes.ram)||
-       account == N(celes.ramfee)||
-       account == N(celes.saving)||
-       account == N(celes.stake)||
-       account == N(celes.token)||
-       account == N(celes.dbps)||
-       account == N(celes.prods)||
-       account == N(celes.dbp)||
-       account == N(celes.bpay)||
-       account == N(celes.wpay)||
-       account == N(celes.dpay)||
-       account == N(celes.bpayp)||
-       account == N(celes.wpayp)||
+bool resource_limits_manager::is_system_account(account_name account) const
+{
+   if (account == N(celes) ||
+       account == N(celes.dbps) ||
+       account == N(celes.prods) ||
+       account == N(celes.dbp) ||
+       account == N(celes.msig) ||
+       account == N(celes.names) ||
+       account == N(celes.stake) ||
+       account == N(celes.unregd) ||
+       account == N(celes.ram) ||
+       account == N(celes.ramfee) ||
+       account == N(celes.token) ||
+       account == N(celes.bpay) ||
+       account == N(celes.wpay) ||
+       account == N(celes.dpay) ||
+       account == N(celes.bpayp) ||
+       account == N(celes.wpayp) ||
        account == N(celes.dpayp))
    {
       return true;
