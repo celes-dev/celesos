@@ -440,13 +440,13 @@ void resource_limits_manager::process_account_limit_updates() {
             break;
          }
 
-         uint64_t last_position = 0;
+
          const auto& actual_entry = _db.get<resource_limits_object, by_owner>(boost::make_tuple(false, itr->owner));
          _db.modify(actual_entry, [&](resource_limits_object& rlo){
             update_state_and_value(rso.total_ram_bytes,  rlo.ram_bytes,  itr->ram_bytes, "ram_bytes");
             update_state_and_value(rso.total_cpu_weight, rlo.cpu_weight, itr->cpu_weight, "cpu_weight");
             update_state_and_value(rso.total_net_weight, rlo.net_weight, itr->net_weight, "net_weight");
-            update_state_and_value(last_position, rlo.last_position, itr->last_position, "ram_last_position");
+            rlo.last_position = itr->last_position;
          });
 
          multi_index.remove(*itr);
