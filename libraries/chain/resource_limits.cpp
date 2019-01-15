@@ -385,7 +385,10 @@ int64_t resource_limits_manager::get_account_limits( const account_name& account
    int64_t _ram = ram_bytes;
 
    //9.98年衰减到原来的1%
-   float total=0.5*2*60*60*24*365*9.98;
+   //float total=0.5*2*60*60*24*365*9.98;
+
+   // 测试网10天衰减到原来的1%
+   float total=0.5*2*60*60*24*10;
 
    float n = block_num-last_position;
 
@@ -395,8 +398,8 @@ int64_t resource_limits_manager::get_account_limits( const account_name& account
    //衰减后
    ram_bytes = ram_bytes*pow(1-m,n);
 
-   //最小边界
-   if(ram_bytes < 100){
+   //最小边界4k
+   if(ram_bytes < 4*1024){
       return 0;
    }
 
