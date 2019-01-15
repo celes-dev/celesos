@@ -237,17 +237,34 @@ struct faucet_testnet_plugin_impl {
       trx.set_reference_block(cc.head_block_id());
       trx.sign(_create_account_private_key, chainid);
 
-      try {
-         cc.push_transaction( std::make_shared<transaction_metadata>(trx),fc::time_point::maximum(),1000 );
-      } catch (const account_name_exists_exception& ) {
-         // another transaction ended up adding the account, so look for alternates
+      auto packed_tx_ptr = std::make_shared<chain::packed_transaction>(
+          chain::packed_transaction{trx});
+      using method_type = chain::plugin_interface::incoming::methods::transaction_async;
+      using handler_param_type = fc::static_variant<fc::exception_ptr, chain::transaction_trace_ptr>;
+      auto handler = [](const handler_param_type &param) {
+         if (param.contains<fc::exception_ptr>())
+         {
+            auto exp_ptr = param.get<fc::exception_ptr>();
+         }
+         else
+         {
+            auto trace_ptr = param.get<chain::transaction_trace_ptr>();
+         }
+      };
+      
+      app().get_method<method_type>()(packed_tx_ptr, true, handler);
 
-         return find_alternates(new_account_name);
-      }
+      // try {
+      //    cc.push_transaction( std::make_shared<transaction_metadata>(trx),fc::time_point::maximum(),1000 );
+      // } catch (const account_name_exists_exception& ) {
+      //    // another transaction ended up adding the account, so look for alternates
 
-      _blocking_accounts = true;
-      _timer.expires_from_now(boost::posix_time::microseconds(_create_interval_msec * 1000));
-      _timer.async_wait(boost::bind(&faucet_testnet_plugin_impl::timer_fired, this));
+      //    return find_alternates(new_account_name);
+      // }
+
+      // _blocking_accounts = true;
+      // _timer.expires_from_now(boost::posix_time::microseconds(_create_interval_msec * 1000));
+      // _timer.async_wait(boost::bind(&faucet_testnet_plugin_impl::timer_fired, this));
 
       return std::make_pair(account_created, fc::variant(eosio::detail::faucet_testnet_empty()));
    }
