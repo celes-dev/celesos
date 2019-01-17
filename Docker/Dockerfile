@@ -6,7 +6,7 @@ ARG https_proxy=""
 ARG no_proxy=""
 ARG git_http_proxy=""
 ARG git_https_proxy=""
-ARG git_crendential=""
+ARG git_credential=""
 
 RUN git config --global http.proxy "${git_http_proxy}" \
     && git config --global https.proxy "${git_https_proxy}" \

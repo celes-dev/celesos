@@ -29,6 +29,8 @@ namespace celesos {
 
     private:
         std::shared_ptr<class miner_plugin_impl> my;
+
+        void start_miner();
     };
 }
 

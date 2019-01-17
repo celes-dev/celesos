@@ -36,6 +36,7 @@ public:
     using miner_type = celesos::miner::miner;
     using signature_provider_type = std::function<chain::signature_type(chain::digest_type)>;
 
+    boost::optional<std::thread> _start_miner_thread_opt;
     boost::optional<miner_type> _miner_opt;
     account_name _voter_name;
     account_name _producer_name;
@@ -227,6 +228,106 @@ void celesos::miner_plugin::plugin_initialize(const variables_map &options) {
     } FC_LOG_AND_RETHROW()
 }
 
+void celesos::miner_plugin::start_miner() {
+    auto &logger = this->my->_logger;
+    auto &the_chain_plugin = app().get_plugin<chain_plugin>();
+
+    this->my->_miner_opt->start(this->my->_voter_name, the_chain_plugin.chain());
+    this->my->_miner_opt->connect(
+            [this, &the_chain_plugin, &logger](auto is_success,
+                                               auto block_num,
+                                               const auto &wood_opt) {
+                fc_dlog(logger, "Receive mine callback with is_success: ${is_success} block_num: ${block_num}",
+                        ("is_success", is_success)("block_num", block_num));
+
+                //TODO 考虑系统合约未安装的情况
+                if (!is_success) {
+                    //TODO 完善算不出hash的流程
+                    return;
+                }
+
+                try {
+                    if (!this->my->_auto_vote) {
+                        std::string wood_hex{};
+                        ethash::uint256_to_hex(wood_hex, wood_opt.get());
+                        const auto &owner_name = this->my->_voter_name;
+                        fc_ilog(logger,
+                                "\n\tcollect wood with "
+                                "\n\t\tblock_num: ${block_num} "
+                                "\n\t\tvoter: ${owner} "
+                                "\n\t\twood: ${wood} ",
+                                ("block_num", block_num)
+                                        ("owner", owner_name)
+                                        ("wood", wood_hex.c_str()));
+                    } else {
+                        fc_dlog(logger, "begin prepare transaction about voteproducer");
+
+                        auto &cc = the_chain_plugin.chain();
+                        const auto &chain_id = cc.get_chain_id();
+                        const auto &voter_name = this->my->_voter_name;
+                        const auto &producer_name = this->my->_producer_name;
+                        std::string wood_hex{};
+                        ethash::uint256_to_hex(wood_hex, wood_opt.get());
+//                        auto bank = forest::forest_bank::getInstance(the_chain_plugin.chain());
+//                        fc_dlog(logger,
+//                                "\n\twood should pass verify with "
+//                                "\n\t\tis_pass: ${is_pass} "
+//                                "\n\t\tblock_num: ${block_num} "
+//                                "\n\t\tvoter: ${voter} "
+//                                "\n\t\twood: ${wood} ",
+//                                ("is_pass", bank->verify_wood(block_num, voter_name, wood_hex.c_str()))
+//                                        ("block_num", block_num)
+//                                        ("voter", voter_name)
+//                                        ("wood", wood_hex.c_str()));
+
+                        chain::signed_transaction tx{};
+                        vector<chain::permission_level> auth{{voter_name, "active"}};
+                        const auto &code = chain::config::system_account_name;
+                        chain::action_name action{"voteproducer"};
+                        auto args = fc::mutable_variant_object{}
+                                ("voter_name", voter_name)
+                                ("wood_owner_name", voter_name)
+                                ("wood", wood_hex)
+                                ("block_number", block_num)
+                                ("producer_name", producer_name);
+                        auto a_action = miner_plugin_impl::create_action(the_chain_plugin,
+                                                                         std::move(auth), code,
+                                                                         std::move(action), std::move(args));
+                        tx.actions.push_back(std::move(a_action));
+                        tx.expiration = cc.head_block_time() + fc::seconds(30);
+                        tx.set_reference_block(cc.last_irreversible_block_id());
+                        tx.max_cpu_usage_ms = 0;
+                        tx.max_net_usage_words = 0UL;
+                        tx.delay_sec = 1UL;
+                        for (auto &&pair : this->my->_signature_providers) {
+                            auto &&digest = tx.sig_digest(chain_id, tx.context_free_data);
+                            auto &&signature = pair.second(digest);
+                            tx.signatures.push_back(signature);
+                        }
+                        auto packed_tx_ptr = std::make_shared<chain::packed_transaction>(
+                                chain::packed_transaction{tx});
+                        fc_dlog(logger, "end prepare transaction about voteproducer");
+                        using method_type = chain::plugin_interface::incoming::methods::transaction_async;
+                        using handler_param_type = fc::static_variant<fc::exception_ptr, chain::transaction_trace_ptr>;
+                        fc_dlog(logger, "start to push transation about voteproducer");
+                        auto handler = [&logger](const handler_param_type &param) {
+                            if (param.contains<fc::exception_ptr>()) {
+                                auto exp_ptr = param.get<fc::exception_ptr>();
+                                fc_dlog(logger,
+                                        "fail to push transaction about voteproducer with error: \n${error}",
+                                        ("error", exp_ptr->to_detail_string().c_str()));
+                            } else {
+                                auto trace_ptr = param.get<chain::transaction_trace_ptr>();
+                                fc_dlog(logger, "suceess to push transaction about voteproducer");
+                            }
+                        };
+                        app().get_method<method_type>()(packed_tx_ptr, true, handler);
+                    }
+                }
+                FC_LOG_AND_RETHROW()
+            });
+}
+
 void celesos::miner_plugin::plugin_startup() {
     try {
         auto &logger_map = fc::get_logger_map();
@@ -252,108 +353,25 @@ void celesos::miner_plugin::plugin_startup() {
                                      this->my->_worker_count,
                                      this->my->_sleep_interval_sec,
                                      this->my->_sleep_probability);
-        auto &the_chain_plugin = app().get_plugin<chain_plugin>();
-        this->my->_miner_opt->start(this->my->_voter_name, the_chain_plugin.chain());
 
-        auto launch_time = fc::time_point::now();
-        this->my->_miner_opt->connect(
-                [this, &the_chain_plugin, launch_time, &logger](auto is_success,
-                                                                auto block_num,
-                                                                const auto &wood_opt) {
-                    fc_dlog(logger, "Receive mine callback with is_success: ${is_success} block_num: ${block_num}",
-                            ("is_success", is_success)("block_num", block_num));
+        this->my->_start_miner_thread_opt.emplace([this, &logger]() {
+            auto &the_chain_plugin = app().get_plugin<chain_plugin>();
 
-                    //TODO 考虑系统合约未安装的情况
-                    if (!is_success) {
-                        //TODO 完善算不出hash的流程
-                        return;
-                    }
+            for (;;) {
+                if (fc::time_point::now() - the_chain_plugin.chain().head_block_time() >= fc::seconds(10)) {
+                    fc_ilog(logger, "chain is syncing block, wait 10 sec");
+                    std::this_thread::sleep_for(std::chrono::seconds{10});
+                } else {
+                    break;
+                }
+            }
 
-                    if (fc::time_point::now() - launch_time <= fc::seconds(10)) {
-                        fc_ilog(logger, "not ready, ignore miner event");
-                        return;
-                    }
+            auto &main_io_service = app().get_io_service();
+            main_io_service.post([this]() {
+                this->start_miner();
+            });
+        });
 
-                    try {
-                        if (!this->my->_auto_vote) {
-                            std::string wood_hex{};
-                            ethash::uint256_to_hex(wood_hex, wood_opt.get());
-                            const auto &owner_name = this->my->_voter_name;
-                            fc_ilog(logger,
-                                    "\n\tcollect wood with "
-                                    "\n\t\tblock_num: ${block_num} "
-                                    "\n\t\tvoter: ${owner} "
-                                    "\n\t\twood: ${wood} ",
-                                    ("block_num", block_num)
-                                            ("owner", owner_name)
-                                            ("wood", wood_hex.c_str()));
-                        } else {
-                            fc_dlog(logger, "begin prepare transaction about voteproducer");
-
-                            auto &cc = the_chain_plugin.chain();
-                            const auto &chain_id = cc.get_chain_id();
-                            const auto &voter_name = this->my->_voter_name;
-                            const auto &producer_name = this->my->_producer_name;
-                            std::string wood_hex{};
-                            ethash::uint256_to_hex(wood_hex, wood_opt.get());
-//                        auto bank = forest::forest_bank::getInstance(the_chain_plugin.chain());
-//                        fc_dlog(logger,
-//                                "\n\twood should pass verify with "
-//                                "\n\t\tis_pass: ${is_pass} "
-//                                "\n\t\tblock_num: ${block_num} "
-//                                "\n\t\tvoter: ${voter} "
-//                                "\n\t\twood: ${wood} ",
-//                                ("is_pass", bank->verify_wood(block_num, voter_name, wood_hex.c_str()))
-//                                        ("block_num", block_num)
-//                                        ("voter", voter_name)
-//                                        ("wood", wood_hex.c_str()));
-
-                            chain::signed_transaction tx{};
-                            vector<chain::permission_level> auth{{voter_name, "active"}};
-                            const auto &code = chain::config::system_account_name;
-                            chain::action_name action{"voteproducer"};
-                            auto args = fc::mutable_variant_object{}
-                                    ("voter_name", voter_name)
-                                    ("wood_owner_name", voter_name)
-                                    ("wood", wood_hex)
-                                    ("block_number", block_num)
-                                    ("producer_name", producer_name);
-                            auto a_action = miner_plugin_impl::create_action(the_chain_plugin,
-                                                                             std::move(auth), code,
-                                                                             std::move(action), std::move(args));
-                            tx.actions.push_back(std::move(a_action));
-                            tx.expiration = cc.head_block_time() + fc::seconds(30);
-                            tx.set_reference_block(cc.last_irreversible_block_id());
-                            tx.max_cpu_usage_ms = 0;
-                            tx.max_net_usage_words = 0UL;
-                            tx.delay_sec = 1UL;
-                            for (auto &&pair : this->my->_signature_providers) {
-                                auto &&digest = tx.sig_digest(chain_id, tx.context_free_data);
-                                auto &&signature = pair.second(digest);
-                                tx.signatures.push_back(signature);
-                            }
-                            auto packed_tx_ptr = std::make_shared<chain::packed_transaction>(
-                                    chain::packed_transaction{tx});
-                            fc_dlog(logger, "end prepare transaction about voteproducer");
-                            using method_type = chain::plugin_interface::incoming::methods::transaction_async;
-                            using handler_param_type = fc::static_variant<fc::exception_ptr, chain::transaction_trace_ptr>;
-                            fc_dlog(logger, "start to push transation about voteproducer");
-                            auto handler = [&logger](const handler_param_type &param) {
-                                if (param.contains<fc::exception_ptr>()) {
-                                    auto exp_ptr = param.get<fc::exception_ptr>();
-                                    fc_dlog(logger,
-                                            "fail to push transaction about voteproducer with error: \n${error}",
-                                            ("error", exp_ptr->to_detail_string().c_str()));
-                                } else {
-                                    auto trace_ptr = param.get<chain::transaction_trace_ptr>();
-                                    fc_dlog(logger, "suceess to push transaction about voteproducer");
-                                }
-                            };
-                            app().get_method<method_type>()(packed_tx_ptr, true, handler);
-                        }
-                    }
-                    FC_LOG_AND_RETHROW()
-                });
         ilog("plugin_startup() end");
     }
     FC_LOG_AND_RETHROW()
