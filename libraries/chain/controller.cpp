@@ -324,7 +324,7 @@ struct controller_impl {
       replaying = true;
       replay_head_time = blog_head_time;
       auto start_block_num = head->block_num + 1;
-      ilog( "existing block log, attempting to replay from ${s} to ${n} blocks",
+      dlog( "existing block log, attempting to replay from ${s} to ${n} blocks",
             ("s", start_block_num)("n", blog_head->block_num()) );
 
       auto start = fc::time_point::now();
@@ -336,7 +336,7 @@ struct controller_impl {
          }
       }
       std::cerr<< "\n";
-      ilog( "${n} blocks replayed", ("n", head->block_num - start_block_num) );
+      dlog( "${n} blocks replayed", ("n", head->block_num - start_block_num) );
 
       // if the irreverible log is played without undo sessions enabled, we need to sync the
       // revision ordinal to the appropriate expected value here.
@@ -349,9 +349,9 @@ struct controller_impl {
          replay_push_block( obj->get_block(), controller::block_status::validated );
       }
 
-      ilog( "${n} reversible blocks replayed", ("n",rev) );
+      dlog( "${n} reversible blocks replayed", ("n",rev) );
       auto end = fc::time_point::now();
-      ilog( "replayed ${n} blocks in ${duration} seconds, ${mspb} ms/block",
+      dlog( "replayed ${n} blocks in ${duration} seconds, ${mspb} ms/block",
             ("n", head->block_num - start_block_num)("duration", (end-start).count()/1000000)
             ("mspb", ((end-start).count()/1000.0)/(head->block_num-start_block_num)) );
       replaying = false;
@@ -423,7 +423,7 @@ struct controller_impl {
       
       if( report_integrity_hash ) {
          const auto hash = calculate_integrity_hash();
-         ilog( "database initialized with hash: ${hash}", ("hash", hash) );
+         dlog( "database initialized with hash: ${hash}", ("hash", hash) );
       }
 
    }
@@ -1174,7 +1174,7 @@ struct controller_impl {
             {
                // Promote proposed schedule to pending schedule.
                if( !replaying ) {
-                  ilog( "promoting proposed schedule (set in block ${proposed_num}) to pending; current block: ${n} lib: ${lib} schedule: ${schedule} ",
+                  dlog( "promoting proposed schedule (set in block ${proposed_num}) to pending; current block: ${n} lib: ${lib} schedule: ${schedule} ",
                         ("proposed_num", *gpo.proposed_schedule_block_num)("n", pending->_pending_block_state->block_num)
                         ("lib", pending->_pending_block_state->dpos_irreversible_blocknum)
                         ("schedule", static_cast<producer_schedule_type>(gpo.proposed_schedule) ) );
@@ -1403,7 +1403,7 @@ struct controller_impl {
             throw;
          }
       } else if( new_head->id != head->id ) {
-         ilog("switching forks from ${current_head_id} (block number ${current_head_num}) to ${new_head_id} (block number ${new_head_num})",
+         dlog("switching forks from ${current_head_id} (block number ${current_head_num}) to ${new_head_id} (block number ${new_head_num})",
               ("current_head_id", head->id)("current_head_num", head->block_num)("new_head_id", new_head->id)("new_head_num", new_head->block_num) );
          auto branches = fork_db.fetch_branch_from( new_head->id, head->id );
 
@@ -1449,7 +1449,7 @@ struct controller_impl {
                throw *except;
             } // end if exception
          } /// end for each block in branch
-         ilog("successfully switched fork to new head ${new_head_id}", ("new_head_id", new_head->id) );
+         dlog("successfully switched fork to new head ${new_head_id}", ("new_head_id", new_head->id) );
       }
    } /// push_block
 
@@ -1509,14 +1509,14 @@ struct controller_impl {
       block_id_type result_hash = fc::sha256::hash(p->header.previous.str() + random_value);
       current_random_vector.push_back(std::make_tuple(p->header.block_num(),random_value,result_hash));
       p->header.next_random_hash = move(result_hash);
-      ilog("set_next_random_hash random_value:${random_value},hash:${result_hash}",("random_value",random_value)("result_hash",result_hash));
+      dlog("set_next_random_hash random_value:${random_value},hash:${result_hash}",("random_value",random_value)("result_hash",result_hash));
    }
 //my random in this block
    void set_my_random(){
       // if(last_random_vector.begin() != last_random_vector.end()){
       //    std::pair<uint32_t,uint64_t> last_random_pair = *(last_random_vector.begin());
       //    pending->_pending_block_state->header.my_random = last_random_pair.second;
-      //    ilog("set_my_random:${random}",("random",last_random_pair.second));
+      //    dlog("set_my_random:${random}",("random",last_random_pair.second));
       //    last_random_vector.erase(last_random_vector.begin());
       // }
       auto p = pending->_pending_block_state;
@@ -1531,7 +1531,7 @@ struct controller_impl {
          if(blk_state == nullptr && block_number == current_num){
             blk_state = p->block;
          }else if(blk_state == nullptr){
-            ilog("block_number:${block_number} blk_state is null",("block_number",block_number));
+            dlog("block_number:${block_number} blk_state is null",("block_number",block_number));
             return;
          }
          if(p->header.producer == blk_state->producer){
@@ -1551,17 +1551,17 @@ struct controller_impl {
       }
 
       if(last_hash_vector.size() < random_index){
-         ilog("last_hash_vector.size() < random_index");
+         dlog("last_hash_vector.size() < random_index");
          return;
       }
       if(hash_index == 0){
-         ilog("last_hash_vector.size() == 0");
+         dlog("last_hash_vector.size() == 0");
          return;
       }
 
       signed_block_ptr blk_state = last_hash_vector[last_hash_vector.size() - random_index];
       if(blk_state == nullptr){
-         ilog("get index is null");
+         dlog("get index is null");
          return;
       }
       for(int i = 0;i < last_random_vector.size();i++){
@@ -1570,7 +1570,7 @@ struct controller_impl {
          uint64_t random_value = get<1>(last_random_tuple);
          if(blk_state->next_random_hash == next_hash){
              pending->_pending_block_state->header.my_random = random_value;
-             ilog("set_my_random:${random}",("random",random_value));
+             dlog("set_my_random:${random}",("random",random_value));
              break;
          }
       }
@@ -1583,7 +1583,7 @@ struct controller_impl {
       int count = 0;
       for(uint32_t block_number = current_num; block_number > current_num -  length_num; block_number--){
          if(block_number <= 0){
-            ilog( "block numer < length_num 252");
+            // dlog( "block numer < length_num 252");
             return;
          }
          auto blk_state = self.fetch_block_by_number(block_number);
@@ -1596,7 +1596,7 @@ struct controller_impl {
       auto p = pending->_pending_block_state;
       if(all_random == 0){
          p->header.block_random = 0;
-         ilog("set_block_random block random is 0");
+         // dlog("set_block_random block random is 0");
          return;
       }
    
@@ -1604,7 +1604,7 @@ struct controller_impl {
          block_id_type result_hash = fc::sha256::hash(all_random + p->header.previous.str());
          p->header.block_random = result_hash._hash[0];
       }else{
-         ilog( "random count is too little:${n}", ("n",count) );
+         dlog( "random count is too little:${n}", ("n",count) );
       }
    }
    
@@ -1613,14 +1613,14 @@ struct controller_impl {
       uint32_t current_num = p->header.block_num();
       uint32_t length_num = 252;
       if(current_num < length_num){
-         ilog( "block numer < length_num 252");
+         dlog( "block numer < length_num 252");
          return true;
       }
       uint64_t all_random = 0;
       // bool  is_random_correct = false;
       for(uint32_t block_number = current_num; block_number > 0; block_number--){
          if(block_number <= 0){
-            ilog( "block_number <= 0");
+            dlog( "block_number <= 0");
             return true;
          }
          if(block_number < (current_num -  length_num)){
@@ -1634,7 +1634,7 @@ struct controller_impl {
       }
 
       if(all_random == 0){
-         ilog("check_block_random the blcok random is 0");
+         // dlog("check_block_random the blcok random is 0");
          return true;
       }
        
@@ -1654,7 +1654,7 @@ struct controller_impl {
 
    bool check_BP_random(uint64_t random){
       if(random == 0){
-         // ilog("check_BP_random random is 0");
+         // dlog("check_BP_random random is 0");
          return true;
       }
       auto p = pending->_pending_block_state;
@@ -1670,7 +1670,7 @@ struct controller_impl {
          if(blk_state == nullptr && block_number == current_num){
             blk_state = p->block;
          }else if(blk_state == nullptr){
-            ilog("block_number:${block_number} blk_state is null",("block_number",block_number));
+            dlog("block_number:${block_number} blk_state is null",("block_number",block_number));
             return true;
          }
 
@@ -1690,7 +1690,7 @@ struct controller_impl {
          }
       }
       if(last_hash_vector.size() - random_index >= last_hash_vector.size()){
-         // ilog("last random hash count:${count},get index:${index},producer:${producer}",
+         // dlog("last random hash count:${count},get index:${index},producer:${producer}",
          // ("count",last_hash_vector.size())
          // ("index",last_hash_vector.size() - random_index)
          // ("producer",N(p->header.producer)));
@@ -1699,7 +1699,7 @@ struct controller_impl {
 
       signed_block_ptr blk_state = last_hash_vector[last_hash_vector.size() - random_index];
       if(blk_state == nullptr){
-         // ilog("check_BP_random last_hash_vector count:${count},get index:${index}",("count",last_hash_vector.size())("index",(last_hash_vector.size() - random_index)));
+         // dlog("check_BP_random last_hash_vector count:${count},get index:${index}",("count",last_hash_vector.size())("index",(last_hash_vector.size() - random_index)));
          return true;
       }
       block_id_type result_hash = fc::sha256::hash(blk_state->previous.str() + random);
@@ -1707,14 +1707,14 @@ struct controller_impl {
          return true;
       }
 
-      // ilog("check_BP_random my random:${random}",("random",random));
-      // ilog("check_BP_random my hash:${hash}",("hash",result_hash));
-      // ilog("check_BP_random blk_state hash:${hash}",("hash",blk_state->next_random_hash));
+      // dlog("check_BP_random my random:${random}",("random",random));
+      // dlog("check_BP_random my hash:${hash}",("hash",result_hash));
+      // dlog("check_BP_random blk_state hash:${hash}",("hash",blk_state->next_random_hash));
       for(int i = 0;i < last_hash_vector.size();i++){
          signed_block_ptr blk_state_temp = last_hash_vector[i];
-         // ilog("********************check_BP_random blk_state hash:${hash}\n",("hash",blk_state_temp->next_random_hash));
-         // ilog("********************check_BP_random blk_state my random:${random}\n",("random",blk_state_temp->my_random));
-         // ilog("********************check_BP_random blk_state block number:${number}\n",("number",blk_state_temp->block_num()));
+         // dlog("********************check_BP_random blk_state hash:${hash}\n",("hash",blk_state_temp->next_random_hash));
+         // dlog("********************check_BP_random blk_state my random:${random}\n",("random",blk_state_temp->my_random));
+         // dlog("********************check_BP_random blk_state block number:${number}\n",("number",blk_state_temp->block_num()));
       }
 
       return false;
@@ -1728,7 +1728,7 @@ struct controller_impl {
 
 
       /*
-      ilog( "finalize block ${n} (${id}) at ${t} by ${p} (${signing_key}); schedule_version: ${v} lib: ${lib} #dtrxs: ${ndtrxs} ${np}",
+      dlog( "finalize block ${n} (${id}) at ${t} by ${p} (${signing_key}); schedule_version: ${v} lib: ${lib} #dtrxs: ${ndtrxs} ${np}",
             ("n",pending->_pending_block_state->block_num)
             ("id",pending->_pending_block_state->header.id())
             ("t",pending->_pending_block_state->header.timestamp)
@@ -2176,7 +2176,7 @@ uint32_t controller::head_block_num()const {
 uint64_t controller::block_random_by_num(uint32_t num) const{
    signed_block_ptr blk_state = fetch_block_by_number( num );
    if(blk_state == nullptr){
-      ilog("block number:${number} not exist!",("number",num));
+      dlog("block number:${number} not exist!",("number",num));
       return 0;
    }
    return blk_state->block_random;
