@@ -325,23 +325,24 @@ uint64_t resource_limits_manager::get_need_attenuation_account () const{
 
 }
 
-bool resource_limits_manager::is_system_account( account_name account)const{
-   if( account == N(celes)||
-       account == N(celes.msig)||
-       account == N(celes.names)||
-       account == N(celes.ram)||
-       account == N(celes.ramfee)||
-       account == N(celes.saving)||
-       account == N(celes.stake)||
-       account == N(celes.token)||
-       account == N(celes.dbps)||
-       account == N(celes.prods)||
-       account == N(celes.dbp)||
-       account == N(celes.bpay)||
-       account == N(celes.wpay)||
-       account == N(celes.dpay)||
-       account == N(celes.bpayp)||
-       account == N(celes.wpayp)||
+bool resource_limits_manager::is_system_account(account_name account) const
+{
+   if (account == N(celes) ||
+       account == N(celes.dbps) ||
+       account == N(celes.prods) ||
+       account == N(celes.dbp) ||
+       account == N(celes.msig) ||
+       account == N(celes.names) ||
+       account == N(celes.stake) ||
+       account == N(celes.unregd) ||
+       account == N(celes.ram) ||
+       account == N(celes.ramfee) ||
+       account == N(celes.token) ||
+       account == N(celes.bpay) ||
+       account == N(celes.wpay) ||
+       account == N(celes.dpay) ||
+       account == N(celes.bpayp) ||
+       account == N(celes.wpayp) ||
        account == N(celes.dpayp))
    {
       return true;
@@ -384,7 +385,10 @@ int64_t resource_limits_manager::get_account_limits( const account_name& account
    int64_t _ram = ram_bytes;
 
    //9.98年衰减到原来的1%
-   float total=0.5*2*60*60*24*365*9.98;
+   //float total=0.5*2*60*60*24*365*9.98;
+
+   // 测试网10天衰减到原来的1%
+   float total=0.5*2*60*60*24*10;
 
    float n = block_num-last_position;
 
@@ -394,8 +398,8 @@ int64_t resource_limits_manager::get_account_limits( const account_name& account
    //衰减后
    ram_bytes = ram_bytes*pow(1-m,n);
 
-   //最小边界
-   if(ram_bytes < 100){
+   //最小边界4k
+   if(ram_bytes < 4*1024){
       return 0;
    }
 
@@ -440,13 +444,13 @@ void resource_limits_manager::process_account_limit_updates() {
             break;
          }
 
-         uint64_t last_position = 0;
+
          const auto& actual_entry = _db.get<resource_limits_object, by_owner>(boost::make_tuple(false, itr->owner));
          _db.modify(actual_entry, [&](resource_limits_object& rlo){
             update_state_and_value(rso.total_ram_bytes,  rlo.ram_bytes,  itr->ram_bytes, "ram_bytes");
             update_state_and_value(rso.total_cpu_weight, rlo.cpu_weight, itr->cpu_weight, "cpu_weight");
             update_state_and_value(rso.total_net_weight, rlo.net_weight, itr->net_weight, "net_weight");
-            update_state_and_value(last_position, rlo.last_position, itr->last_position, "ram_last_position");
+            rlo.last_position = itr->last_position;
          });
 
          multi_index.remove(*itr);
