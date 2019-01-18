@@ -345,10 +345,8 @@ void celesos::miner_plugin::plugin_startup() {
             }
 #ifdef DEBUG
             logger.set_log_level(fc::log_level::debug);
-            dlog("set log level to debug");
 #else
             logger.set_log_level(fc::log_level::info);
-            dlog("set log level to warn");
 #endif
         }
 
@@ -392,6 +390,7 @@ void celesos::miner_plugin::plugin_startup() {
 void celesos::miner_plugin::plugin_shutdown() {
     try {
         ilog("plugin_shutdown() begin");
+        this->my->_has_plugin_shutdown = true;
         this->my->_miner_opt->stop(true);
         this->my->_miner_opt.reset();
         if (this->my->_start_miner_thread_opt && this->my->_start_miner_thread_opt->joinable()) {
