@@ -44,15 +44,20 @@ public:
     unsigned int _worker_count;
     float _sleep_probability;
     uint32_t _sleep_interval_sec;
+    bool _has_plugin_shutdown;
     std::map<chain::public_key_type, signature_provider_type> _signature_providers;
     fc::microseconds _kcelesd_provider_timeout_us;
     fc::logger _logger;
     bool _auto_vote;
 
-    miner_plugin_impl() : _worker_count{1}, _auto_vote{true} {
+    miner_plugin_impl() : _worker_count{1}, _has_plugin_shutdown{false}, _auto_vote{true} {
     };
 
     ~miner_plugin_impl() {
+        this->_has_plugin_shutdown = true;
+        if (this->_start_miner_thread_opt && this->_start_miner_thread_opt->joinable()) {
+            this->_start_miner_thread_opt->join();
+        }
     }
 
     static chain::action create_action(const chain_plugin &the_plugin,
@@ -309,16 +314,16 @@ void celesos::miner_plugin::start_miner() {
                         fc_dlog(logger, "end prepare transaction about voteproducer");
                         using method_type = chain::plugin_interface::incoming::methods::transaction_async;
                         using handler_param_type = fc::static_variant<fc::exception_ptr, chain::transaction_trace_ptr>;
-                        fc_dlog(logger, "start to push transation about voteproducer");
+                        fc_ilog(logger, "start to push transation about voteproducer");
                         auto handler = [&logger](const handler_param_type &param) {
                             if (param.contains<fc::exception_ptr>()) {
                                 auto exp_ptr = param.get<fc::exception_ptr>();
-                                fc_dlog(logger,
+                                fc_ilog(logger,
                                         "fail to push transaction about voteproducer with error: \n${error}",
                                         ("error", exp_ptr->to_detail_string().c_str()));
                             } else {
                                 auto trace_ptr = param.get<chain::transaction_trace_ptr>();
-                                fc_dlog(logger, "suceess to push transaction about voteproducer");
+                                fc_ilog(logger, "suceess to push transaction about voteproducer");
                             }
                         };
                         app().get_method<method_type>()(packed_tx_ptr, true, handler);
@@ -342,7 +347,7 @@ void celesos::miner_plugin::plugin_startup() {
             logger.set_log_level(fc::log_level::debug);
             dlog("set log level to debug");
 #else
-            logger.set_log_level(fc::log_level::warn);
+            logger.set_log_level(fc::log_level::info);
             dlog("set log level to warn");
 #endif
         }
@@ -366,10 +371,12 @@ void celesos::miner_plugin::plugin_startup() {
                 }
             }
 
+            fc_elog(logger, "ccc");
             auto &main_io_service = app().get_io_service();
             main_io_service.post([this]() {
                 this->start_miner();
             });
+            fc_elog(logger, "ddd");
         });
 
         ilog("plugin_startup() end");
@@ -382,6 +389,10 @@ void celesos::miner_plugin::plugin_shutdown() {
         ilog("plugin_shutdown() begin");
         this->my->_miner_opt->stop(true);
         this->my->_miner_opt.reset();
+        if (this->my->_start_miner_thread_opt && this->my->_start_miner_thread_opt->joinable()) {
+            this->my->_start_miner_thread_opt->join();
+        }
+        this->my->_start_miner_thread_opt.reset();
         ilog("plugin_shutdown() end");
     } FC_LOG_AND_RETHROW()
 }
