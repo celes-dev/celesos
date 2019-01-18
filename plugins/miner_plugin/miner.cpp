@@ -179,10 +179,10 @@ void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::fore
 
     shared_ptr<vector<ethash::node>> cache_ptr{};
     if (is_cache_changed) {
-        fc_dlog(_logger, "begin prepare cache with count: ${count}", ("count", new_cache_count));
+        fc_ilog(_logger, "begin prepare cache with count: ${count}", ("count", new_cache_count));
         cache_ptr = make_shared<vector<ethash::node>>(new_cache_count, vector<ethash::node>::allocator_type());
         ethash::calc_cache(*cache_ptr, new_cache_count, *seed_ptr);
-        fc_dlog(_logger, "end prepare cache with count: ${count}", ("count", new_cache_count));
+        fc_ilog(_logger, "end prepare cache with count: ${count}", ("count", new_cache_count));
     } else {
         fc_dlog(_logger, "use cache generated");
         cache_ptr = *this->_target_cache_ptr_opt;
@@ -202,11 +202,23 @@ void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::fore
                                                             this->_target_dataset_count_opt, new_dataset_count);
     shared_ptr<vector<ethash::node>> dataset_ptr{};
     if (is_dataset_changed) {
-        fc_dlog(_logger, "begin prepare dataset with count: ${count}", ("count", new_dataset_count));
+        fc_ilog(_logger, "begin prepare dataset with count: ${count}", ("count", new_dataset_count));
         dataset_ptr = make_shared<vector<ethash::node>>(new_dataset_count,
                                                         vector<ethash::node>::allocator_type());
-        ethash::calc_dataset(*dataset_ptr, new_dataset_count, *cache_ptr);
-        fc_dlog(_logger, "end prepare dataset with count: ${count}", ("count", new_dataset_count));
+
+        auto &dataset = *dataset_ptr;
+        auto &cache = *cache_ptr;
+        dataset.resize(new_dataset_count);
+        for (uint32_t i = 0; i < new_dataset_count; ++i) {
+            if(i % 1000 == 0 && this->_state == state::stopped) {
+                fc_ilog(_logger, "miner has been stop, quit");
+                return;
+            }
+            dataset[i] = calc_dataset_item(cache, i);
+        }
+
+//        ethash::calc_dataset(*dataset_ptr, new_dataset_count, *cache_ptr);
+        fc_ilog(_logger, "end prepare dataset with count: ${count}", ("count", new_dataset_count));
     } else {
         fc_dlog(_logger, "use dataset generated");
         dataset_ptr = *this->_target_dataset_ptr_opt;
@@ -226,6 +238,11 @@ void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::fore
     } else {
         fc_dlog(_logger, "restart workers to logging");
         this->stop_workers(true);
+
+        if (this->_state == state::stopped) {
+            fc_ilog(_logger, "miner has been stop, quit");
+            return;
+        }
 
         auto retry_count_ptr = make_shared<uint256_t>(-1);
         *retry_count_ptr /= _worker_count;
@@ -251,6 +268,11 @@ void celesos::miner::miner::on_forest_updated(const std::shared_ptr<forest::fore
                     .sleep_probability = this->_sleep_probability,
             };
             this->_alive_worker_ptrs[i] = make_shared<worker>(std::move(ctx));
+        }
+
+        if (this->_state == state::stopped) {
+            fc_ilog(_logger, "miner has been stop, quit");
+            return;
         }
 
         for (auto &x : this->_alive_worker_ptrs) {

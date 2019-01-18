@@ -374,12 +374,10 @@ void celesos::miner_plugin::plugin_startup() {
                 }
             }
 
-            fc_elog(logger, "ccc");
             auto &main_io_service = app().get_io_service();
             main_io_service.post([this]() {
                 this->start_miner();
             });
-            fc_elog(logger, "ddd");
         });
 
         ilog("plugin_startup() end");

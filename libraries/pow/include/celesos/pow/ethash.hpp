@@ -30,6 +30,8 @@ namespace celesos {
 
         bool calc_cache(std::vector<node> &cache, uint32_t cache_count, const std::string &seed);
 
+        node calc_dataset_item(const std::vector<node> &cache, uint32_t item_idx);
+
         bool
         calc_dataset(std::vector<node> &dataset, uint32_t dataset_count, const std::vector<node> &cache);
 
