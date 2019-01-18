@@ -10,7 +10,7 @@ ARG git_credential=""
 
 RUN git config --global http.proxy "${git_http_proxy}" \
     && git config --global https.proxy "${git_https_proxy}" \
-    && git clone -b $branch http://${git_crendential}172.12.0.11/celesos/src.git --recursive ./celes \
+    && git clone -b $branch http://${git_credential}172.12.0.11/celesos/src.git --recursive ./celes \
     && git config --global --unset http.proxy \
     && git config --global --unset https.proxy \
     && cd celes && echo "$branch:$(git rev-parse HEAD)" > /etc/celesos-version \
