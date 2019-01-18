@@ -363,6 +363,11 @@ void celesos::miner_plugin::plugin_startup() {
             auto &the_chain_plugin = app().get_plugin<chain_plugin>();
 
             for (;;) {
+                if (this->my->_has_plugin_shutdown) {
+                    fc_ilog(logger, "miner_plugin has been shutdown, break loop");
+                    return;
+                }
+
                 if (fc::time_point::now() - the_chain_plugin.chain().head_block_time() >= fc::seconds(10)) {
                     fc_ilog(logger, "chain is syncing block, wait 10 sec");
                     std::this_thread::sleep_for(std::chrono::seconds{10});

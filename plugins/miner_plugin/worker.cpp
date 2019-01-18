@@ -19,7 +19,7 @@ void *celesos::miner::worker::thread_run(void *arg) {
 
     auto &logger = worker_ptr->_ctx.logger;
 
-    fc_ilog(logger, "begin run()");
+    fc_dlog(logger, "begin run()");
 
     const auto &target = *worker_ptr->_ctx.target_ptr;
     const auto &dataset = *worker_ptr->_ctx.dataset_ptr;
@@ -75,7 +75,7 @@ void *celesos::miner::worker::thread_run(void *arg) {
         ++nonce_current;
     } while (--retry_count > 0);
 
-    fc_ilog(logger, "end run()");
+    fc_dlog(logger, "end run()");
     pthread_exit(nullptr);
 }
 
@@ -96,7 +96,7 @@ void celesos::miner::worker::start() {
 //        auto native_handle = this->_alive_thread_opt->native_handle();
 
         auto &logger = _ctx.logger;
-        fc_ilog(logger, "begin create thread for mine");
+        fc_dlog(logger, "begin create thread for mine");
         this->_alive_thread_opt.emplace();
         pthread_attr_t attr{};
         sched_param param{};
@@ -112,7 +112,7 @@ void celesos::miner::worker::start() {
         auto thread_ptr = this->_alive_thread_opt.get_ptr();
 
         pthread_create(thread_ptr, &attr, miner::worker::thread_run, this);
-        fc_ilog(logger, "end create thread for mine");
+        fc_dlog(logger, "end create thread for mine");
         this->_alive_thread_opt.emplace(std::move(*thread_ptr));
     }
     lock.unlock();
