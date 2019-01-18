@@ -211,7 +211,7 @@ void celesos::miner_plugin::plugin_initialize(const variables_map &options) {
         auto &&sleep_interval_sec = options["miner-sleep-interval-sec"].as<uint32_t>();
         this->my->_sleep_interval_sec = sleep_interval_sec;
         auto sleep_probability = options["miner-sleep-probability"].as<float>();
-        if (sleep_interval_sec < 0.0f || sleep_interval_sec > 1.0f) {
+        if (sleep_probability < 0.0f || sleep_probability > 1.0f) {
             elog("Option \"miner-sleep-probability\" must be in range [0,1]");
         }
         this->my->_sleep_probability = sleep_probability;
