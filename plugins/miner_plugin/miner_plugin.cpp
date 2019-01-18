@@ -367,8 +367,8 @@ void celesos::miner_plugin::plugin_startup() {
                 }
 
                 if (fc::time_point::now() - the_chain_plugin.chain().head_block_time() >= fc::seconds(10)) {
-                    fc_ilog(logger, "chain is syncing block, wait 10 sec");
-                    std::this_thread::sleep_for(std::chrono::seconds{10});
+                    fc_ilog(logger, "chain is syncing block, wait 3 sec");
+                    std::this_thread::sleep_for(std::chrono::seconds{3});
                 } else {
                     break;
                 }
