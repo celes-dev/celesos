@@ -275,7 +275,7 @@ void celesos::miner_plugin::start_miner() {
                         ethash::uint256_to_hex(wood_hex, wood_opt.get());
 
                         chain::signed_transaction tx{};
-                        vector <chain::permission_level> auth{{voter_name, "active"}};
+                        vector<chain::permission_level> auth{{voter_name, "active"}};
                         const auto &code = chain::config::system_account_name;
                         chain::action_name action{"voteproducer"};
                         auto args = fc::mutable_variant_object{}
@@ -314,7 +314,7 @@ void celesos::miner_plugin::start_miner() {
                             } else {
                                 auto trace_ptr = param.get<chain::transaction_trace_ptr>();
                                 fc_ilog(logger,
-                                        "success to push transaction about voteproducer with voter: {1} producer: {2}",
+                                        "success to push transaction about voteproducer with voter: ${1} producer: ${2}",
                                         ("1", voter_name)("2", producer_name));
                             }
                         };
@@ -366,9 +366,16 @@ void celesos::miner_plugin::plugin_startup() {
                     return;
                 }
 
-                if (fc::time_point::now() - the_chain_plugin.chain().head_block_time() >= fc::seconds(10)) {
-                    fc_ilog(logger, "chain is syncing block, wait 3 sec");
-                    std::this_thread::sleep_for(std::chrono::seconds{3});
+                if (fc::time_point::now() - the_chain_plugin.chain().head_block_time() >= fc::minutes(1)) {
+                    fc_ilog(logger, "chain is syncing block, wait 10 sec");
+                    auto sleep_until_time = fc::time_point::now() + fc::seconds(10);
+                    while (fc::time_point::now() < sleep_until_time) {
+                        std::this_thread::sleep_for(std::chrono::seconds{1});
+                        if (this->my->_has_plugin_shutdown) {
+                            fc_ilog(logger, "miner_plugin has been shutdown, quit");
+                            return;
+                        }
+                    }
                 } else {
                     break;
                 }

@@ -44,7 +44,13 @@ void *celesos::miner::worker::thread_run(void *arg) {
 
         if (sleep_interval_sec > 0 && sleep_probability > 0 && system_clock::now() >= next_check_time) {
             if (distribution(engine) <= sleep_probability) {
-                std::this_thread::sleep_for(std::chrono::seconds{sleep_interval_sec});
+                auto sleep_until_time = fc::time_point::now() + fc::seconds(sleep_interval_sec);
+                while (fc::time_point::now() < sleep_until_time) {
+                    std::this_thread::sleep_for(std::chrono::seconds{1});
+                    if (worker_ptr->_state == state::stopped) {
+                        break;
+                    }
+                }
                 continue;
             }
             next_check_time = system_clock::now() + std::chrono::seconds{sleep_interval_sec};
@@ -65,6 +71,11 @@ void *celesos::miner::worker::thread_run(void *arg) {
                             ("target", target.str(0, std::ios_base::hex).c_str())
                             ("dataset_count", dataset_count)
             );
+
+            if (worker_ptr->_state == state::stopped) {
+                break;
+            }
+
             worker_ptr->_ctx.io_service_ref.post(
                     [signal = worker_ptr->_ctx.signal_ptr, block_num = worker_ptr->_ctx.block_num, wood_opt = wood_opt]() {
                         auto is_success = !!wood_opt;
