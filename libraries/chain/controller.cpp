@@ -1604,7 +1604,7 @@ struct controller_impl {
          block_id_type result_hash = fc::sha256::hash(all_random + p->header.previous.str());
          p->header.block_random = result_hash._hash[0];
       }else{
-         dlog( "random count is too little:${n}", ("n",count) );
+         ilog( "random count is too little:${n}", ("n",count) );
       }
    }
    
@@ -1613,14 +1613,14 @@ struct controller_impl {
       uint32_t current_num = p->header.block_num();
       uint32_t length_num = 252;
       if(current_num < length_num){
-         dlog( "block numer < length_num 252");
+//         dlog( "block numer < length_num 252");
          return true;
       }
       uint64_t all_random = 0;
       // bool  is_random_correct = false;
       for(uint32_t block_number = current_num; block_number > 0; block_number--){
          if(block_number <= 0){
-            dlog( "block_number <= 0");
+//            dlog( "block_number <= 0");
             return true;
          }
          if(block_number < (current_num -  length_num)){
@@ -1670,7 +1670,7 @@ struct controller_impl {
          if(blk_state == nullptr && block_number == current_num){
             blk_state = p->block;
          }else if(blk_state == nullptr){
-            dlog("block_number:${block_number} blk_state is null",("block_number",block_number));
+//            dlog("block_number:${block_number} blk_state is null",("block_number",block_number));
             return true;
          }
 

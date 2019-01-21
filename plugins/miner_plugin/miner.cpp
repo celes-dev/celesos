@@ -220,10 +220,10 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
 
     shared_ptr<vector<ethash::node>> cache_ptr{};
     if (force || is_cache_changed) {
-        fc_ilog(_logger, "begin prepare cache with count: ${count}", ("count", new_cache_count));
+        fc_ilog(_logger, "begin prepare cache with count: ${1}", ("1", new_cache_count));
         cache_ptr = make_shared<vector<ethash::node>>(new_cache_count, vector<ethash::node>::allocator_type());
         ethash::calc_cache(*cache_ptr, new_cache_count, *seed_ptr);
-        fc_ilog(_logger, "end prepare cache with count: ${count}", ("count", new_cache_count));
+        fc_ilog(_logger, "end prepare cache with count: ${1}", ("1", new_cache_count));
     } else {
         fc_dlog(_logger, "use cache generated");
         cache_ptr = *this->_target_cache_ptr_opt;
@@ -252,7 +252,7 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
                                                             this->_target_dataset_count_opt, new_dataset_count);
     shared_ptr<vector<ethash::node>> dataset_ptr{};
     if (force || is_dataset_changed) {
-        fc_ilog(_logger, "begin prepare dataset with count: ${count}", ("count", new_dataset_count));
+        fc_ilog(_logger, "begin prepare dataset with count: ${1}", ("1", new_dataset_count));
         dataset_ptr = make_shared<vector<ethash::node>>(new_dataset_count,
                                                         vector<ethash::node>::allocator_type());
 
@@ -273,7 +273,7 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
         }
 
 //        ethash::calc_dataset(*dataset_ptr, new_dataset_count, *cache_ptr);
-        fc_ilog(_logger, "end prepare dataset with count: ${count}", ("count", new_dataset_count));
+        fc_ilog(_logger, "end prepare dataset with count: ${1}", ("1", new_dataset_count));
     } else {
         fc_dlog(_logger, "use dataset generated");
         dataset_ptr = *this->_target_dataset_ptr_opt;

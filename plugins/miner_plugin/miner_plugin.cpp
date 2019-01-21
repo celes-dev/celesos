@@ -242,8 +242,8 @@ void celesos::miner_plugin::start_miner() {
             [this, &the_chain_plugin, &logger](auto is_success,
                                                auto block_num,
                                                const auto &wood_opt) {
-                fc_dlog(logger, "Receive mine callback with is_success: ${is_success} block_num: ${block_num}",
-                        ("is_success", is_success)("block_num", block_num));
+                fc_dlog(logger, "Receive mine callback with is_success: ${1} block_num: ${2}",
+                        ("1", is_success)("2", block_num));
 
                 //TODO 考虑系统合约未安装的情况
                 if (!is_success) {
@@ -275,7 +275,7 @@ void celesos::miner_plugin::start_miner() {
                         ethash::uint256_to_hex(wood_hex, wood_opt.get());
 
                         chain::signed_transaction tx{};
-                        vector<chain::permission_level> auth{{voter_name, "active"}};
+                        vector <chain::permission_level> auth{{voter_name, "active"}};
                         const auto &code = chain::config::system_account_name;
                         chain::action_name action{"voteproducer"};
                         auto args = fc::mutable_variant_object{}
@@ -303,8 +303,9 @@ void celesos::miner_plugin::start_miner() {
                         fc_dlog(logger, "end prepare transaction about voteproducer");
                         using method_type = chain::plugin_interface::incoming::methods::transaction_async;
                         using handler_param_type = fc::static_variant<fc::exception_ptr, chain::transaction_trace_ptr>;
-                        fc_ilog(logger, "start to push transation about voteproducer");
-                        auto handler = [&logger](const handler_param_type &param) {
+                        fc_ilog(logger, "start to push transation about voteproducer with voter: ${1} producer: ${2}",
+                                ("1", voter_name)("2", producer_name));
+                        auto handler = [&logger, voter_name, producer_name](const handler_param_type &param) {
                             if (param.contains<fc::exception_ptr>()) {
                                 auto exp_ptr = param.get<fc::exception_ptr>();
                                 fc_ilog(logger,
@@ -312,7 +313,9 @@ void celesos::miner_plugin::start_miner() {
                                         ("error", exp_ptr->to_detail_string().c_str()));
                             } else {
                                 auto trace_ptr = param.get<chain::transaction_trace_ptr>();
-                                fc_ilog(logger, "suceess to push transaction about voteproducer");
+                                fc_ilog(logger,
+                                        "success to push transaction about voteproducer with voter: {1} producer: {2}",
+                                        ("1", voter_name)("2", producer_name));
                             }
                         };
                         app().get_method<method_type>()(packed_tx_ptr, true, handler);
