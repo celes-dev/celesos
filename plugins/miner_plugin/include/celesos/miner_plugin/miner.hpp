@@ -33,9 +33,10 @@ namespace celesos {
             std::shared_ptr<boost::asio::io_service> _sub_io_service_ptr;
             std::thread _io_thread;
             state _state;
+
             boost::optional<std::shared_ptr<std::vector<celesos::ethash::node>>> _target_cache_ptr_opt;
             boost::optional<std::shared_ptr<std::vector<celesos::ethash::node>>> _target_dataset_ptr_opt;
-            boost::optional<celesos::forest::forest_struct> _target_forest_info_opt;
+            boost::optional<celesos::forest::forest_struct> _last_forest_info_opt;
             boost::optional<uint32_t> _target_cache_count_opt;
             boost::optional<uint32_t> _target_dataset_count_opt;
             boost::optional<fc::microseconds> _last_failure_time_us;
@@ -43,18 +44,18 @@ namespace celesos {
             fc::microseconds _failure_retry_interval_us;
             uint32_t _sleep_interval_sec;
             float _sleep_probability;
+            uint64_t _last_job_id;
 
-            void on_forest_updated(const std::shared_ptr<celesos::forest::forest_struct> forest_info_ptr,
-                                   const eosio::chain::account_name &relative_account);
+            void on_forest_updated(const celesos::forest::forest_struct &old_forest_info,
+                                   const celesos::forest::forest_struct &new_forest_info,
+                                   const eosio::chain::account_name &relative_account,
+                                   bool force = false);
 
             void run();
 
             void stop_workers(bool wait);
 
         public:
-
-            static void string_to_uint256_little(boost::multiprecision::uint256_t &dst, const std::string &str);
-
             static void gen_random_uint256(boost::multiprecision::uint256_t &dst);
 
             miner(const fc::logger &logger,

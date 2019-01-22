@@ -59,10 +59,8 @@ namespace celesos {
                 }
 #ifdef DEBUG
                 this->logger.set_log_level(fc::log_level::debug);
-                dlog("set log level to debug");
 #else
-                this->logger.set_log_level(fc::log_level::warn);
-                dlog("set log level to warn");
+                this->logger.set_log_level(fc::log_level::info);
 #endif
             }
 
@@ -197,7 +195,7 @@ namespace celesos {
             }
 
             for (auto iter = cachevector.cbegin(); iter != cachevector.cend(); iter++) {
-                fc_dlog(this->logger, "block_cache:erase for key:${key}", ("key", *iter));
+//                fc_dlog(this->logger, "block_cache:erase for key:${key}", ("key", *iter));
                 block_cache.erase(*iter);
             }
 
@@ -387,15 +385,15 @@ namespace celesos {
                 forest_data.next_block_num = current_forest_number + forest_space_number();
                 forest_data.target = value;
 
-                fc_dlog(this->logger, "\n\tcalc seed with "
-                     "\n\t\tseed: ${seed} "
-                     "\n\t\tblock_num_1: ${block_num_1} "
-                     "\n\t\tblock_num_2: ${block_num_2} "
-                     "\n\t\ttarget: ${target}",
-                     ("seed", forest_data.seed.str())(
-                             "block_num_1", first_cache_pair->first)("block_num_2",
-                                                                     forest_data.block_number)(
-                             "target", forest_data.target.str(0, std::ios_base::hex)));
+//                fc_dlog(this->logger, "\n\tcalc seed with "
+//                     "\n\t\tseed: ${seed} "
+//                     "\n\t\tblock_num_1: ${block_num_1} "
+//                     "\n\t\tblock_num_2: ${block_num_2} "
+//                     "\n\t\ttarget: ${target}",
+//                     ("seed", forest_data.seed.str())(
+//                             "block_num_1", first_cache_pair->first)("block_num_2",
+//                                                                     forest_data.block_number)(
+//                             "target", forest_data.target.str(0, std::ios_base::hex)));
 
                 forestLock.unlock();
 
@@ -408,13 +406,13 @@ namespace celesos {
                     forest_bank::cacheBlockInfo(current_forest_number, result_value, diff);
                 }
 
-                fc_dlog(this->logger, "\n\tupdate forest with "
-                     "\n\t\tnumber: ${current_forest_number} "
-                     "\n\t\tresult_value: ${result_value} "
-                     "\n\t\tdiff: ${diff} "
-                     "\n\t\ttarget: ${target}",
-                     ("current_forest_number", current_forest_number)(
-                             "result_value", result_value)("diff", diff)("target", value));
+//                fc_dlog(this->logger, "\n\tupdate forest with "
+//                     "\n\t\tnumber: ${current_forest_number} "
+//                     "\n\t\tresult_value: ${result_value} "
+//                     "\n\t\tdiff: ${diff} "
+//                     "\n\t\ttarget: ${target}",
+//                     ("current_forest_number", current_forest_number)(
+//                             "result_value", result_value)("diff", diff)("target", value));
             }
         }
 

@@ -242,8 +242,8 @@ void celesos::miner_plugin::start_miner() {
             [this, &the_chain_plugin, &logger](auto is_success,
                                                auto block_num,
                                                const auto &wood_opt) {
-                fc_dlog(logger, "Receive mine callback with is_success: ${is_success} block_num: ${block_num}",
-                        ("is_success", is_success)("block_num", block_num));
+                fc_dlog(logger, "Receive mine callback with is_success: ${1} block_num: ${2}",
+                        ("1", is_success)("2", block_num));
 
                 //TODO 考虑系统合约未安装的情况
                 if (!is_success) {
@@ -273,17 +273,6 @@ void celesos::miner_plugin::start_miner() {
                         const auto &producer_name = this->my->_producer_name;
                         std::string wood_hex{};
                         ethash::uint256_to_hex(wood_hex, wood_opt.get());
-//                        auto bank = forest::forest_bank::getInstance(the_chain_plugin.chain());
-//                        fc_dlog(logger,
-//                                "\n\twood should pass verify with "
-//                                "\n\t\tis_pass: ${is_pass} "
-//                                "\n\t\tblock_num: ${block_num} "
-//                                "\n\t\tvoter: ${voter} "
-//                                "\n\t\twood: ${wood} ",
-//                                ("is_pass", bank->verify_wood(block_num, voter_name, wood_hex.c_str()))
-//                                        ("block_num", block_num)
-//                                        ("voter", voter_name)
-//                                        ("wood", wood_hex.c_str()));
 
                         chain::signed_transaction tx{};
                         vector<chain::permission_level> auth{{voter_name, "active"}};
@@ -314,8 +303,9 @@ void celesos::miner_plugin::start_miner() {
                         fc_dlog(logger, "end prepare transaction about voteproducer");
                         using method_type = chain::plugin_interface::incoming::methods::transaction_async;
                         using handler_param_type = fc::static_variant<fc::exception_ptr, chain::transaction_trace_ptr>;
-                        fc_ilog(logger, "start to push transation about voteproducer");
-                        auto handler = [&logger](const handler_param_type &param) {
+                        fc_ilog(logger, "start to push transation about voteproducer with voter: ${1} producer: ${2}",
+                                ("1", voter_name)("2", producer_name));
+                        auto handler = [&logger, voter_name, producer_name](const handler_param_type &param) {
                             if (param.contains<fc::exception_ptr>()) {
                                 auto exp_ptr = param.get<fc::exception_ptr>();
                                 fc_ilog(logger,
@@ -323,13 +313,23 @@ void celesos::miner_plugin::start_miner() {
                                         ("error", exp_ptr->to_detail_string().c_str()));
                             } else {
                                 auto trace_ptr = param.get<chain::transaction_trace_ptr>();
-                                fc_ilog(logger, "suceess to push transaction about voteproducer");
+                                fc_ilog(logger,
+                                        "success to push transaction about voteproducer with voter: ${1} producer: ${2}",
+                                        ("1", voter_name)("2", producer_name));
                             }
                         };
                         app().get_method<method_type>()(packed_tx_ptr, true, handler);
                     }
+                } catch (fc::exception &er) {
+                    wlog("${details}", ("details", er.to_detail_string()));
+                } catch (const std::exception &e) {
+                    fc::exception fce{FC_LOG_MESSAGE(warn, "rethrow ${what}: ", ("what", e.what())),
+                                      fc::std_exception_code, BOOST_CORE_TYPEID(e).name(), e.what()};
+                    wlog("${details}", ("details", fce.to_detail_string()));
+                } catch (...) {
+                    fc::unhandled_exception e{FC_LOG_MESSAGE(warn, "rethrow"), std::current_exception()};
+                    wlog("${details}", ("details", e.to_detail_string()));
                 }
-                FC_LOG_AND_RETHROW()
             });
 }
 
@@ -362,22 +362,28 @@ void celesos::miner_plugin::plugin_startup() {
 
             for (;;) {
                 if (this->my->_has_plugin_shutdown) {
-                    fc_ilog(logger, "miner_plugin has been shutdown, break loop");
+                    fc_ilog(logger, "miner_plugin has been shutdown, quit");
                     return;
                 }
 
-                if (fc::time_point::now() - the_chain_plugin.chain().head_block_time() >= fc::seconds(10)) {
-                    fc_ilog(logger, "chain is syncing block, wait 3 sec");
-                    std::this_thread::sleep_for(std::chrono::seconds{3});
+                if (fc::time_point::now() - the_chain_plugin.chain().head_block_time() >= fc::minutes(1)) {
+                    fc_ilog(logger, "chain is syncing block, wait 10 sec");
+                    auto sleep_until_time = fc::time_point::now() + fc::seconds(10);
+                    while (fc::time_point::now() < sleep_until_time) {
+                        std::this_thread::sleep_for(std::chrono::seconds{1});
+                        if (this->my->_has_plugin_shutdown) {
+                            fc_ilog(logger, "miner_plugin has been shutdown, quit");
+                            return;
+                        }
+                    }
                 } else {
                     break;
                 }
             }
 
             auto &main_io_service = app().get_io_service();
-            main_io_service.post([this]() {
-                this->start_miner();
-            });
+            auto handler = std::bind(&miner_plugin::start_miner, this);
+            main_io_service.post(handler);
         });
 
         ilog("plugin_startup() end");
