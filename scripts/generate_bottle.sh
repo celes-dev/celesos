@@ -36,7 +36,7 @@ echo "class Celesos < Formula
 
    homepage \"${URL}\"
    revision 0
-   url \"https://github.com/celesos/celes/archive/v${VERSION}.tar.gz\"
+   url \"https://github.com/celes-dev/celesos/archive/v${VERSION}.tar.gz\"
    version \"${VERSION}\"
    
    option :universal
@@ -50,7 +50,7 @@ echo "class Celesos < Formula
    depends_on :arch =>  :intel
   
    bottle do
-      root_url \"https://github.com/celesos/celes/releases/download/v${VERSION}\"
+      root_url \"https://github.com/celes-dev/celesos/releases/download/v${VERSION}\"
       sha256 \"${hash}\" => :${MAC_VERSION}
    end
    def install

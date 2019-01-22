@@ -5,7 +5,7 @@ CELES_PREFIX=${PREFIX}/${SUBPREFIX}
 mkdir -p ${PREFIX}/bin/
 #mkdir -p ${PREFIX}/lib/cmake/${PROJECT}
 mkdir -p ${CELES_PREFIX}/bin
-mkdir -p ${CELES_PREFIX}/licenses/eosio
+mkdir -p ${CELES_PREFIX}/licenses/celesos
 #mkdir -p ${EOS_PREFIX}/include
 #mkdir -p ${EOS_PREFIX}/lib/cmake/${PROJECT}
 #mkdir -p ${EOS_PREFIX}/cmake
@@ -15,7 +15,7 @@ mkdir -p ${CELES_PREFIX}/licenses/eosio
 cp -R ${BUILD_DIR}/bin/* ${CELES_PREFIX}/bin
 
 # install licenses
-cp -R ${BUILD_DIR}/licenses/eosio/* ${CELES_PREFIX}/licenses
+cp -R ${BUILD_DIR}/licenses/celesos/* ${CELES_PREFIX}/licenses
 
 # install libraries
 #cp -R ${BUILD_DIR}/lib/* ${EOS_PREFIX}/lib
