@@ -4,10 +4,10 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = "CELES.OS"
+PROJECT_NAME           = "CELESOS"
 PROJECT_NUMBER         = "CELESOS ${DOXY_CELES_VERSION}"
 PROJECT_BRIEF          =
-PROJECT_LOGO           = eos-logo.png
+PROJECT_LOGO           = celesos-logo.png
 OUTPUT_DIRECTORY       =
 CREATE_SUBDIRS         = NO
 ALLOW_UNICODE_NAMES    = NO
@@ -210,8 +210,8 @@ HTML_INDEX_NUM_ENTRIES = 100
 GENERATE_DOCSET        = NO
 DOCSET_FEEDNAME        = "Doxygen generated docs"
 DOCSET_BUNDLE_ID       = os.celes
-DOCSET_PUBLISHER_ID    = one.block
-DOCSET_PUBLISHER_NAME  = block.one
+DOCSET_PUBLISHER_ID    = celes.block
+DOCSET_PUBLISHER_NAME  = block.celes
 GENERATE_HTMLHELP      = NO
 CHM_FILE               =
 HHC_LOCATION           =

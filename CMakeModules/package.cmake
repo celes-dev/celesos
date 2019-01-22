@@ -1,8 +1,8 @@
-set(VENDOR "block.one")
-set(PROJECT_NAME "eosio")
-set(DESC "Software for the EOS.IO network")
-set(URL "https://github.com/eosio/eos")
-set(EMAIL "support@block.one")
+set(VENDOR "celesos")
+set(PROJECT_NAME "celesos")
+set(DESC "Software for the CELESOS network")
+set(URL "https://github.com/celes-dev/celesos")
+set(EMAIL "support@celesos.io")
 
 configure_file(${CMAKE_SOURCE_DIR}/scripts/generate_package.sh.in ${CMAKE_BINARY_DIR}/packages/generate_package.sh @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/scripts/generate_bottle.sh ${CMAKE_BINARY_DIR}/packages/generate_bottle.sh COPYONLY)
