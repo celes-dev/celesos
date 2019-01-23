@@ -1985,26 +1985,23 @@ read_only::get_question_block_number_result read_only::get_question_block_number
     return result;
 }
 
-    read_only::verify_wood_result read_only::verify_wood(const eosio::chain_apis::read_only::verify_wood_params &params) const {
+read_only::verify_wood_result read_only::verify_wood(const eosio::chain_apis::read_only::verify_wood_params &params) const
+{
+   read_only::verify_wood_result verify_wood_result;
 
-       read_only::verify_wood_result verify_wood_result;
+   uint32_t block_number = params.block_number;
+   account_name account{params.account};
 
-       uint32_t block_number=params.block_number;
-       account_name account{params.account};
+   const char *wood = params.wood.c_str();
 
+   verify_wood_result.result = db.verify_wood(block_number, account, wood);
 
-       const char *wood = params.wood.c_str();
+   //    get_block_header_state_params pa;
+   //    pa.block_num_or_id="123";
+   //    fc::variant va = get_block_header_state(pa);
+   return verify_wood_result;
+}
 
-       verify_wood_result.result = db.verify_wood(block_number,account,wood);
-
-//    get_block_header_state_params pa;
-//    pa.block_num_or_id="123";
-//    fc::variant va = get_block_header_state(pa);
-
-
-
-       return verify_wood_result;
-    }
 read_only::get_block_random_result read_only::get_block_random(const read_only::get_block_random_params& params)const{
    signed_block_ptr block;
    EOS_ASSERT(!params.block_num_or_id.empty() && params.block_num_or_id.size() <= 64, chain::block_id_type_exception, "Invalid Block number or ID, must be greater than 0 and less than 64 characters" );
