@@ -346,7 +346,7 @@ void celesos::miner_plugin::plugin_startup() {
 #ifdef DEBUG
             logger.set_log_level(fc::log_level::debug);
 #else
-            logger.set_log_level(fc::log_level::debug);
+            logger.set_log_level(fc::log_level::info);
 #endif
         }
 

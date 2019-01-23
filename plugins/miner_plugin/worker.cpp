@@ -100,7 +100,10 @@ celesos::miner::worker::worker(worker_ctx ctx) :
 }
 
 celesos::miner::worker::~worker() {
-    this->stop(false);
+    auto &logger = _ctx.logger;
+    fc_dlog(logger, "begin worker::~worker()");
+    this->stop();
+    fc_dlog(logger, "end worker::~worker()");
 }
 
 void celesos::miner::worker::start() {

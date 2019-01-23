@@ -37,11 +37,12 @@ celesos::miner::miner::miner(const fc::logger &logger,
 }
 
 celesos::miner::miner::~miner() {
+    fc_dlog(_logger, "begin miner::~miner()");
     if (this->_signal_ptr) {
         this->_signal_ptr->disconnect_all_slots();
         this->_signal_ptr.reset();
     }
-    this->stop(false);
+    this->stop(true);
     if (this->_sub_io_service_ptr) {
         this->_sub_io_service_ptr->stop();
         this->_sub_io_service_ptr.reset();
@@ -50,6 +51,7 @@ celesos::miner::miner::~miner() {
     if (this->_io_thread.joinable()) {
         this->_io_thread.detach();
     }
+    fc_dlog(_logger, "end miner::~miner()");
 }
 
 void celesos::miner::miner::start(const chain::account_name &relative_account, chain::controller &cc) {
@@ -354,8 +356,10 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
 
 void celesos::miner::miner::run() {
     this->_sub_io_service_ptr = make_shared<boost::asio::io_service>();
-    boost::asio::io_service::work a_work{std::ref(*this->_sub_io_service_ptr)};
-    this->_sub_io_service_ptr->run();
+
+    auto sub_io_service_ptr = this->_sub_io_service_ptr;
+    boost::asio::io_service::work a_work{std::ref(*sub_io_service_ptr)};
+    sub_io_service_ptr->run();
 }
 
 void celesos::miner::miner::gen_random_uint256(uint256_t &dst) {
