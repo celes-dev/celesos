@@ -292,7 +292,7 @@ void celesos::miner_plugin::start_miner() {
                         tx.set_reference_block(cc.last_irreversible_block_id());
                         tx.max_cpu_usage_ms = 0;
                         tx.max_net_usage_words = 0UL;
-                        tx.delay_sec = 1UL;
+                        tx.delay_sec = 0UL;
                         for (auto &&pair : this->my->_signature_providers) {
                             auto &&digest = tx.sig_digest(chain_id, tx.context_free_data);
                             auto &&signature = pair.second(digest);
@@ -346,7 +346,7 @@ void celesos::miner_plugin::plugin_startup() {
 #ifdef DEBUG
             logger.set_log_level(fc::log_level::debug);
 #else
-            logger.set_log_level(fc::log_level::info);
+            logger.set_log_level(fc::log_level::debug);
 #endif
         }
 
@@ -358,6 +358,7 @@ void celesos::miner_plugin::plugin_startup() {
                                      this->my->_sleep_probability);
 
         this->my->_start_miner_thread_opt.emplace([this, &logger]() {
+            fc_dlog(logger, "begin start_miner_thread::run()");
             auto &the_chain_plugin = app().get_plugin<chain_plugin>();
 
             for (;;) {
@@ -384,6 +385,7 @@ void celesos::miner_plugin::plugin_startup() {
             auto &main_io_service = app().get_io_service();
             auto handler = std::bind(&miner_plugin::start_miner, this);
             main_io_service.post(handler);
+            fc_dlog(logger, "end start_miner_thread::run()");
         });
 
         ilog("plugin_startup() end");
@@ -395,7 +397,7 @@ void celesos::miner_plugin::plugin_shutdown() {
     try {
         ilog("plugin_shutdown() begin");
         this->my->_has_plugin_shutdown = true;
-        this->my->_miner_opt->stop(true);
+        this->my->_miner_opt->stop(false);
         this->my->_miner_opt.reset();
         if (this->my->_start_miner_thread_opt && this->my->_start_miner_thread_opt->joinable()) {
             this->my->_start_miner_thread_opt->join();

@@ -37,20 +37,18 @@ celesos::miner::miner::miner(const fc::logger &logger,
 }
 
 celesos::miner::miner::~miner() {
-    if (this->_io_work_ptr) {
-        this->_io_work_ptr.reset();
-    }
     if (this->_signal_ptr) {
         this->_signal_ptr->disconnect_all_slots();
         this->_signal_ptr.reset();
     }
-    this->stop();
+    this->stop(false);
     if (this->_sub_io_service_ptr) {
         this->_sub_io_service_ptr->stop();
         this->_sub_io_service_ptr.reset();
     }
+    fc_dlog(_logger, "alive_worker_count: ${1}", ("1", this->_alive_worker_ptrs.size()));
     if (this->_io_thread.joinable()) {
-        this->_io_thread.join();
+        this->_io_thread.detach();
     }
 }
 
@@ -152,6 +150,7 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
 }
 
 void celesos::miner::miner::stop_workers(bool wait) {
+    fc_ilog(_logger, "begin miner::stop_workers(wait = ${wait})", ("wait", wait));
     for (auto &x : this->_alive_worker_ptrs) {
         if (x) {
             x->stop(wait);
@@ -159,11 +158,15 @@ void celesos::miner::miner::stop_workers(bool wait) {
         }
     }
     this->_alive_worker_ptrs.clear();
+    fc_ilog(_logger, "end miner::stop_workers(wait = ${wait})", ("wait", wait));
 }
 
 void celesos::miner::miner::stop(bool wait) {
-//    fc_ilog(_logger, "stop(wait = ${wait}) begin", ("wait", wait));
+    fc_ilog(_logger, "begin miner::stop(wait = ${wait})", ("wait", wait));
     if (this->_state == state::stopped) {
+        fc_ilog(_logger, "connection_count: ${1} worker_count: ${2}",
+                ("1", this->_connections.size())("2", this->_alive_worker_ptrs.size()));
+        fc_ilog(_logger, "end miner::stop(wait = ${wait})", ("wait", wait));
         return;
     }
     this->_state = state::stopped;
@@ -175,7 +178,7 @@ void celesos::miner::miner::stop(bool wait) {
 
     this->stop_workers(wait);
 
-//    fc_ilog(_logger, "stop(wait = ${wait}) end", ("wait", wait));
+    fc_ilog(_logger, "end miner::stop(wait = ${wait})", ("wait", wait));
 }
 
 connection celesos::miner::miner::connect(const celesos::miner::mine_slot_type &slot) {
@@ -337,6 +340,7 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
         for (auto &x : this->_alive_worker_ptrs) {
             x->start();
         }
+        fc_dlog(_logger, "start worker with count: ${1}", ("1", this->_alive_worker_ptrs.size()));
     }
 
     // update target fields
@@ -344,11 +348,13 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
     this->_target_dataset_ptr_opt = dataset_ptr;
     this->_target_cache_count_opt = new_cache_count;
     this->_target_dataset_count_opt = new_dataset_count;
+
+    fc_dlog(_logger, "end on_forested_updated()");
 }
 
 void celesos::miner::miner::run() {
     this->_sub_io_service_ptr = make_shared<boost::asio::io_service>();
-    this->_io_work_ptr = make_shared<boost::asio::io_service::work>(std::ref(*this->_sub_io_service_ptr));
+    boost::asio::io_service::work a_work{std::ref(*this->_sub_io_service_ptr)};
     this->_sub_io_service_ptr->run();
 }
 

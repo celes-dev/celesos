@@ -56,6 +56,10 @@ void *celesos::miner::worker::thread_run(void *arg) {
             next_check_time = system_clock::now() + std::chrono::seconds{sleep_interval_sec};
         }
 
+        if (worker_ptr->_state == state::stopped) {
+            break;
+        }
+
         if (ethash::hash_full(forest, nonce_current, dataset_count, dataset) <= target) {
             wood_opt = nonce_current;
             fc_dlog(logger,
@@ -77,9 +81,9 @@ void *celesos::miner::worker::thread_run(void *arg) {
             }
 
             worker_ptr->_ctx.io_service_ref.post(
-                    [signal = worker_ptr->_ctx.signal_ptr, block_num = worker_ptr->_ctx.block_num, wood_opt = wood_opt]() {
-                        auto is_success = !!wood_opt;
-                        (*signal)(std::move(is_success), block_num, wood_opt);
+                    [signal_ptr = worker_ptr->_ctx.signal_ptr, block_num = worker_ptr->_ctx.block_num, wood_opt = wood_opt]() {
+                        auto &&is_success = !!wood_opt;
+                        (*signal_ptr)(is_success, block_num, wood_opt);
                     });
             std::this_thread::sleep_for(std::chrono::seconds{1}); // if success,then sleep 1 second.
         }
@@ -96,7 +100,7 @@ celesos::miner::worker::worker(worker_ctx ctx) :
 }
 
 celesos::miner::worker::~worker() {
-    this->stop();
+    this->stop(false);
 }
 
 void celesos::miner::worker::start() {
@@ -124,12 +128,14 @@ void celesos::miner::worker::start() {
 
         pthread_create(thread_ptr, &attr, miner::worker::thread_run, this);
         fc_dlog(logger, "end create thread for mine");
-        this->_alive_thread_opt.emplace(std::move(*thread_ptr));
+//        this->_alive_thread_opt.emplace(std::move(*thread_ptr));
     }
     lock.unlock();
 }
 
 void celesos::miner::worker::stop(bool wait) {
+    auto &logger = _ctx.logger;
+    fc_dlog(logger, "begin worker::stop(${1})", ("1", wait));
     write_lock_type lock{this->_mutex};
     if (this->_state == state::started) {
         this->_state = state::stopped;
@@ -147,6 +153,7 @@ void celesos::miner::worker::stop(bool wait) {
             this->_alive_thread_opt.reset();
         }
     }
+    fc_dlog(logger, "end worker::stop(${1})", ("1", wait));
 }
 
 
