@@ -37,29 +37,29 @@ celesos::miner::miner::miner(const fc::logger &logger,
 }
 
 celesos::miner::miner::~miner() {
-    if (this->_io_work_ptr) {
-        this->_io_work_ptr.reset();
-    }
+    fc_dlog(_logger, "begin miner::~miner()");
     if (this->_signal_ptr) {
         this->_signal_ptr->disconnect_all_slots();
         this->_signal_ptr.reset();
     }
-    this->stop();
+    this->stop(true);
     if (this->_sub_io_service_ptr) {
         this->_sub_io_service_ptr->stop();
         this->_sub_io_service_ptr.reset();
     }
+    fc_dlog(_logger, "alive_worker_count: ${1}", ("1", this->_alive_worker_ptrs.size()));
     if (this->_io_thread.joinable()) {
-        this->_io_thread.join();
+        this->_io_thread.detach();
     }
+    fc_dlog(_logger, "end miner::~miner()");
 }
 
 void celesos::miner::miner::start(const chain::account_name &relative_account, chain::controller &cc) {
-    fc_dlog(_logger, "start() attempt");
+    fc_dlog(_logger, "attempt miner::start()");
     if (this->_state == state::started) {
         return;
     }
-    fc_dlog(_logger, "start() begin");
+    fc_dlog(_logger, "begin miner::start()");
     this->_state = state::started;
 
     auto slot = [this, &relative_account, &cc](const chain::block_state_ptr block_ptr) {
@@ -148,10 +148,11 @@ void celesos::miner::miner::start(const chain::account_name &relative_account, c
     };
     auto a_connection = cc.accepted_block_header.connect(slot);
     this->_connections.push_back(std::move(a_connection));
-    fc_dlog(_logger, "start() end");
+    fc_dlog(_logger, "end miner::start()");
 }
 
 void celesos::miner::miner::stop_workers(bool wait) {
+    fc_dlog(_logger, "begin miner::stop_workers(wait = ${wait})", ("wait", wait));
     for (auto &x : this->_alive_worker_ptrs) {
         if (x) {
             x->stop(wait);
@@ -159,11 +160,15 @@ void celesos::miner::miner::stop_workers(bool wait) {
         }
     }
     this->_alive_worker_ptrs.clear();
+    fc_dlog(_logger, "end miner::stop_workers(wait = ${wait})", ("wait", wait));
 }
 
 void celesos::miner::miner::stop(bool wait) {
-//    fc_ilog(_logger, "stop(wait = ${wait}) begin", ("wait", wait));
+    fc_dlog(_logger, "begin miner::stop(wait = ${wait})", ("wait", wait));
     if (this->_state == state::stopped) {
+        fc_dlog(_logger, "connection_count: ${1} worker_count: ${2}",
+                ("1", this->_connections.size())("2", this->_alive_worker_ptrs.size()));
+        fc_dlog(_logger, "end miner::stop(wait = ${wait})", ("wait", wait));
         return;
     }
     this->_state = state::stopped;
@@ -175,7 +180,7 @@ void celesos::miner::miner::stop(bool wait) {
 
     this->stop_workers(wait);
 
-//    fc_ilog(_logger, "stop(wait = ${wait}) end", ("wait", wait));
+    fc_dlog(_logger, "end miner::stop(wait = ${wait})", ("wait", wait));
 }
 
 connection celesos::miner::miner::connect(const celesos::miner::mine_slot_type &slot) {
@@ -195,6 +200,18 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
     const auto seed_ptr = make_shared<string>(new_forest_info.seed.str());
     const auto forest_ptr = make_shared<string>(new_forest_info.forest.str());
 
+    auto is_miner_quit_func = [this, current_job_id]() {
+        auto &logger = this->_logger;
+        if (this->_state == state::stopped) {
+            fc_ilog(logger, "miner has been stop, quit");
+            return true;
+        } else if (current_job_id != this->_last_job_id) {
+            fc_ilog(logger, "forest has changed, quit");
+            return true;
+        }
+        return false;
+    };
+
     // prepare cache and dataset_ptr
     const static auto is_cache_changed_func = [](const forest::forest_struct &old_forest,
                                                  const forest::forest_struct &new_forest,
@@ -206,11 +223,7 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
     };
 //    const uint32_t new_cache_count{512};
 
-    if (this->_state == state::stopped) {
-        fc_ilog(_logger, "miner has been stop, quit");
-        return;
-    } else if (current_job_id != this->_last_job_id) {
-        fc_ilog(_logger, "forest has changed, cancel job");
+    if (is_miner_quit_func()) {
         return;
     }
 
@@ -237,11 +250,7 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
                old_dataset_count_opt != new_dataset_count;
     };
 
-    if (this->_state == state::stopped) {
-        fc_ilog(_logger, "miner has been stop, quit");
-        return;
-    } else if (current_job_id != this->_last_job_id) {
-        fc_ilog(_logger, "forest has changed, quit");
+    if (is_miner_quit_func()) {
         return;
     }
 
@@ -260,14 +269,8 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
         auto &cache = *cache_ptr;
         dataset.resize(new_dataset_count);
         for (uint32_t i = 0; i < new_dataset_count; ++i) {
-            if (i % 1000 == 0) {
-                if (this->_state == state::stopped) {
-                    fc_ilog(_logger, "miner has been stop, quit");
-                    return;
-                } else if (current_job_id != this->_last_job_id) {
-                    fc_ilog(_logger, "forest has changed, quit");
-                    return;
-                }
+            if (i % 1000 == 0 && is_miner_quit_func()) {
+                return;
             }
             dataset[i] = calc_dataset_item(cache, i);
         }
@@ -285,11 +288,7 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
         return is_dataset_changed || old_forest.forest != new_forest.forest;
     };
 
-    if (this->_state == state::stopped) {
-        fc_ilog(_logger, "miner has been stop, quit");
-        return;
-    } else if (current_job_id != this->_last_job_id) {
-        fc_ilog(_logger, "forest has changed, quit");
+    if(is_miner_quit_func()) {
         return;
     }
 
@@ -326,17 +325,14 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
             this->_alive_worker_ptrs[i] = make_shared<worker>(std::move(ctx));
         }
 
-        if (this->_state == state::stopped) {
-            fc_ilog(_logger, "miner has been stop, quit");
-            return;
-        } else if (current_job_id != this->_last_job_id) {
-            fc_ilog(_logger, "forest has changed, quit");
+        if(is_miner_quit_func()) {
             return;
         }
 
         for (auto &x : this->_alive_worker_ptrs) {
             x->start();
         }
+        fc_dlog(_logger, "start worker with count: ${1}", ("1", this->_alive_worker_ptrs.size()));
     }
 
     // update target fields
@@ -344,12 +340,16 @@ void celesos::miner::miner::on_forest_updated(const forest::forest_struct &old_f
     this->_target_dataset_ptr_opt = dataset_ptr;
     this->_target_cache_count_opt = new_cache_count;
     this->_target_dataset_count_opt = new_dataset_count;
+
+    fc_dlog(_logger, "end on_forested_updated()");
 }
 
 void celesos::miner::miner::run() {
     this->_sub_io_service_ptr = make_shared<boost::asio::io_service>();
-    this->_io_work_ptr = make_shared<boost::asio::io_service::work>(std::ref(*this->_sub_io_service_ptr));
-    this->_sub_io_service_ptr->run();
+
+    auto sub_io_service_ptr = this->_sub_io_service_ptr;
+    boost::asio::io_service::work a_work{std::ref(*sub_io_service_ptr)};
+    sub_io_service_ptr->run();
 }
 
 void celesos::miner::miner::gen_random_uint256(uint256_t &dst) {
