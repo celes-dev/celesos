@@ -308,7 +308,7 @@ void celesos::miner_plugin::start_miner() {
                         auto handler = [&logger, voter_name, producer_name](const handler_param_type &param) {
                             if (param.contains<fc::exception_ptr>()) {
                                 auto exp_ptr = param.get<fc::exception_ptr>();
-                                fc_ilog(logger,
+                                fc_wlog(logger,
                                         "fail to push transaction about voteproducer with error: \n${error}",
                                         ("error", exp_ptr->to_detail_string().c_str()));
                             } else {
