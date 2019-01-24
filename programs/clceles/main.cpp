@@ -707,12 +707,12 @@ struct set_account_permission_subcommand {
       auto permissions = accountCmd->add_subcommand("permission", localized("set parameters dealing with account permissions"));
       permissions->add_option("account", account, localized("The account to set/delete a permission authority for"))->required();
       permissions->add_option("permission", permission, localized("The permission name to set/delete an authority for"))->required();
-      // permissions->add_option("authority", authority_json_or_file, localized("[delete] NULL, [create/update] public key, JSON string or filename defining the authority, [code] contract name"));
+       permissions->add_option("authority", authority_json_or_file, localized("[delete] NULL, [create/update] public key, JSON string or filename defining the authority, [code] contract name"));
       permissions->add_option("parent", parent, localized("[create] The permission name of this parents permission, defaults to 'active'"));
       permissions->add_flag("--add-code", add_code, localized("[code] add '${code}' permission to specified permission authority", ("code", name(config::celes_code_name))));
       permissions->add_flag("--remove-code", remove_code, localized("[code] remove '${code}' permission from specified permission authority", ("code", name(config::celes_code_name))));
 
-      authority_json_or_file = "{\"threshold\": 2,\"keys\": [],\"accounts\": [{\"permission\": {\"actor\": \"celes.prods\",\"permission\": \"owner\"},\"weight\": 1},{\"permission\": {\"actor\": \"celes.abps\",\"permission\": \"owner\"},\"weight\": 1}],\"waits\": []}";
+//      authority_json_or_file = "{\"threshold\": 2,\"keys\": [],\"accounts\": [{\"permission\": {\"actor\": \"celes.prods\",\"permission\": \"owner\"},\"weight\": 1},{\"permission\": {\"actor\": \"celes.abps\",\"permission\": \"owner\"},\"weight\": 1}],\"waits\": []}";
       
 
       add_standard_transaction_options(permissions, "account@active");
