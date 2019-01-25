@@ -237,16 +237,16 @@ struct faucet_testnet_plugin_impl {
       trx.set_reference_block(cc.head_block_id());
       trx.sign(_create_account_private_key, chainid);
 
-      try {
-         cc.push_transaction( std::make_shared<transaction_metadata>(trx),fc::time_point::maximum(),1000 );
-      } catch (const account_name_exists_exception& ) {
-         // another transaction ended up adding the account, so look for alternates
-         return find_alternates(new_account_name);
-      }
+      // try {
+      //    cc.push_transaction( std::make_shared<transaction_metadata>(trx),fc::time_point::maximum(),1000 );
+      // } catch (const account_name_exists_exception& ) {
+      //    // another transaction ended up adding the account, so look for alternates
+      //    return find_alternates(new_account_name);
+      // }
 
-      _blocking_accounts = true;
-      _timer.expires_from_now(boost::posix_time::microseconds(_create_interval_msec * 1000));
-      _timer.async_wait(boost::bind(&faucet_testnet_plugin_impl::timer_fired, this));
+      // _blocking_accounts = true;
+      // _timer.expires_from_now(boost::posix_time::microseconds(_create_interval_msec * 1000));
+      // _timer.async_wait(boost::bind(&faucet_testnet_plugin_impl::timer_fired, this));
 
       auto packed_tx_ptr = std::make_shared<chain::packed_transaction>(
           chain::packed_transaction{trx});
