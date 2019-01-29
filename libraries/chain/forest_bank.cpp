@@ -196,7 +196,7 @@ namespace celesos {
                     chain.db().get_index<forest_info_multi_index, by_block_number>();
             auto itr = idx.cbegin();
             while (itr != idx.cend()) {
-                if (itr->block_number + cache_period_number()) + 1 < block_number) {
+                if (itr->block_number + cache_period_number() + 1 < block_number) {
                     dbvector.emplace_back(itr->block_number);
                     itr++;
                 } else {
