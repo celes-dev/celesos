@@ -99,7 +99,7 @@ namespace celesos {
         }
 
         uint32_t forest_bank::cache_period_number() {
-            uint32_t result_value = 24 * 60 * 21 * 6 * 3;
+            uint32_t result_value = 24 * 60 * 21 * 6 * 2;
 #ifdef DEBUG
             result_value = 60 * 21 * 6 * 2;
 #endif
@@ -188,7 +188,7 @@ namespace celesos {
             std::vector<uint32_t> cachevector;
             auto iter = block_cache.cbegin();
             while (iter != block_cache.cend()) {
-                if (iter->first + 2 * forest_period_number() + 1 < block_number) {
+                if (iter->first + cache_period_number() + 1 < block_number) {
                     cachevector.emplace_back(iter->first);
                 }
                 iter++;
@@ -205,7 +205,7 @@ namespace celesos {
                     chain.db().get_index<forest_info_multi_index, by_block_number>();
             auto itr = idx.cbegin();
             while (itr != idx.cend()) {
-                if (itr->block_number + 2 * forest_period_number() + 1 < block_number) {
+                if (itr->block_number + cache_period_number()) + 1 < block_number) {
                     dbvector.emplace_back(itr->block_number);
                     itr++;
                 } else {
