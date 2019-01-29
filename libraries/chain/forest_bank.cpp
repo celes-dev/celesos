@@ -99,11 +99,7 @@ namespace celesos {
         }
 
         uint32_t forest_bank::cache_period_number() {
-            uint32_t result_value = 24 * 60 * 21 * 6 * 2;
-#ifdef DEBUG
-            result_value = 60 * 21 * 6 * 2;
-#endif
-            return result_value;
+            return 2 * forest_bank::forest_period_number();
         }
 
         uint32_t forest_bank::forest_space_number() {
@@ -144,11 +140,6 @@ namespace celesos {
 
             auto itr = idx.cbegin();
             while (itr != idx.cend()) {
-                // fc_dlog(this->logger, "load block cache block "
-                //      "number:${block_number},block_id:${block_id},diff:${diff}",
-                //      ("block_number", itr->block_number)("block_id",
-                //                                          itr->block_id)("diff", itr->diff));
-
                 forest_bank::update_forest_with_block_number(itr->block_number + 1,
                                                              itr->diff,
                                                              false);
