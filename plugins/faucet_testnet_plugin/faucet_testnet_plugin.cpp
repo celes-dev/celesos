@@ -230,7 +230,7 @@ struct faucet_testnet_plugin_impl {
                                newaccount{_create_account_name, new_account_name, owner_auth, active_auth});
 
       trx.actions.emplace_back(vector<chain::permission_level>{{_create_account_name,"active"}},
-                               buyram{_create_account_name, new_account_name,asset(2000)});
+                               buyrambytes{_create_account_name, new_account_name,8192});
 
 
       trx.expiration = cc.head_block_time() + fc::seconds(30);

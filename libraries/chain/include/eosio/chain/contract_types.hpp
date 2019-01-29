@@ -23,20 +23,36 @@ struct newaccount {
       return N(newaccount);
    }
 };
-    struct buyram {
-        account_name                     payer;
-        account_name                     receiver;
-        asset                        quant;
+
+struct buyram {
+   account_name                     payer;
+   account_name                     receiver;
+   asset                        quant;
 
 
-        static account_name get_account() {
-            return N(celes);
-        }
+   static account_name get_account() {
+      return N(celes);
+   }
 
-        static action_name get_name() {
-            return N(buyram);
-        }
-    };
+   static action_name get_name() {
+      return N(buyram);
+   }
+};
+
+struct buyrambytes {
+   account_name                     payer;
+   account_name                     receiver;
+   uint32_t                         bytes;
+
+
+   static account_name get_account() {
+      return N(celes);
+   }
+
+   static action_name get_name() {
+      return N(buyrambytes);
+   }
+};
 
 struct setcode {
    account_name                     account;
@@ -179,4 +195,5 @@ FC_REFLECT( eosio::chain::linkauth                         , (account)(code)(typ
 FC_REFLECT( eosio::chain::unlinkauth                       , (account)(code)(type) )
 FC_REFLECT( eosio::chain::canceldelay                      , (canceling_auth)(trx_id) )
 FC_REFLECT( eosio::chain::onerror                          , (sender_id)(sent_trx) )
-FC_REFLECT( eosio::chain::buyram                          , (payer)(receiver)(quant) )
+FC_REFLECT( eosio::chain::buyram                           , (payer)(receiver)(quant) )
+FC_REFLECT( eosio::chain::buyrambytes                      , (payer)(receiver)(bytes) )
