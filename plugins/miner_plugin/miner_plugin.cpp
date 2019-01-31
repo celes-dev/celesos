@@ -39,7 +39,8 @@ public:
     boost::optional<std::thread> _start_miner_thread_opt;
     boost::optional<miner_type> _miner_opt;
     account_name _voter_name;
-    account_name _producer_name;
+    std::vector<account_name> _producer_names;
+    std::size_t _next_producer_idx;
 //    uint32_t _worker_priority;
     unsigned int _worker_count;
     float _sleep_probability;
@@ -50,7 +51,10 @@ public:
     fc::logger _logger;
     bool _auto_vote;
 
-    miner_plugin_impl() : _worker_count{1}, _has_plugin_shutdown{false}, _auto_vote{true} {
+    miner_plugin_impl() : _next_producer_idx{0},
+                          _worker_count{1},
+                          _has_plugin_shutdown{false},
+                          _auto_vote{true} {
     };
 
     ~miner_plugin_impl() {
@@ -115,7 +119,7 @@ void celesos::miner_plugin::set_program_options(options_description &, options_d
              boost::program_options::value<string>(),
              "Account name for fetch forest")
             ("miner-producer-name",
-             boost::program_options::value<string>(),
+             boost::program_options::value<std::vector<string>>()->multitoken(),
              "Producer to vote when solve puzzle,program will "
              "perform vote action with answer after puzzle "
              "solved.")
@@ -164,7 +168,10 @@ void celesos::miner_plugin::plugin_initialize(const variables_map &options) {
         }
 
         if (options.count("miner-producer-name")) {
-            this->my->_producer_name = account_name{options["miner-producer-name"].as<string>()};
+            auto &producer_names = options["miner-producer-name"].as<std::vector<string>>();
+            for (auto &producer_name : producer_names) {
+                this->my->_producer_names.emplace_back(producer_name);
+            }
         } else if (this->my->_auto_vote) {
             elog("Option \"miner-producer-name\" must be provide");
         }
@@ -251,8 +258,9 @@ void celesos::miner_plugin::start_miner() {
                     return;
                 }
 
+                auto producer_name_count = this->my->_producer_names.size();
                 try {
-                    if (!this->my->_auto_vote) {
+                    if (!this->my->_auto_vote || producer_name_count == 0) {
                         std::string wood_hex{};
                         ethash::uint256_to_hex(wood_hex, wood_opt.get());
                         const auto &owner_name = this->my->_voter_name;
@@ -270,7 +278,9 @@ void celesos::miner_plugin::start_miner() {
                         auto &cc = the_chain_plugin.chain();
                         const auto &chain_id = cc.get_chain_id();
                         const auto &voter_name = this->my->_voter_name;
-                        const auto &producer_name = this->my->_producer_name;
+                        const auto &producer_name = this->my->_producer_names[this->my->_next_producer_idx];
+                        this->my->_next_producer_idx =
+                                (this->my->_next_producer_idx + 1) % producer_name_count;
                         std::string wood_hex{};
                         ethash::uint256_to_hex(wood_hex, wood_opt.get());
 
