@@ -1526,7 +1526,7 @@ struct controller_impl {
       bool is_last_loop = false;
       //calculate current my_random position
       std::vector<signed_block_ptr> last_hash_vector;
-      uint32_t max_blcok_count = ((current_num - 21*12) > 0?(current_num - 21*12):0);
+      uint32_t max_blcok_count = ((current_num - 22*12) > 0?(current_num - 22*12):0);
       for(uint32_t block_number = current_num; block_number > max_blcok_count; block_number--){
          signed_block_ptr blk_state = self.fetch_block_by_number( block_number );
          if(blk_state == nullptr && block_number == current_num){
@@ -1557,6 +1557,8 @@ struct controller_impl {
       }
 
       if(last_hash_vector.size() < random_index){
+         // dlog("last_hash_vector.size() ${size}",("size",last_hash_vector.size()));
+         // dlog("random_index ${random_index}",("random_index",random_index));
          dlog("last_hash_vector.size() < random_index");
          return;
       }
@@ -1722,9 +1724,9 @@ struct controller_impl {
       // dlog("check_BP_random blk_state hash:${hash}",("hash",blk_state->next_random_hash));
       for(int i = 0;i < last_hash_vector.size();i++){
          signed_block_ptr blk_state_temp = last_hash_vector[i];
-         // dlog("********************check_BP_random blk_state hash:${hash}\n",("hash",blk_state_temp->next_random_hash));
-         // dlog("********************check_BP_random blk_state my random:${random}\n",("random",blk_state_temp->my_random));
-         // dlog("********************check_BP_random blk_state block number:${number}\n",("number",blk_state_temp->block_num()));
+         dlog("********************check_BP_random blk_state hash:${hash}\n",("hash",blk_state_temp->next_random_hash));
+         dlog("********************check_BP_random blk_state my random:${random}\n",("random",blk_state_temp->my_random));
+         dlog("********************check_BP_random blk_state block number:${number}\n",("number",blk_state_temp->block_num()));
       }
 
       return false;
