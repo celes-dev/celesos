@@ -1526,7 +1526,8 @@ struct controller_impl {
       bool is_last_loop = false;
       //calculate current my_random position
       std::vector<signed_block_ptr> last_hash_vector;
-      for(uint32_t block_number = current_num; block_number > 0; block_number--){
+      uint32_t max_blcok_count = ((current_num - 21*12) > 0?(current_num - 21*12):0);
+      for(uint32_t block_number = current_num; block_number > max_blcok_count; block_number--){
          signed_block_ptr blk_state = self.fetch_block_by_number( block_number );
          if(blk_state == nullptr && block_number == current_num){
             blk_state = p->block;
@@ -1548,6 +1549,11 @@ struct controller_impl {
             }
             is_last_loop = true;
          }
+      }
+//can not found last hash in max_blcok_count
+      if(last_hash_vector.size() == 0){
+         dlog("can not found last hash in max_blcok_count, maybe this BP is first produce block!");
+         return;
       }
 
       if(last_hash_vector.size() < random_index){
@@ -1581,6 +1587,10 @@ struct controller_impl {
       uint32_t length_num = 252;
       uint64_t all_random = 0;
       int count = 0;
+      if(current_num < length_num){
+         dlog("current_num is small than length_num!");
+         return;
+      }
       for(uint32_t block_number = current_num; block_number > current_num -  length_num; block_number--){
          if(block_number <= 0){
             // dlog( "block numer < length_num 252");

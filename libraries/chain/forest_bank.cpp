@@ -23,19 +23,19 @@ namespace celesos {
 //        static uint32_t question_period = 21600;//问题有效期
 
         uint32_t dataset_count() {
-#ifdef DEBUG
-            return 512 * 16;
-#else
+// #ifdef DEBUG
+//             return 512 * 16;
+// #else
             return 1024*1024*1024/64;
-#endif
+// #endif
         }
 
         uint32_t cache_count() {
-#ifdef DEBUG
-            return 512;
-#else
+// #ifdef DEBUG
+//             return 512;
+// #else
             return 1024*1024*16/64;
-#endif
+// #endif
         }
 
         static forest_bank *instance = nullptr;
@@ -57,11 +57,11 @@ namespace celesos {
                 for(const auto &appender : fc::logger::get().get_appenders()) {
                     this->logger.add_appender(appender);
                 }
-#ifdef DEBUG
-                this->logger.set_log_level(fc::log_level::debug);
-#else
+// #ifdef DEBUG
+//                 this->logger.set_log_level(fc::log_level::debug);
+// #else
                 this->logger.set_log_level(fc::log_level::info);
-#endif
+// #endif
             }
 
             std::vector<celesos::ethash::node> vector;
@@ -92,9 +92,9 @@ namespace celesos {
 
         uint32_t forest_bank::forest_period_number() {
             uint32_t result_value = 24 * 60 * 21 * 6;
-#ifdef DEBUG
-            result_value = 60 * 21 * 6;
-#endif
+// #ifdef DEBUG
+//             result_value = 60 * 21 * 6;
+// #endif
             return result_value;
         }
 
@@ -104,9 +104,9 @@ namespace celesos {
 
         uint32_t forest_bank::forest_space_number() {
             uint32_t result_value = 21 * 6 * 10;
-#ifdef DEBUG
-            result_value = 21 * 6;
-#endif
+// #ifdef DEBUG
+//             result_value = 21 * 6;
+// #endif
             return result_value;
         }
 
