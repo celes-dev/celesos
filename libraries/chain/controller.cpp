@@ -1526,7 +1526,7 @@ struct controller_impl {
       bool is_last_loop = false;
       //calculate current my_random position
       std::vector<signed_block_ptr> last_hash_vector;
-      uint32_t max_blcok_count = ((current_num - 22*12) > 0?(current_num - 22*12):0);
+      uint32_t max_blcok_count = ((current_num - 492) > 0?(current_num - 492):0);
       for(uint32_t block_number = current_num; block_number > max_blcok_count; block_number--){
          signed_block_ptr blk_state = self.fetch_block_by_number( block_number );
          if(blk_state == nullptr && block_number == current_num){
@@ -1586,7 +1586,7 @@ struct controller_impl {
 //the result random for all
    void set_block_random(){
       uint64_t current_num = head->block_num;
-      uint32_t length_num = 252;
+      uint32_t length_num = 492;
       uint64_t all_random = 0;
       int count = 0;
       if(current_num < length_num){
@@ -1623,7 +1623,7 @@ struct controller_impl {
    bool check_block_random(){
       auto p = pending->_pending_block_state;
       uint32_t current_num = p->header.block_num();
-      uint32_t length_num = 252;
+      uint32_t length_num = 492;
       if(current_num < length_num){
 //         dlog( "block numer < length_num 252");
          return true;
