@@ -1332,13 +1332,13 @@ struct list_producers_subcommand {
          auto weight = result.total_wood;
          if ( !weight )
             weight = 1;
-         printf("%-13s %-57s %-35s %s\n", "Producer", "Producer key", "Url", "Scaled votes");
+         printf("%-13s %-57s %-35s %s\n", "Producer", "Producer key", "Url", "Valid woods");
          for ( auto& row : result.rows )
-            printf("%-13.13s %-57.57s %-35.35s %1.4f\n",
+            printf("%-13.13s %-57.57s %-35.35s %lld\n",
                    row["owner"].as_string().c_str(),
                    row["producer_key"].as_string().c_str(),
                    row["url"].as_string().c_str(),
-                   row["valid_woods"].as_double() / weight);
+                   row["valid_woods"].as_uint64());
          if ( !result.more.empty() )
             std::cout << "-L " << result.more << " for more" << std::endl;
       });
