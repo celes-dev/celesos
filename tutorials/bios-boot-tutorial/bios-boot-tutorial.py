@@ -284,17 +284,22 @@ def stepStartBoot():
     startNode(0, {'name': 'celes', 'pvt': args.private_key, 'pub': args.public_key})
     sleep(1.5)
 def stepInstallSystemContracts():
-    run(args.cleos + 'set contract celes.token ' + args.contracts_dir + 'celes.token/')
-    run(args.cleos + 'set contract celes.msig ' + args.contracts_dir + 'celes.msig/')
+    run(args.cleos + 'set contract celes.token ' + args.contracts_dir + '/celes.token/')
+    run(args.cleos + 'set contract celes.msig ' + args.contracts_dir + '/celes.msig/')
+
 def stepCreateTokens():
     run(args.cleos + 'push action celes.token create \'["eosio", "10000000000.0000 %s"]\' -p celes.token' % (args.symbol))
     totalAllocation = allocateFunds(0, len(accounts))
     run(args.cleos + 'push action celes.token issue \'["eosio", "%s", "memo"]\' -p celes' % intToCurrency(totalAllocation))
     sleep(1)
 def stepSetSystemContract():
-    retry(args.cleos + 'set contract eosio ' + args.contracts_dir + 'celesos.system/')
+    retry(args.cleos + 'set contract eosio ' + args.contracts_dir + '/celesos.system/')
     sleep(1)
     run(args.cleos + 'push action eosio setpriv' + jsonArg(['celes.msig', 1]) + '-p eosio@active')
+
+def stepInitSystemContract():
+    run(args.cleos + 'push action eosio init' + jsonArg(['0', '4,SYS']) + '-p eosio@active')
+    sleep(1)
 def stepCreateStakedAccounts():
     createStakedAccounts(0, len(accounts))
 def stepRegProducers():
@@ -326,23 +331,25 @@ def stepLog():
 parser = argparse.ArgumentParser()
 
 commands = [
-    ('k', 'kill',           stepKillAll,                True,    "Kill all nodeos and keosd processes"),
-    ('w', 'wallet',         stepStartWallet,            True,    "Start keosd, create wallet, fill with keys"),
-    ('b', 'boot',           stepStartBoot,              True,    "Start boot node"),
-    ('s', 'sys',            createSystemAccounts,       True,    "Create system accounts (celes.*)"),
-    ('c', 'contracts',      stepInstallSystemContracts, True,    "Install system contracts (token, msig)"),
-    ('t', 'tokens',         stepCreateTokens,           True,    "Create tokens"),
-    ('S', 'sys-contract',   stepSetSystemContract,      True,    "Set system contract"),
-    ('T', 'stake',          stepCreateStakedAccounts,   True,    "Create staked accounts"),
-    ('p', 'reg-prod',       stepRegProducers,           True,    "Register producers"),
-    ('P', 'start-prod',     stepStartProducers,         True,    "Start producers"),
-    ('v', 'vote',           stepVote,                   True,    "Vote for producers"),
-    ('R', 'claim',          claimRewards,               True,    "Claim rewards"),
-    ('x', 'proxy',          stepProxyVotes,             True,    "Proxy votes"),
-    ('q', 'resign',         stepResign,                 True,    "Resign eosio"),
-    ('m', 'msg-replace',    msigReplaceSystem,          False,   "Replace system contract using msig"),
-    ('X', 'xfer',           stepTransfer,               False,   "Random transfer tokens (infinite loop)"),
-    ('l', 'log',            stepLog,                    True,    "Show tail of node's log"),
+
+    ('k', 'kill',               stepKillAll,                True,    "Kill all nodceles and kceles processes"),
+    ('w', 'wallet',             stepStartWallet,            True,    "Start kcelesd, create wallet, fill with keys"),
+    ('b', 'boot',               stepStartBoot,              True,    "Start boot node"),
+    ('s', 'sys',                createSystemAccounts,       True,    "Create system accounts (celes.*)"),
+    ('c', 'contracts',          stepInstallSystemContracts, True,    "Install system contracts (token, msig)"),
+    ('t', 'tokens',             stepCreateTokens,           True,    "Create tokens"),
+    ('S', 'sys-contract',       stepSetSystemContract,      True,    "Set system contract"),
+    ('I', 'init-sys-contract',  stepInitSystemContract,     True,    "Initialiaze system contract"),
+    ('T', 'stake',              stepCreateStakedAccounts,   True,    "Create staked accounts"),
+    ('p', 'reg-prod',           stepRegProducers,           True,    "Register producers"),
+    ('P', 'start-prod',         stepStartProducers,         True,    "Start producers"),
+    ('v', 'vote',               stepVote,                   True,    "Vote for producers"),
+    ('R', 'claim',              claimRewards,               True,    "Claim rewards"),
+    ('x', 'proxy',              stepProxyVotes,             True,    "Proxy votes"),
+    ('q', 'resign',             stepResign,                 True,    "Resign celes"),
+    ('m', 'msg-replace',        msigReplaceSystem,          False,   "Replace system contract using msig"),
+    ('X', 'xfer',               stepTransfer,               False,   "Random transfer tokens (infinite loop)"),
+    ('l', 'log',                stepLog,                    True,    "Show tail of node's log"),
 ]
 
 parser.add_argument('--public-key', metavar='', help="EOSIO Public Key", default='EOS8Znrtgwt8TfpmbVpTKvA2oB8Nqey625CLN8bCN3TEbgx86Dsvr', dest="public_key")

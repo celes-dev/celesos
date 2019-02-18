@@ -20,10 +20,11 @@ cd celesos/Docker
 docker build . -t celesos/celes
 ```
 
-The above will build off the most recent commit to the master branch by default. If you would like to target a specific branch/tag, you may use a build argument. For example, if you wished to generate a docker image based off of the v1.5.1 tag, you could do the following:
+The above will build off the most recent commit to the master branch by default. If you would like to target a specific branch/tag, you may use a build argument. For example, if you wished to generate a docker image based off of the 1.6.1 tag, you could do the following:
 
 ```bash
-docker build -t celesos/celes:v1.5.1 --build-arg branch=v1.5.1 .
+docker build -t celesos/celes:v1.6.1 --build-arg branch=v1.6.1 .
+
 ```
 
 By default, the symbol in celesos.system is set to SYS. You can override this using the symbol argument while building the docker image.
@@ -172,6 +173,7 @@ volumes:
 run `docker pull celesos/celes:latest`
 
 run `docker-compose up`
+
 
 ### CELESOS Testnet
 
