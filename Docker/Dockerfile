@@ -8,12 +8,12 @@ ARG git_http_proxy=""
 ARG git_https_proxy=""
 ARG git_credential=""
 
-RUN git config --global http.proxy "${git_http_proxy}" \
-    && git config --global https.proxy "${git_https_proxy}" \
-    && git clone -b $branch http://${git_credential}172.12.0.11/celesos/src.git --recursive ./celes \
+RUN if [ ! -z ${git_http_proxy} ]; then git config --global http.proxy "${git_http_proxy}"; fi \
+    ; if [ ! -z ${git_http_proxy} ]; then git config --global https.proxy "${git_https_proxy}"; fi \
+    ; git clone -b $branch http://${git_credential}172.12.0.11/celesos/src.git --recursive ./celes \
     && git config --global --unset http.proxy \
-    && git config --global --unset https.proxy \
-    && cd celes && echo "$branch:$(git rev-parse HEAD)" > /etc/celesos-version \
+    ; git config --global --unset https.proxy \
+    ; cd celes && echo "$branch:$(git rev-parse HEAD)" > /etc/celesos-version \
     && cmake -H. -B"/tmp/build" -GNinja -DCMAKE_BUILD_TYPE=Release -DWASM_ROOT=/opt/wasm -DCMAKE_CXX_COMPILER=clang++ \
        -DCMAKE_C_COMPILER=clang -DCMAKE_INSTALL_PREFIX=/tmp/build -DBUILD_MONGO_DB_PLUGIN=true -DCORE_SYMBOL_NAME=$symbol \
     && cmake --build /tmp/build --target install
