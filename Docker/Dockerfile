@@ -1,6 +1,6 @@
 FROM 172.12.0.12:5000/celesos/builder:v0.9.0 as builder
 ARG branch=master
-ARG symbol=CELES
+ARG symbol=SYS
 ARG http_proxy=""
 ARG https_proxy=""
 ARG no_proxy=""
