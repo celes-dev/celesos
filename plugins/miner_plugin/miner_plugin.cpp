@@ -308,9 +308,9 @@ void celesos::miner_plugin::start_miner() {
                             auto &&signature = pair.second(digest);
                             tx.signatures.push_back(signature);
                         }
-                        // auto packed_tx_ptr = std::make_shared<chain::packed_transaction>(
-                        //         chain::packed_transaction{tx});
-                        auto packed_tx_metadata_ptr = std::make_shared<chain::transaction_metadata>(std::make_shared<chain::packed_transaction>(chain::packed_transaction{tx}));
+                        auto packed_tx_ptr = std::make_shared<chain::packed_transaction>(
+                                chain::packed_transaction{tx});
+                        auto tx_metadata_ptr = std::make_shared<chain::transaction_metadata>(packed_tx_ptr);
                         fc_dlog(logger, "end prepare transaction about voteproducer");
                         using method_type = chain::plugin_interface::incoming::methods::transaction_async;
                         using handler_param_type = fc::static_variant<fc::exception_ptr, chain::transaction_trace_ptr>;
@@ -329,7 +329,7 @@ void celesos::miner_plugin::start_miner() {
                                         ("1", voter_name)("2", producer_name));
                             }
                         };
-                        app().get_method<method_type>()(packed_tx_metadata_ptr, true, handler);
+                        app().get_method<method_type>()(tx_metadata_ptr, true, handler);
                     }
                 } catch (fc::exception &er) {
                     wlog("${details}", ("details", er.to_detail_string()));
