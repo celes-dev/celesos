@@ -248,8 +248,8 @@ struct faucet_testnet_plugin_impl {
       // _timer.expires_from_now(boost::posix_time::microseconds(_create_interval_msec * 1000));
       // _timer.async_wait(boost::bind(&faucet_testnet_plugin_impl::timer_fired, this));
 
-      auto packed_tx_ptr = std::make_shared<chain::packed_transaction>(
-          chain::packed_transaction{trx});
+      auto packed_tx_metadata_ptr = std::make_shared<transaction_metadata>(std::make_shared<packed_transaction>(chain::packed_transaction{trx}));
+
       using method_type = chain::plugin_interface::incoming::methods::transaction_async;
       using handler_param_type = fc::static_variant<fc::exception_ptr, chain::transaction_trace_ptr>;
       auto handler = [](const handler_param_type &param) {
@@ -262,8 +262,8 @@ struct faucet_testnet_plugin_impl {
             auto trace_ptr = param.get<chain::transaction_trace_ptr>();
          }
       };
-      
-      app().get_method<method_type>()(packed_tx_ptr, true, handler);
+
+      app().get_method<method_type>()(packed_tx_metadata_ptr, true, handler);
 
       return std::make_pair(account_created, fc::variant(eosio::detail::faucet_testnet_empty()));
    }
