@@ -1760,7 +1760,7 @@ struct verifywood_subcommand {
       verifywood->add_option("wood", wood, localized("The wood(like 0x2A3F...)"))->required();
 
       verifywood->set_callback([this] {
-         auto result = call(get_random_func, fc::mutable_variant_object("block_num", block_num)("account",account)("wood",wood));
+         auto result = call(verify_wood_func, fc::mutable_variant_object("block_num", block_num)("account",account)("wood",wood));
          std::cout << fc::json::to_pretty_string(result) << std::endl;
          return;
       });
