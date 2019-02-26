@@ -1433,6 +1433,31 @@ struct get_transaction_id_subcommand {
    }
 };
 
+struct get_random_subcommand {
+   string blocknumorid;
+   get_random_subcommand(CLI::App* actionRoot) {
+      auto get_random = actionRoot->add_subcommand("random", localized("Get random by block num or id"));
+      get_random->add_option("block_num_or_id", blocknumorid, localized("block num or id"))->required();
+
+      get_random->set_callback([&] {
+         auto result = call(get_random_func, fc::mutable_variant_object("block_num_or_id", blocknumorid));
+         std::cout << fc::json::to_pretty_string(result) << std::endl;
+         return;
+      });
+   }
+};
+
+struct get_question_block_number_subcommand {
+   get_question_block_number_subcommand(CLI::App* actionRoot) {
+      auto get_question_block_number = actionRoot->add_subcommand("question_block_number", localized("Get question block number"));
+      get_question_block_number->set_callback([&] {
+         auto result = call(get_question_block_number_func, fc::mutable_variant_object());
+         std::cout << fc::json::to_pretty_string(result) << std::endl;
+         return;
+      });
+   }
+};
+
 struct delegate_bandwidth_subcommand {
    string from_str;
    string receiver_str;
@@ -1719,6 +1744,25 @@ struct canceldelay_subcommand {
                   ("trx_id", trx_id);
          auto accountPermissions = get_account_permissions(tx_permission, canceling_auth);
          send_actions({create_action(accountPermissions, config::system_account_name, N(canceldelay), act_payload)});
+      });
+   }
+};
+
+struct verifywood_subcommand {
+   string block_num;
+   string account;
+   string wood;
+
+   verifywood_subcommand(CLI::App* actionRoot) {
+      auto verifywood = actionRoot->add_subcommand("verifywood", localized("verifywood"));
+      verifywood->add_option("block_num", block_num, localized("Block num"))->required();
+      verifywood->add_option("account", account, localized("The wood owner account"))->required();
+      verifywood->add_option("wood", wood, localized("The wood(like 0x2A3F...)"))->required();
+
+      verifywood->set_callback([this] {
+         auto result = call(get_random_func, fc::mutable_variant_object("block_num", block_num)("account",account)("wood",wood));
+         std::cout << fc::json::to_pretty_string(result) << std::endl;
+         return;
       });
    }
 };
@@ -2505,7 +2549,8 @@ int main( int argc, char** argv ) {
 
    auto getSchedule = get_schedule_subcommand{get};
    auto getTransactionId = get_transaction_id_subcommand{get};
-
+   auto getRandom = get_random_subcommand{get};
+   auto getQuestionBlockNumber = get_question_block_number_subcommand{get};
    /*
    auto getTransactions = get->add_subcommand("transactions", localized("Retrieve all transactions with specific account name referenced in their scope"), false);
    getTransactions->add_option("account_name", account_name, localized("name of account to query on"))->required();
@@ -3578,6 +3623,7 @@ int main( int argc, char** argv ) {
    auto unregProxy = unregproxy_subcommand(system);
 
    auto cancelDelay = canceldelay_subcommand(system);
+   auto verywood = verifywood_subcommand(system);
 
    try {
        app.parse(argc, argv);

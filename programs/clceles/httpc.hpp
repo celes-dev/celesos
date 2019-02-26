@@ -101,6 +101,9 @@ namespace eosio { namespace client { namespace http {
    const string get_dbps_func = chain_func_base + "/get_dbps";
    const string get_schedule_func = chain_func_base + "/get_producer_schedule";
    const string get_required_keys = chain_func_base + "/get_required_keys";
+   const string get_random_func = chain_func_base + "/get_block_random";
+   const string get_question_block_number_func = chain_func_base + "/get_question_block_number";
+   const string verify_wood_func = chain_func_base + "/verify_wood";
 
 
    const string history_func_base = "/v1/history";
