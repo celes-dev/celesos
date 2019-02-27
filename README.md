@@ -3,7 +3,7 @@
 
 Welcome to the CELESOS source code repository! This software enables businesses to rapidly build and deploy high-performance and high-security blockchain-based applications.
 
-Some of the groundbreaking features of EOSIO include:
+Some of the groundbreaking features of CELESOS include:
 
 1. 基于DPOW的共识机制
 1. 我们使用燃木作为pow的中间产物
@@ -22,7 +22,7 @@ CELESOS team is neither launching nor operating any initial public blockchains b
 
 There is no public testnet running currently.
 
-**If you have previously installed EOSIO, please run the `eosio_uninstall` script (it is in the directory where you cloned EOSIO) before downloading and using the binary releases.**
+**If you have previously installed CELESOS, please run the `celesos_uninstall` script (it is in the directory where you cloned CELESOS) before downloading and using the binary releases.**
 
 #### Mac OS X Brew Install
 ```sh
