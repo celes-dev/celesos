@@ -92,13 +92,11 @@ CELESOS currently supports the following operating systems:
 
 ## Resources
 1. [Website](https://www.celesos.com)
-1. [Blog](https://medium.com/eosio)
+1. [Blog](https://medium.com/@CelesChain_3381)
 1. [Developer Portal](developers.celesos.com)
 1. [StackExchange for Q&A](https://celes.stackexchange.com/)
-1. [Community Telegram Group](https://t.me/EOSProject)
-1. [Developer Telegram Group](https://t.me/joinchat/EaEnSUPktgfoI-XPfMYtcQ)
-1. [White Paper](https://github.com/EOSIO/Documentation/blob/master/TechnicalWhitePaper.md)
-1. [Roadmap](https://github.com/EOSIO/Documentation/blob/master/Roadmap.md)
+1. [Community Telegram Group](https://t.me/celeschain)
+1. [White Paper](https://www.celeschain.io/whitepdf/Celes-Chain-WhitePaper_en.pdf?v=1551244047294)
 
 <a name="gettingstarted"></a>
 ## Getting Started
