@@ -1,32 +1,32 @@
 [submodule "libraries/chainbase"]
 	path = libraries/chainbase
-	url = https://github.com/eosio/chainbase
+	url = https://github.com/celes-dev/chainbase.git
         ignore = dirty
 [submodule "libraries/appbase"]
 	path = libraries/appbase
-	url = https://github.com/eosio/appbase
+	url = https://github.com/celes-dev/appbase.git
         ignore = dirty
 [submodule "contracts/musl/upstream"]
 	path = contracts/musl/upstream
-	url = https://github.com/EOSIO/musl.git
+	url = https://github.com/celes-dev/musl.git
 	branch = eosio
 [submodule "contracts/libc++/upstream"]
 	path = contracts/libc++/upstream
-	url = https://github.com/EOSIO/libcxx.git
+	url = https://github.com/celes-dev/libcxx.git
 	branch = eosio
 [submodule "externals/binaryen"]
 	path = externals/binaryen
-	url = https://github.com/EOSIO/binaryen
+	url = https://github.com/celes-dev/binaryen.git
 
 [submodule "libraries/softfloat"]
 	path = libraries/softfloat
-	url = https://github.com/eosio/berkeley-softfloat-3
+	url = https://github.com/celes-dev/berkeley-softfloat-3.git
 [submodule "externals/magic_get"]
 	path = externals/magic_get
-	url = https://github.com/EOSIO/magic_get
+	url = https://github.com/celes-dev/magic_get.git
 [submodule "libraries/fc"]
 	path = libraries/fc
-	url = http://dickyang:leijingjing@code.yangjinfang.club/celesos/fc.git
+	url = https://github.com/celes-dev/fc.git
 [submodule "libraries/wabt"]
 	path = libraries/wabt
-	url = https://github.com/EOSIO/wabt
+	url =https://github.com/celes-dev/wabt.git
