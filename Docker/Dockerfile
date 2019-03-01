@@ -6,11 +6,12 @@ ARG https_proxy=""
 ARG no_proxy=""
 ARG git_http_proxy=""
 ARG git_https_proxy=""
-ARG git_credential=""
+
+ADD https://api.github.com/repos/celes-dev/celesos/commits/${branch} /etc/celesos-version-detail
 
 RUN if [ ! -z ${git_http_proxy} ]; then git config --global http.proxy "${git_http_proxy}"; fi \
     ; if [ ! -z ${git_http_proxy} ]; then git config --global https.proxy "${git_https_proxy}"; fi \
-    ; git clone -b $branch http://${git_credential}172.12.0.11/celesos/src.git --recursive ./celes \
+    ; git clone -b $branch https://github.com/celes-dev/celesos.git --recursive ./celes \
     && git config --global --unset http.proxy \
     ; git config --global --unset https.proxy \
     ; cd celes && echo "$branch:$(git rev-parse HEAD)" > /etc/celesos-version \
