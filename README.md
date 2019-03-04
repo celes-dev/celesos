@@ -33,20 +33,15 @@ $ brew install celesos
 ```sh
 $ brew remove celesos
 ```
-#### Ubuntu 18.04 Debian Package Install
+#### Ubuntu 18.04 / Mint 19 Debian Package Install
 ```sh
 $ wget https://github.com/celes-dev/celesos/releases/download/v0.9.0/celesos_0.9.0-1-ubuntu-16.04_amd64.deb
 $ sudo apt install ./celesos_0.9.0-1-ubuntu-16.04_amd64.deb
 ```
-#### Ubuntu 16.04 Debian Package Install
+#### Ubuntu 16.04 / Mint 18 Debian Package Install
 ```sh
 $ wget https://github.com/celes-dev/celesos/releases/download/v0.9.0/celesos_0.9.0-1-ubuntu-18.04_amd64.deb
 $ sudo apt install ./celesos_0.9.0-1-ubuntu-18.04_amd64.deb
-```
-#### Mint 18 Debian Package Install
-```sh
-$ wget https://github.com/celes-dev/celesos/releases/download/v0.9.0/celesos-0.9.0-1.mint18.x86_64.deb
-$ sudo apt install ./celesos-0.9.0-1.mint18.x86_64.deb
 ```
 #### Debian Package Uninstall
 ```sh
@@ -83,12 +78,12 @@ $ sudo yum remove celesos
 ## Supported Operating Systems
 CELESOS currently supports the following operating systems:  
 1. Amazon 2018.03 and higher
-1. Centos 7
-1. Fedora 25 and higher (Fedora 27 recommended)
-1. Mint 18
-1. Ubuntu 16.04 (Ubuntu 16.10 recommended)
-1. Ubuntu 18.04
-1. MacOS Darwin 10.12 and higher (MacOS 10.13.x recommended)
+2. Centos 7
+3. Fedora 25 and higher (Fedora 27 recommended)
+4. Mint 18
+5. Ubuntu 16.04 (Ubuntu 16.10 recommended)
+6. Ubuntu 18.04
+7. MacOS Darwin 10.12 and higher (MacOS 10.13.x recommended)
 
 ## Resources
 1. [Website](https://www.celesos.com)
