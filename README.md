@@ -35,13 +35,13 @@ $ brew remove celesos
 ```
 #### Ubuntu 18.04 / Mint 19 Debian Package Install
 ```sh
-$ wget https://github.com/celes-dev/celesos/releases/download/v0.9.0/celesos_0.9.0-1-ubuntu-16.04_amd64.deb
-$ sudo apt install ./celesos_0.9.0-1-ubuntu-16.04_amd64.deb
+$ wget https://github.com/celes-dev/celesos/releases/download/v1.0.0/celesos_1.0.0-1-ubuntu-16.04_amd64.deb
+$ sudo apt install ./celesos_1.0.0-1-ubuntu-16.04_amd64.deb
 ```
 #### Ubuntu 16.04 / Mint 18 Debian Package Install
 ```sh
-$ wget https://github.com/celes-dev/celesos/releases/download/v0.9.0/celesos_0.9.0-1-ubuntu-18.04_amd64.deb
-$ sudo apt install ./celesos_0.9.0-1-ubuntu-18.04_amd64.deb
+$ wget https://github.com/celes-dev/celesos/releases/download/v1.0.0/celesos_1.0.0-1-ubuntu-18.04_amd64.deb
+$ sudo apt install ./celesos_1.0.0-1-ubuntu-18.04_amd64.deb
 ```
 #### Debian Package Uninstall
 ```sh
@@ -49,8 +49,8 @@ $ sudo apt remove celesos
 ```
 #### Centos RPM Package Install
 ```sh
-$ wget https://github.com/celes-dev/celesos/releases/download/v0.9.0/celesos-0.9.0-1.el7.x86_64.rpm
-$ sudo yum install ./celesos-0.9.0-1.el7.x86_64.rpm
+$ wget https://github.com/celes-dev/celesos/releases/download/v1.0.0/celesos-1.0.0-1.el7.x86_64.rpm
+$ sudo yum install ./celesos-1.0.0-1.el7.x86_64.rpm
 ```
 #### Centos RPM Package Uninstall
 ```sh
@@ -58,8 +58,8 @@ $ sudo yum remove celesos
 ```
 #### Fedora RPM Package Install
 ```sh
-$ wget https://github.com/celes-dev/celesos/releases/download/v0.9.0/celesos-0.9.0-1.fc27.x86_64.rpm
-$ sudo yum install ./celesos-0.9.0-1.fc27.x86_64.rpm
+$ wget https://github.com/celes-dev/celesos/releases/download/v1.0.0/celesos-1.0.0-1.fc27.x86_64.rpm
+$ sudo yum install ./celesos-1.0.0-1.fc27.x86_64.rpm
 ```
 #### Fedora RPM Package Uninstall
 ```sh
@@ -67,8 +67,8 @@ $ sudo yum remove celesos
 ```
 #### AWS RPM Package Install
 ```sh
-$ wget https://github.com/celes-dev/celesos/releases/download/v0.9.0/celesos-0.9.0-1.aws.x86_64.rpm
-$ sudo yum install ./celesos-0.9.0-1.aws.x86_64.rpm
+$ wget https://github.com/celes-dev/celesos/releases/download/v1.0.0/celesos-1.0.0-1.aws.x86_64.rpm
+$ sudo yum install ./celesos-1.0.0-1.aws.x86_64.rpm
 ```
 #### AWS RPM Package Uninstall
 ```sh
