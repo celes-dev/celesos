@@ -53,48 +53,39 @@ void apply_context::exec_one( action_trace& trace )
           {
               need_supervision = is_supervision(*this);
           }
-          if (need_supervision)
-          {
-              try
-              {
-                  control.get_wasm_interface().apply(a.code_version, a.code, *this);
-              }
-              catch (const wasm_exit &)
-              {
-              }
-          }
-          else
-          {
-              ///@}
+       
+         auto native = control.find_apply_handler(receiver, act.account, act.name);
+         if (native)
+         {
+            if (trx_context.enforce_whiteblacklist && control.is_producing_block())
+            {
+                  control.check_contract_list(receiver);
+                  control.check_action_list(act.account, act.name);
+            }
+            (*native)(*this);
+         }
 
-              auto native = control.find_apply_handler(receiver, act.account, act.name);
-              if (native)
-              {
-                  if (trx_context.enforce_whiteblacklist && control.is_producing_block())
-                  {
-                      control.check_contract_list(receiver);
-                      control.check_action_list(act.account, act.name);
-                  }
-                  (*native)(*this);
-              }
 
-              if (a.code.size() > 0 && !(act.account == config::system_account_name && act.name == N(setcode) &&
-                                         receiver == config::system_account_name))
-              {
-                  if (trx_context.enforce_whiteblacklist && control.is_producing_block())
-                  {
-                      control.check_contract_list(receiver);
-                      control.check_action_list(act.account, act.name);
-                  }
-                  try
-                  {
-                      control.get_wasm_interface().apply(a.code_version, a.code, *this);
-                  }
-                  catch (const wasm_exit &)
-                  {
-                  }
-              }
-          }
+         if(act.name == N(linkauth)&&!need_supervision){
+            
+         }else{
+            if (a.code.size() > 0 && !(act.account == config::system_account_name && act.name == N(setcode) &&
+                                       receiver == config::system_account_name))
+            {
+               if (trx_context.enforce_whiteblacklist && control.is_producing_block())
+               {
+                     control.check_contract_list(receiver);
+                     control.check_action_list(act.account, act.name);
+               }
+               try
+               {
+                     control.get_wasm_interface().apply(a.code_version, a.code, *this);
+               }
+               catch (const wasm_exit &)
+               {
+               }
+            }
+         }
       } FC_RETHROW_EXCEPTIONS( warn, "pending console output: ${console}", ("console", _pending_console_output.str()) )
    } catch( fc::exception& e ) {
       trace.receipt = r; // fill with known data
@@ -145,14 +136,23 @@ bool apply_context::is_supervision(apply_context &context)
 
     auto &db = context.db;
     const auto *account = db.find<account_object, by_name>(code);
-    abi_def abi;
 
-    if (abi_serializer::to_abi(account->abi, abi))
-    {
-        abi_serializer abis(abi, fc::seconds(10));
-        auto action_type = abis.get_action_type(N(supervision));
-        return !action_type.empty();
+    if( NULL == account){
+       return false;
     }
+
+    try {
+         abi_def abi;
+
+         if (abi_serializer::to_abi(account->abi, abi))
+         {       
+            abi_serializer abis(abi, fc::seconds(10));
+            auto action_type = abis.get_action_type(N(supervision));
+            return !action_type.empty();
+            
+         }
+    } FC_RETHROW_EXCEPTIONS( error, "Failed to find or parse ABI for ${name}", ("name", code))
+
     return false;
 }
 
