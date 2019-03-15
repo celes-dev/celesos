@@ -1586,7 +1586,6 @@ struct controller_impl {
       }
       for(uint32_t block_number = current_num; block_number > current_num -  length_num; block_number--){
          if(block_number <= 0){
-            // dlog( "block numer < length_num 252");
             return;
          }
          auto blk_state = self.fetch_block_by_number(block_number);
@@ -1599,7 +1598,6 @@ struct controller_impl {
       auto p = pending->_pending_block_state;
       if(all_random == 0){
          p->header.block_random = 0;
-         // dlog("set_block_random block random is 0");
          return;
       }
    
@@ -1612,37 +1610,32 @@ struct controller_impl {
    }
    
    bool check_block_random(){
-      auto p = pending->_pending_block_state;
-      uint32_t current_num = p->header.block_num();
+       auto p = pending->_pending_block_state;
+      // uint32_t current_num = p->header.block_num();
+      uint64_t current_num = head->block_num;
       uint32_t length_num = 492;
       if(current_num < length_num){
-//         dlog( "block numer < length_num 252");
+         return true;
+      }
+      if(p->header.block_random == 0){
          return true;
       }
       uint64_t all_random = 0;
-      // bool  is_random_correct = false;
-      for(uint32_t block_number = current_num; block_number > 0; block_number--){
+      for(uint32_t block_number = current_num; block_number > (current_num -  length_num); block_number--){
          if(block_number <= 0){
-//            dlog( "block_number <= 0");
             return true;
          }
-         if(block_number < (current_num -  length_num)){
-            break;
-         }
-         // auto blk_state = self.fetch_block_by_number(block_number);
          auto blk_state = self.fetch_block_by_number( block_number );
-         if( blk_state) {
+         if( blk_state != nullptr) {
             all_random += blk_state->my_random;
          }
       }
 
       if(all_random == 0){
-         // dlog("check_block_random the blcok random is 0");
          return true;
       }
        
       bool result_value = false;
-
       block_id_type result_hash = fc::sha256::hash(all_random + p->header.previous.str());
       uint64_t random_value = result_hash._hash[0];
       if(p->header.block_random ==  random_value){
