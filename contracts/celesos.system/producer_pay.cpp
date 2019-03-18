@@ -13,64 +13,64 @@ namespace celesossystem {
 
     void system_contract::onblock(block_timestamp timestamp, account_name producer) {
 
-        using namespace eosio;
+        // using namespace eosio;
 
-        require_auth(N(celes));
+        // require_auth(N(celes));
 
-        uint32_t head_block_number = get_chain_head_num();
+        //  uint32_t head_block_number = get_chain_head_num();
         
-        /**
-         * At startup the initial producer may not be one that is registered / elected
-         * and therefore there may be no producer object for them.
-         */
-        if (_gstate.is_network_active) {
-            auto prod = _producers.find(producer);
-            if (prod != _producers.end()) {
-                uint32_t fee = (uint32_t)(ORIGIN_REWARD_NUMBER / (pow(2, (head_block_number / REWARD_HALF_TIME))));
-                _gstate.total_unpaid_fee = _gstate.total_unpaid_fee + fee;
-                _producers.modify(prod, 0, [&](auto &p) {
-                    p.unpaid_fee = p.unpaid_fee + fee;
-                });
-            }
-        }
+        // /**
+        //  * At startup the initial producer may not be one that is registered / elected
+        //  * and therefore there may be no producer object for them.
+        //  */
+        // if (_gstate.is_network_active) {
+        //     auto prod = _producers.find(producer);
+        //     if (prod != _producers.end()) {
+        //         uint32_t fee = (uint32_t)(ORIGIN_REWARD_NUMBER / (pow(2, (head_block_number / REWARD_HALF_TIME))));
+        //         _gstate.total_unpaid_fee = _gstate.total_unpaid_fee + fee;
+        //         _producers.modify(prod, 0, [&](auto &p) {
+        //             p.unpaid_fee = p.unpaid_fee + fee;
+        //         });
+        //     }
+        // }
 
-        if (head_block_number % (uint32_t) forest_space_number() == 1) {
-            set_difficulty(calc_diff(head_block_number));
-            clean_diff_stat_history(head_block_number);
-        }
+        // if (head_block_number % (uint32_t) forest_space_number() == 1) {
+        //     set_difficulty(calc_diff(head_block_number));
+        //     clean_diff_stat_history(head_block_number);
+        // }
 
-        // 即将开始唱票，提前清理数据
-        // ready to singing the voting
-        if (_gstate.last_producer_schedule_block + SINGING_TICKER_SEP <= head_block_number + 30 - 1) {
-            uint32_t guess_modify_block = _gstate.last_producer_schedule_block + SINGING_TICKER_SEP;
-            if (head_block_number > guess_modify_block) guess_modify_block = head_block_number; // Next singing blocktime
-            clean_dirty_stat_producers(guess_modify_block, 5);
-        }
+        // // 即将开始唱票，提前清理数据
+        // // ready to singing the voting
+        // if (_gstate.last_producer_schedule_block + SINGING_TICKER_SEP <= head_block_number + 30 - 1) {
+        //     uint32_t guess_modify_block = _gstate.last_producer_schedule_block + SINGING_TICKER_SEP;
+        //     if (head_block_number > guess_modify_block) guess_modify_block = head_block_number; // Next singing blocktime
+        //     clean_dirty_stat_producers(guess_modify_block, 5);
+        // }
 
-        /// only update block producers once every minute, block_timestamp is in half seconds
-        if (head_block_number - _gstate.last_producer_schedule_block >= SINGING_TICKER_SEP) {
-            update_elected_producers(head_block_number);
+        // /// only update block producers once every minute, block_timestamp is in half seconds
+        // if (head_block_number - _gstate.last_producer_schedule_block >= SINGING_TICKER_SEP) {
+        //     update_elected_producers(head_block_number);
 
-            if (_gstate.is_network_active) {
-                if ((timestamp.slot - _gstate.last_name_close.slot) > blocks_per_day) {
-                    name_bid_table bids(_self, _self);
-                    auto idx = bids.get_index<N(highbid)>();
-                    auto highest = idx.begin();
-                    if (highest != idx.end() &&
-                        highest->high_bid > 0 &&
-                        highest->last_bid_time < (current_time() - useconds_per_day) &&
-                        _gstate.thresh_activated_stake_time > 0 &&
-                        (current_time() - _gstate.thresh_activated_stake_time) > 14 * useconds_per_day) {
-                        _gstate.last_name_close = timestamp;
-                        idx.modify(highest, 0, [&](auto &b) {
-                            b.high_bid = -b.high_bid;
-                        });
-                    }
-                }
-            }
-        }
+        //     if (_gstate.is_network_active) {
+        //         if ((timestamp.slot - _gstate.last_name_close.slot) > blocks_per_day) {
+        //             name_bid_table bids(_self, _self);
+        //             auto idx = bids.get_index<N(highbid)>();
+        //             auto highest = idx.begin();
+        //             if (highest != idx.end() &&
+        //                 highest->high_bid > 0 &&
+        //                 highest->last_bid_time < (current_time() - useconds_per_day) &&
+        //                 _gstate.thresh_activated_stake_time > 0 &&
+        //                 (current_time() - _gstate.thresh_activated_stake_time) > 14 * useconds_per_day) {
+        //                 _gstate.last_name_close = timestamp;
+        //                 idx.modify(highest, 0, [&](auto &b) {
+        //                     b.high_bid = -b.high_bid;
+        //                 });
+        //             }
+        //         }
+        //     }
+        // }
 
-        ramattenuator();
+        // ramattenuator();
     }
 
     using namespace eosio;

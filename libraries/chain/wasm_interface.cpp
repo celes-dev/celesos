@@ -241,9 +241,9 @@ class privileged_api : public context_aware_api {
          return context.verify_wood(block_number, account, wood);
       }
 
-      uint32_t get_chain_head_num() {
-         return context.head_block_num();
-      }
+      // uint32_t get_chain_head_num() {
+      //    return context.head_block_num();
+      // }
 
       uint32_t forest_period_number() const {
          return context.forest_period_number();
@@ -1036,6 +1036,9 @@ class system_api : public context_aware_api {
      /// CELES code:hubery.zhang {@
       uint64_t block_random_by_num(uint32_t num) {
          return context.block_random_by_num(num);
+      }
+       uint32_t get_chain_head_num() {
+         return context.head_block_num();
       }
     /// @}
 
@@ -1832,7 +1835,7 @@ REGISTER_INTRINSICS(privileged_api,
    (get_need_attenuation_account,     int64_t()                             )
    (set_difficulty,                   int(double)                           )
    (verify_wood,                      int(int,int64_t,int)                  )
-   (get_chain_head_num,               int()                                 )
+   // (get_chain_head_num,               int()                                 )
    (forest_period_number,             int()                                 )
    (forest_space_number,              int()                                 )
    (cregdbp,                          int(int64_t)                          )
@@ -1921,6 +1924,7 @@ REGISTER_INTRINSICS(system_api,
    (current_time, int64_t()       )
    (publication_time,   int64_t() )
    (block_random_by_num,    int64_t (int32_t) )
+   (get_chain_head_num,  int())
 );
 
 REGISTER_INTRINSICS(context_free_system_api,
