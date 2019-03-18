@@ -388,7 +388,7 @@ int64_t resource_limits_manager::get_account_limits( const account_name& account
    //float total=0.5*2*60*60*24*365*9.98;
 
    // 测试网10天衰减到原来的1%
-   float total=0.5*2*60*60*24*10;
+   float total=0.5*2*60*60*24*365;
 
    float n = block_num-last_position;
 
