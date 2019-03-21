@@ -232,8 +232,8 @@ add_subdirectory( contracts )
 add_subdirectory( plugins )
 add_subdirectory( programs )
 add_subdirectory( scripts )
-add_subdirectory( unittests )
-add_subdirectory( tests )
+# add_subdirectory( unittests )
+# add_subdirectory( tests )
 add_subdirectory( tools )
 add_subdirectory( debian )
 
@@ -281,4 +281,4 @@ install(FILES externals/binaryen/LICENSE DESTINATION ${CMAKE_INSTALL_FULL_DATARO
 install(FILES libraries/fc/src/network/LICENSE.go DESTINATION ${CMAKE_INSTALL_FULL_DATAROOTDIR}/licenses/celesos/ )
 
 include(package)
-include(doxygen)
+# include(doxygen)

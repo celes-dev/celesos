@@ -688,11 +688,3 @@ mongodconf
 
 	printf "\\n"
 
-	function print_instructions()
-	{
-		printf "\\t%s -f %s &\\n" "$( command -v mongod )" "${MONGOD_CONF}"
-		printf "\\tsource /opt/rh/python33/enable\\n"
-		printf '\texport PATH=${HOME}/opt/mongodb/bin:$PATH\n'
-		printf "\\tcd %s; make test\\n\\n" "${BUILD_DIR}"
-		return 0
-	}

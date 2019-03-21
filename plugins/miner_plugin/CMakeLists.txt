@@ -18,4 +18,4 @@ IF (CMAKE_BUILD_TYPE STREQUAL Debug)
     ADD_DEFINITIONS(-DDEBUG)
 ENDIF()
 
-add_subdirectory(test)
+# add_subdirectory(test)

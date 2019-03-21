@@ -492,9 +492,3 @@
 		printf "\\n\\tWASM found @ %s/opt/wasm\\n\\n" "${HOME}"
 	fi
 
-	function print_instructions()
-	{
-		printf "\\n\\t%s -f %s &\\n" "$( command -v mongod )" "${MONGOD_CONF}"
-		printf "\\tcd %s; make test\\n\\n" "${BUILD_DIR}"
-	return 0;
-	}

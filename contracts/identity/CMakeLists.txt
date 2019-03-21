@@ -21,4 +21,4 @@ add_wast_library(TARGET identity_interface
   DESTINATION_FOLDER ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-add_subdirectory(test)
+# add_subdirectory(test)

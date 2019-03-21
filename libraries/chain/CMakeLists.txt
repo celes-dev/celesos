@@ -60,7 +60,7 @@ target_include_directories( eosio_chain
                                    "${CMAKE_SOURCE_DIR}/libraries/wabt"
                                    "${CMAKE_BINARY_DIR}/libraries/wabt"
                             )
-add_subdirectory(test)
+# add_subdirectory(test)
 
 
 IF (CMAKE_BUILD_TYPE STREQUAL Debug)

@@ -11,4 +11,4 @@ target_link_libraries(pow
 target_include_directories(pow
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_subdirectory(test)
+# add_subdirectory(test)
