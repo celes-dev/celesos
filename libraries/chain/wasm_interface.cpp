@@ -222,6 +222,18 @@ class privileged_api : public context_aware_api {
          });
       }
 
+      void set_name_list_packed(uint32_t list_type, uint32_t action_type, array_ptr<char> packed_name_list, size_t datalen)
+      {
+         EOS_ASSERT(list_type > 0 && list_type < static_cast<uint32_t>(list_type::unknown_list_type), wasm_execution_error, "unkown list type");
+         EOS_ASSERT(action_type > 0 && action_type < static_cast<uint32_t>(action_type::unknown_action_type), wasm_execution_error, "unkown action type");
+
+         datastream<const char *> ds(packed_name_list, datalen);
+         std::vector<name> name_list;
+         fc::raw::unpack(ds, name_list);
+
+         context.control.set_name_list(list_type, action_type, name_list);
+      }
+
       bool is_privileged( account_name n )const {
          return context.db.get<account_object, by_name>( n ).privileged;
       }
@@ -1829,6 +1841,7 @@ REGISTER_INTRINSICS(privileged_api,
    (set_proposed_producers,           int64_t(int,int)                      )
    (get_blockchain_parameters_packed, int(int, int)                         )
    (set_blockchain_parameters_packed, void(int,int)                         )
+   (set_name_list_packed,             void(int,int,int,int)                 )
    (is_privileged,                    int(int64_t)                          )
    (set_privileged,                   void(int64_t, int)                    )
    (ram_attenuation,                  int64_t(int64_t)                      )

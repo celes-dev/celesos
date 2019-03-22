@@ -29,6 +29,7 @@ namespace eosio { namespace chain {
 
    class dynamic_global_property_object;
    class global_property_object;
+   class global_property2_object;
    class permission_object;
    class account_object;
    using resource_limits::resource_limits_manager;
@@ -48,6 +49,19 @@ namespace eosio { namespace chain {
       FULL,
       LIGHT
    };
+
+    enum class list_type : uint32_t {
+        actor_blacklist_type = 1,
+        contract_blacklist_type,
+        resource_greylist_type,
+        unknown_list_type
+    };
+
+    enum class action_type : uint32_t {
+        insert_action_type = 1,
+        remove_action_type,
+        unknown_action_type
+    };
 
    class controller {
       public:
@@ -151,6 +165,7 @@ namespace eosio { namespace chain {
 
          const account_object&                 get_account( account_name n )const;
          const global_property_object&         get_global_properties()const;
+         const global_property2_object&        get_global_properties2()const;
          const dynamic_global_property_object& get_dynamic_global_properties()const;
          const resource_limits_manager&        get_resource_limits_manager()const;
          resource_limits_manager&              get_mutable_resource_limits_manager();
@@ -242,6 +257,8 @@ namespace eosio { namespace chain {
          /// CELES code: hubery.zhang {@
          uint64_t block_random_by_num(uint32_t num) const;
          /// @}
+
+         void set_name_list(uint32_t list, uint32_t action, std::vector<account_name> name_list);
 
          bool skip_auth_check()const;
          bool skip_db_sessions( )const;

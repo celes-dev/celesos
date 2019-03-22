@@ -40,6 +40,7 @@ using controller_index_set = index_set<
    dbp_index,
    account_sequence_index,
    global_property_multi_index,
+   global_property2_multi_index,
    dynamic_global_property_multi_index,
    block_summary_multi_index,
    transaction_multi_index,
@@ -417,6 +418,9 @@ struct controller_impl {
          dlog( "database initialized with hash: ${hash}", ("hash", hash) );
       }
 
+      sync_name_list(list_type::actor_blacklist_type,true);
+      sync_name_list(list_type::contract_blacklist_type,true);
+      sync_name_list(list_type::resource_greylist_type,true);
    }
 
    ~controller_impl() {
@@ -661,6 +665,7 @@ struct controller_impl {
       db.create<global_property_object>([&](auto& gpo ){
         gpo.configuration = conf.genesis.initial_configuration;
       });
+      db.create<global_property2_object>([&](auto &){});
       db.create<dynamic_global_property_object>([](auto&){});
 
       authorization.initialize_database();
@@ -1131,6 +1136,80 @@ struct controller_impl {
       } FC_CAPTURE_AND_RETHROW((trace))
    } /// push_transaction
 
+   void set_name_list(list_type list_type, action_type action_type, std::vector<account_name> name_list)
+   {
+      uint32_t intlisttype = static_cast<uint32_t>(list_type);
+      EOS_ASSERT(intlisttype > 0 && intlisttype <= static_cast<uint32_t>(list_type::unknown_list_type), transaction_exception, "unknown list type : ${list}", ("list", intlisttype));
+
+      uint32_t intactiontype = static_cast<uint32_t>(action_type);
+      EOS_ASSERT(intactiontype > 0 && intactiontype <= static_cast<uint32_t>(action_type::unknown_action_type), transaction_exception, "unknown action type :${action}", ("action", intactiontype));
+
+      vector<flat_set<account_name> *> lists = {&conf.actor_blacklist, &conf.contract_blacklist, &conf.resource_greylist};
+      flat_set<account_name> &lo = *lists[intlisttype - 1];
+
+      if (action_type == action_type::insert_action_type)
+      {
+         lo.insert(name_list.begin(), name_list.end());
+      }
+      else if (action_type == action_type::remove_action_type)
+      {
+         flat_set<account_name> name_set(name_list.begin(), name_list.end());
+
+         flat_set<account_name> results;
+         results.reserve(lo.size());
+         set_difference(lo.begin(), lo.end(),
+                        name_set.begin(), name_set.end(),
+                        std::inserter(results, results.begin()));
+
+         lo = results;
+      }
+
+      sync_name_list(list_type);
+   }
+
+   void sync_name_list(list_type list, bool isMerge = false)
+   {
+      try
+      {
+         const auto &gpo2 = db.get<global_property2_object>();
+         db.modify(gpo2, [&](auto &gprops2) {
+            sync_list_and_db(list, gprops2, isMerge);
+         });
+      }
+      catch (...)
+      {
+         wlog("plugin initialize  sync list ignore before initialize database");
+      }
+   }
+
+   void sync_list_and_db(list_type list_type, global_property2_object &gprops2, bool ismerge = false)
+   {
+      uint32_t intlisttype = static_cast<uint32_t>(list_type);
+      EOS_ASSERT(intlisttype > 0 && intlisttype <= static_cast<uint32_t>(list_type::unknown_list_type), transaction_exception, "unknown list type : ${list_type}, ismerge: ${n}", ("list_type", intlisttype)("n", ismerge));
+
+      vector<shared_vector<account_name> *> lists = {&gprops2.configuration.actor_blacklist, &gprops2.configuration.contract_blacklist, &gprops2.configuration.resource_greylist};
+      vector<flat_set<account_name> *> conflists = {&conf.actor_blacklist, &conf.contract_blacklist, &conf.resource_greylist};
+
+      shared_vector<account_name> &lo = *lists[intlisttype - 1];
+      flat_set<account_name> &clo = *conflists[intlisttype - 1];
+
+      if (ismerge)
+      {
+         //initialize,  merge elements and deduplication between list and db.result save to  list
+         for (auto &a : lo)
+         {
+            clo.insert(a);
+         }
+      }
+
+      //clear list from db and save merge result to db  object
+      lo.clear();
+
+      for (auto &a : clo)
+      {
+         lo.push_back(a);
+      }
+   }
 
    void start_block( block_timestamp_type when, uint16_t confirm_block_count, controller::block_status s,
                      const optional<block_id_type>& producer_block_id )
@@ -2151,12 +2230,14 @@ void controller::set_actor_whitelist( const flat_set<account_name>& new_actor_wh
 }
 void controller::set_actor_blacklist( const flat_set<account_name>& new_actor_blacklist ) {
    my->conf.actor_blacklist = new_actor_blacklist;
+   my->sync_name_list(list_type::actor_blacklist_type);
 }
 void controller::set_contract_whitelist( const flat_set<account_name>& new_contract_whitelist ) {
    my->conf.contract_whitelist = new_contract_whitelist;
 }
 void controller::set_contract_blacklist( const flat_set<account_name>& new_contract_blacklist ) {
    my->conf.contract_blacklist = new_contract_blacklist;
+  my->sync_name_list(list_type::contract_blacklist_type);
 }
 void controller::set_action_blacklist( const flat_set< pair<account_name, action_name> >& new_action_blacklist ) {
    for (auto& act: new_action_blacklist) {
@@ -2261,6 +2342,9 @@ const dynamic_global_property_object& controller::get_dynamic_global_properties(
 }
 const global_property_object& controller::get_global_properties()const {
   return my->db.get<global_property_object>();
+}
+const global_property2_object& controller::get_global_properties2()const {
+   return my->db.get<global_property2_object>();
 }
 
 signed_block_ptr controller::fetch_block_by_id( block_id_type id )const {
@@ -2563,10 +2647,12 @@ void controller::set_subjective_cpu_leeway(fc::microseconds leeway) {
 
 void controller::add_resource_greylist(const account_name &name) {
    my->conf.resource_greylist.insert(name);
+   my->sync_name_list(list_type::resource_greylist_type);
 }
 
 void controller::remove_resource_greylist(const account_name &name) {
    my->conf.resource_greylist.erase(name);
+   my->sync_name_list(list_type::resource_greylist_type);
 }
 
 bool controller::is_resource_greylisted(const account_name &name) const {
@@ -2621,5 +2707,15 @@ bool controller::verify_wood(uint32_t block_number,const account_name &account, 
   celesos::forest::forest_bank* fb = celesos::forest::forest_bank::getInstance(my->self);
   return fb->verify_wood(block_number,account,wood);
 };
+
+void controller::set_name_list(uint32_t list, uint32_t action, std::vector<account_name> name_list)
+{
+   //redundant sync
+   my->sync_name_list(list_type::actor_blacklist_type, true);
+   my->sync_name_list(list_type::contract_blacklist_type, true);
+   my->sync_name_list(list_type::resource_greylist_type, true);
+
+   my->set_name_list(static_cast<list_type>(list), static_cast<action_type>(action), name_list);
+}
 //}@
 } } /// eosio::chain
