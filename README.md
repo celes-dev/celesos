@@ -35,13 +35,13 @@ $ brew remove celesos
 ```
 #### Ubuntu 18.04 / Mint 19 Debian Package Install
 ```sh
-$ wget https://github.com/celes-dev/celesos/releases/download/v1.0.0/celesos_1.0.0-1-ubuntu-16.04_amd64.deb
-$ sudo apt install ./celesos_1.0.0-1-ubuntu-16.04_amd64.deb
+$ wget https://github.com/celes-dev/celesos/releases/download/v1.0.0/celesos_1.0.0-1-ubuntu-18.04_amd64.deb
+$ sudo apt install ./celesos_1.0.0-1-ubuntu-18.04_amd64.deb
 ```
 #### Ubuntu 16.04 / Mint 18 Debian Package Install
 ```sh
-$ wget https://github.com/celes-dev/celesos/releases/download/v1.0.0/celesos_1.0.0-1-ubuntu-18.04_amd64.deb
-$ sudo apt install ./celesos_1.0.0-1-ubuntu-18.04_amd64.deb
+$ wget https://github.com/celes-dev/celesos/releases/download/v1.0.0/celesos_1.0.0-1-ubuntu-16.04_amd64.deb
+$ sudo apt install ./celesos_1.0.0-1-ubuntu-16.04_amd64.deb
 ```
 #### Debian Package Uninstall
 ```sh
