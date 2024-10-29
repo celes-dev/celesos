@@ -90,7 +90,7 @@ CELESOS currently supports the following operating systems:
 1. [Blog](https://medium.com/@CelesOS)
 1. [Developer Portal](developers.celesos.com)
 1. [StackExchange for Q&A](https://celes.stackexchange.com/)
-1. [Twitter Account](https://t.me/celeschain](https://x.com/CelesChain)
+1. [Twitter Account](https://x.com/CelesChain)
 1. [White Paper](https://www.celeschain.io/whitepdf/Celes-Chain-WhitePaper_en.pdf?v=1551244047294)
 
 <a name="gettingstarted"></a>
